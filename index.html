@@ -843,6 +843,13 @@
       align-items: center;
       gap: 6px;
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
+      max-width: 94vw;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .bottom-nav::-webkit-scrollbar {
+      display: none;
     }
 
     .nav-tab {
@@ -2075,7 +2082,6 @@
           badge.style.color = 'var(--accent-amber)';
           badge.style.borderColor = 'rgba(255, 184, 0, 0.35)';
         }
-        showToast('Anda masih menggunakan Mode Simulasi. Harap masukkan URL Endpoint API di dalam kode index.html atau Menu Admin.', true);
       } else {
         if (badge) {
           badge.textContent = 'LIVE SYNC';
@@ -2098,7 +2104,7 @@
         var requestedEvt = urlParams.get('event');
         if (requestedEvt) {
           APP_STATE.activeEventId = requestedEvt;
-        } else if (APP_STATE.events.length > 0) {
+        } else if (APP_STATE.events.length > 0 && (!APP_STATE.activeEventId || !APP_STATE.events.some(function(e){return e.eventId === APP_STATE.activeEventId;}))) {
           APP_STATE.activeEventId = APP_STATE.events[0].eventId;
         }
 
@@ -2106,6 +2112,7 @@
         renderEventSelectorDropdown();
         updateActiveEventHeroBanner();
         updateAutoRenamePreview();
+        renderAdminEventsTable();
         reloadGalleryFeed(true);
         reloadGuestbookFeed(true);
       });
@@ -3048,7 +3055,6 @@
           document.getElementById('evtFormId').value = ev.eventId;
           document.getElementById('evtFormName').value = ev.eventName;
           
-          // Konversi format DD/MM/YYYY (dari DB) menjadi YYYY-MM-DD (untuk input type="date")
           var rawDate = ev.eventDate || '';
           if (rawDate.indexOf('/') > -1) {
             var dParts = rawDate.split('/');
