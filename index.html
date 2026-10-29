@@ -949,14 +949,17 @@
         <div class="brand-titles">
           <h1>
             <span id="headerAppName">SatuAlbum</span>
-            <span class="brand-badge">LIVE SYNC</span>
+            <span class="brand-badge" id="connectionBadge">LIVE SYNC</span>
           </h1>
           <p id="headerWoName">Zettbos Wedding & Event Organizer</p>
         </div>
       </div>
 
       <div class="event-switcher-bar">
-        <select id="globalEventSelect" class="event-select" onchange="handleEventSwitch(this.value)"></select>
+        <select id="globalEventSelect" class="event-select" onchange="handleEventSwitch(this.value)" style="display:none;"></select>
+        <div id="publicEventLabel" class="btn btn-glass btn-sm" style="pointer-events:none;">
+          <i class="fa-solid fa-calendar-check"></i> <span id="publicEventNameText">Memuat...</span>
+        </div>
         <button type="button" class="btn btn-glass btn-sm" onclick="openQrEventModal()" title="Tampilkan QR Code Event">
           <i class="fa-solid fa-qrcode"></i> QR Acara
         </button>
@@ -1208,7 +1211,24 @@
     </section>
 
     <!-- =================================================================== -->
-    <!-- VIEW 4: ADMIN PANEL (APP NAME, MULTI-USER ROLES & DRIVE LINKS)      -->
+    <!-- VIEW 4: HALL OF FAME / AWARDS (FOTO TERPILIH)                       -->
+    <!-- =================================================================== -->
+    <section id="view-awards" class="view-panel">
+      <div class="glass-card">
+        <div class="section-header">
+          <div class="section-title">
+            <i class="fa-solid fa-trophy"></i> Pemenang & Foto Terfavorit
+          </div>
+          <button type="button" class="btn btn-glass btn-sm" onclick="renderAwardsFeed()">
+            <i class="fa-solid fa-rotate"></i> Segarkan
+          </button>
+        </div>
+        <div id="awardsPhotoGrid" class="photo-grid"></div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 5: ADMIN PANEL (APP NAME, MULTI-USER ROLES & DRIVE LINKS)      -->
     <!-- =================================================================== -->
     <section id="view-admin" class="view-panel">
 
@@ -1562,6 +1582,9 @@
     <button type="button" id="navBtn-guestbook" class="nav-tab" onclick="switchMainView('guestbook')">
       <i class="fa-solid fa-book-open-reader"></i> <span>Buku Tamu</span>
     </button>
+    <button type="button" id="navBtn-awards" class="nav-tab" onclick="switchMainView('awards'); renderAwardsFeed();">
+      <i class="fa-solid fa-trophy"></i> <span>Pemenang</span>
+    </button>
     <button type="button" id="navBtn-admin" class="nav-tab" onclick="switchMainView('admin')">
       <i class="fa-solid fa-user-shield"></i> <span>Menu Admin</span>
     </button>
@@ -1633,8 +1656,7 @@
       cameraFilterName: 'Normal',
       capturedDataUrl: '',
       
-      // 👇 GANTI URL DI BAWAH INI DENGAN URL WEB APP GOOGLE APPS SCRIPT MILIKMU 👇
-      // Contoh: 'https://script.google.com/macros/s/AKfycbyxxx_yyy_zzz/exec'
+      // 👇 URL WEB APP GOOGLE APPS SCRIPT AKTIF ANDA 👇
       remoteGasUrl: 'https://script.google.com/macros/s/AKfycby_rqWwEjq2Nfrg4L6jJnVMUJwDDc11dTBkFaZw7QHoPMSBjVKkBf0tl7Gz86CFxVIEhA/exec'
     };
 
@@ -1763,13 +1785,30 @@
           headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify({ action: actionName, payload: payloadObj })
         })
-          .then(function(r) { return r.json(); })
-          .then(function(data) {
-            if (onSuccess) onSuccess(data);
+          .then(function(r) { 
+            if (!r.ok) throw new Error('HTTP Status ' + r.status);
+            return r.text(); 
+          })
+          .then(function(text) {
+            try {
+              var data = JSON.parse(text);
+              if (onSuccess) onSuccess(data);
+            } catch(e) {
+              throw new Error('Respons Server bukan JSON. Cek Setting Deploy GAS!');
+            }
           })
           .catch(function(err) {
             if (onError) onError(err);
-            else showToast('Gagal menghubungi Web App URL: ' + err.toString(), true);
+            else showToast('Gagal Server: ' + err.message, true);
+
+            // Lepas status stuck "Memuat Acara" jika error
+            if (actionName === 'getInitialAppBundle') {
+              var titleEl = document.getElementById('heroEventTitle');
+              if (titleEl) {
+                titleEl.textContent = 'API Error (Cek Setting Deploy)';
+                titleEl.style.color = 'var(--accent-danger)';
+              }
+            }
           });
         return;
       }
@@ -1986,6 +2025,16 @@
         return { status: 'success', message: 'Ucapan & konfirmasi kehadiran berhasil dikirim!', entry: newEntry };
       }
 
+      if (action === 'awardPhoto') {
+        for (var idx = 0; idx < LOCAL_MOCK_DB.photos.length; idx++) {
+          if (LOCAL_MOCK_DB.photos[idx].photoId === p.photoId) {
+            LOCAL_MOCK_DB.photos[idx].awardTitle = p.awardTitle;
+            return { status: 'success', message: 'Penghargaan disimpan!', photoId: p.photoId, awardTitle: p.awardTitle };
+          }
+        }
+        return { status: 'error', message: 'Foto tidak ditemukan.' };
+      }
+
       return { status: 'success' };
     }
 
@@ -2097,16 +2146,33 @@
 
     function renderEventSelectorDropdown() {
       var selectEl = document.getElementById('globalEventSelect');
+      var labelEl = document.getElementById('publicEventLabel');
+      var nameTextEl = document.getElementById('publicEventNameText');
+
       if (!selectEl) return;
 
       var html = '';
+      var activeEventName = '';
       for (var i = 0; i < APP_STATE.events.length; i++) {
         var ev = APP_STATE.events[i];
         var selectedAttr = (ev.eventId === APP_STATE.activeEventId) ? ' selected="selected"' : '';
+        if (ev.eventId === APP_STATE.activeEventId) activeEventName = ev.eventName;
+        
         html += '<option value="' + escapeHtml(ev.eventId) + '"' + selectedAttr + '>' +
                 escapeHtml(ev.eventName) + ' (' + escapeHtml(ev.eventDate) + ')</option>';
       }
       selectEl.innerHTML = html;
+
+      if (nameTextEl) nameTextEl.textContent = activeEventName || 'Memuat...';
+
+      // Proteksi Akses Event: Sembunyikan Dropdown jika bukan Admin yang login
+      if (APP_STATE.currentUser) {
+        selectEl.style.display = 'inline-block';
+        if (labelEl) labelEl.style.display = 'none';
+      } else {
+        selectEl.style.display = 'none';
+        if (labelEl) labelEl.style.display = 'inline-flex';
+      }
     }
 
     function handleEventSwitch(newEventId) {
@@ -2530,15 +2596,20 @@
       reloadGalleryFeed(false);
     }
 
-    function renderGalleryPhotoCards(photoList, appendMode) {
-      var gridEl = document.getElementById('galleryPhotoGrid');
+    function renderGalleryPhotoCards(photoList, appendMode, targetGridId) {
+      var gridId = targetGridId || 'galleryPhotoGrid';
+      var gridEl = document.getElementById(gridId);
       if (!gridEl) return;
 
       if (!photoList || photoList.length === 0) {
+        var emptyMsg = (gridId === 'awardsPhotoGrid') 
+          ? 'Belum ada foto yang mendapatkan penghargaan/award pada acara ini.' 
+          : 'Belum ada foto pada kategori atau acara ini. Jadilah yang pertama mengambil foto!';
+        
         gridEl.innerHTML =
           '<div style="grid-column:1/-1; text-align:center; padding:36px 16px; color:var(--text-muted);">' +
           '<i class="fa-regular fa-images" style="font-size:2.2rem; color:var(--neon-green); margin-bottom:10px; display:block;"></i>' +
-          'Belum ada foto pada kategori atau acara ini. Jadilah yang pertama mengambil foto melalui menu Live Kamera!' +
+          emptyMsg +
           '</div>';
         return;
       }
@@ -2552,11 +2623,17 @@
         var safeFileName = escapeHtml(p.fileName || '');
         var safeDate = escapeHtml(p.uploadedAt || '');
         var safeId = escapeHtml(p.photoId || '');
+        
+        // Render Badge Award jika ada
+        var awardBadge = (p.awardTitle && String(p.awardTitle).trim() !== '') 
+          ? '<div style="position:absolute; bottom:10px; right:10px; background:var(--neon-green); color:#06120e; padding:4px 10px; border-radius:99px; font-size:0.7rem; font-weight:800; box-shadow:var(--neon-glow); z-index:10;"><i class="fa-solid fa-trophy"></i> ' + escapeHtml(p.awardTitle) + '</div>' 
+          : '';
 
         html +=
           '<article class="photo-card">' +
             '<div class="photo-thumb-wrap" onclick="openPhotoLightbox(\'' + safeId + '\')">' +
               '<span class="photo-cat-tag">' + safeCategory + '</span>' +
+              awardBadge +
               '<img src="' + safeUrl + '" alt="' + safeFileName + '" loading="lazy" />' +
             '</div>' +
             '<div class="photo-body">' +
@@ -2762,6 +2839,7 @@
         }
 
         APP_STATE.currentUser = res.user;
+        renderEventSelectorDropdown(); // Buka gembok dropdown event
         applyRoleBasedAdminView();
         showToast(res.message);
       });
@@ -2772,6 +2850,7 @@
       document.getElementById('adminLoginGate').style.display = 'block';
       document.getElementById('adminDashboardContent').style.display = 'none';
       document.getElementById('loginPin').value = '';
+      renderEventSelectorDropdown(); // Kunci kembali dropdown event
       showToast('Anda telah keluar dari sesi Admin.');
     }
 
@@ -3193,21 +3272,89 @@
       var html = '';
       for (var i = 0; i < APP_STATE.photos.length; i++) {
         var p = APP_STATE.photos[i];
+        var awardText = (p.awardTitle) ? '<span style="color:var(--neon-green); font-size:0.7rem; font-weight:bold; display:block; margin-top:4px;"><i class="fa-solid fa-trophy"></i> ' + escapeHtml(p.awardTitle) + '</span>' : '';
         html +=
           '<tr>' +
             '<td><span class="mono-badge">' + escapeHtml(p.photoId) + '</span></td>' +
             '<td>' + escapeHtml(p.category) + '</td>' +
             '<td><span class="mono-badge">' + escapeHtml(p.fileName) + '</span></td>' +
             '<td>' + escapeHtml(p.uploadedBy) + '</td>' +
-            '<td>' + escapeHtml(p.uploadedAt) + '</td>' +
+            '<td>' + escapeHtml(p.uploadedAt) + awardText + '</td>' +
             '<td>' +
-              '<button type="button" class="btn btn-danger btn-sm" onclick="confirmDeletePhoto(\'' + escapeHtml(p.photoId) + '\')">' +
-                '<i class="fa-solid fa-trash"></i> Hapus' +
-              '</button>' +
+              '<div style="display:flex; gap:6px;">' +
+                '<button type="button" class="btn btn-neon btn-sm" onclick="promptAwardModal(\'' + escapeHtml(p.photoId) + '\')">' +
+                  '<i class="fa-solid fa-medal"></i>' +
+                '</button>' +
+                '<button type="button" class="btn btn-danger btn-sm" onclick="confirmDeletePhoto(\'' + escapeHtml(p.photoId) + '\')">' +
+                  '<i class="fa-solid fa-trash"></i>' +
+                '</button>' +
+              '</div>' +
             '</td>' +
           '</tr>';
       }
       tbody.innerHTML = html;
+    }
+
+    function promptAwardModal(photoId) {
+      var titleEl = document.getElementById('customModalTitle');
+      var bodyEl = document.getElementById('customModalBody');
+      if (titleEl) titleEl.textContent = 'Berikan Penghargaan / Award';
+
+      var html = '<p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">Pilih atau ketik gelar pemenang untuk foto ini. Kosongkan lalu simpan untuk mencabut penghargaan.</p>' +
+                 '<div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">' +
+                   '<button type="button" class="btn btn-glass btn-sm" onclick="document.getElementById(\'awardInputText\').value=\'Foto Terbaik 🏆\'">Foto Terbaik 🏆</button>' +
+                   '<button type="button" class="btn btn-glass btn-sm" onclick="document.getElementById(\'awardInputText\').value=\'Tamu Terfavorit 🌟\'">Terfavorit 🌟</button>' +
+                   '<button type="button" class="btn btn-glass btn-sm" onclick="document.getElementById(\'awardInputText\').value=\'Paling Lucu 😂\'">Paling Lucu 😂</button>' +
+                 '</div>' +
+                 '<input type="text" id="awardInputText" class="form-input" placeholder="Contoh: Best Couple 👑" style="margin-bottom:16px;" />' +
+                 '<div style="display:flex; justify-content:flex-end; gap:10px;">' +
+                   '<button type="button" class="btn btn-glass" onclick="closeCustomModal()">Batal</button>' +
+                   '<button type="button" id="btnSubmitAward" class="btn btn-neon" onclick="submitAwardAction(\'' + escapeHtml(photoId) + '\')">Simpan Award</button>' +
+                 '</div>';
+      if (bodyEl) bodyEl.innerHTML = html;
+      document.getElementById('customModalBackdrop').classList.add('active');
+    }
+
+    function submitAwardAction(photoId) {
+      var awardTitle = String(document.getElementById('awardInputText').value || '').trim();
+      var btn = document.getElementById('btnSubmitAward');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Menyimpan...';
+      }
+
+      callBackendApi('awardPhoto', { photoId: photoId, awardTitle: awardTitle }, function(res) {
+        closeCustomModal();
+        if (!res || res.status !== 'success') {
+          showToast((res && res.message) || 'Gagal menyimpan penghargaan.', true);
+          return;
+        }
+        
+        // Optimistic UI Update untuk array photos lokal
+        for (var i = 0; i < APP_STATE.photos.length; i++) {
+          if (APP_STATE.photos[i].photoId === photoId) {
+            APP_STATE.photos[i].awardTitle = awardTitle;
+            break;
+          }
+        }
+        
+        renderAdminPhotosModerationTable();
+        renderGalleryPhotoCards(APP_STATE.photos, false, 'galleryPhotoGrid');
+        renderAwardsFeed(); // Update juga halaman pemenang
+        showToast(res.message);
+      });
+    }
+
+    function renderAwardsFeed() {
+      // Saring hanya foto-foto yang memiliki title penghargaan
+      var awardedPhotos = [];
+      for (var i = 0; i < APP_STATE.photos.length; i++) {
+        if (APP_STATE.photos[i].awardTitle && String(APP_STATE.photos[i].awardTitle).trim() !== '') {
+          awardedPhotos.push(APP_STATE.photos[i]);
+        }
+      }
+      // Re-use komponen render gallery ke target grid yang berbeda
+      renderGalleryPhotoCards(awardedPhotos, false, 'awardsPhotoGrid');
     }
 
     function confirmDeletePhoto(photoId) {
