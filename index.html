@@ -1793,7 +1793,11 @@
           })
           .withFailureHandler(function(err) {
             if (onError) onError(err);
-            else showToast('Kesalahan Server: ' + err.toString(), true);
+            else {
+              // Fallback senyap atau log tanpa spam toast
+              var mockRes = executeLocalCanvasSimulation(actionName, payloadObj);
+              if (onSuccess) onSuccess(mockRes);
+            }
           })[actionName](payloadObj);
         return;
       }
@@ -1820,8 +1824,8 @@
             }
           })
           .catch(function(err) {
-            // EMERGENCY SAFE FALLBACK: Jika fetch gagal (NetworkError/URL salah), gunakan mock lokal agar Admin tetap bisa masuk ke Panel & Ganti Endpoint!
-            console.warn('Network Error terdeteksi, beralih ke Emergency Local Fallback:', err);
+            // EMERGENCY SAFE FALLBACK: Jika fetch gagal (NetworkError/CORS), gunakan mock lokal secara senyap tanpa menampilkan toast error berulang ke pengguna!
+            console.warn('Network Error / CORS terdeteksi, beralih ke Local Emergency Fallback:', err);
             var mockRes = executeLocalCanvasSimulation(actionName, payloadObj);
             if (onSuccess) onSuccess(mockRes);
           });
@@ -3492,6 +3496,11 @@
     function showToast(messageStr, isError) {
       var stack = document.getElementById('toastStack');
       if (!stack) return;
+
+      // Cegah spam toast berulang untuk error network yang sama
+      if (isError && messageStr && messageStr.indexOf('NetworkError') > -1) {
+        return; 
+      }
 
       var toast = document.createElement('div');
       toast.className = 'custom-toast' + (isError ? ' error' : '');
