@@ -2104,8 +2104,8 @@
     }
 
     function buildGoogleDriveFolderUrl(rawUrl, folderId) {
-      var cleanId = extractDriveFolderIdClient(rawUrl || '') || folderId;
-      if (cleanId && cleanId.length >= 10) {
+      var cleanId = extractDriveFolderIdClient(rawUrl) || extractDriveFolderIdClient(folderId) || folderId;
+      if (cleanId && cleanId.length >= 10 && cleanId.indexOf('http') === -1) {
         return 'https://drive.google.com/drive/folders/' + cleanId;
       }
       if (rawUrl && String(rawUrl).indexOf('http') === 0) {
@@ -2121,7 +2121,8 @@
       if (m1 && m1[1]) return m1[1];
       var m2 = str.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
       if (m2 && m2[1]) return m2[1];
-      return str;
+      if (/^[a-zA-Z0-9_-]{10,}$/.test(str) && str.indexOf('http') === -1) return str;
+      return '';
     }
 
     function previewExtractedDriveId(inputVal, targetBadgeId) {
