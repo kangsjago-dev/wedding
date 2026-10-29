@@ -1002,7 +1002,7 @@
               <span class="mono-badge" id="activeFilterLabel">Filter: Normal</span>
             </div>
 
-            <video id="liveVideo" class="mirror-video" autoplay playsinline muted></video>
+            <video id="liveVideo" autoplay playsinline muted></video>
             <img id="capturedPreviewImg" class="captured-preview" style="display:none;" alt="Hasil Jepretan" />
             <canvas id="captureCanvas" style="display:none;"></canvas>
 
@@ -1611,8 +1611,8 @@
       gbHasMore: false,
       currentUser: null,
       cameraStream: null,
-      cameraFacingMode: 'user',
-      cameraMirrored: true,
+      cameraFacingMode: 'environment',
+      cameraMirrored: false,
       cameraFilterCss: 'none',
       cameraFilterName: 'Normal',
       capturedDataUrl: '',
@@ -1733,7 +1733,9 @@
       if (APP_STATE.remoteGasUrl && APP_STATE.remoteGasUrl.indexOf('https://script.google.com') === 0) {
         fetch(APP_STATE.remoteGasUrl, {
           method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          mode: 'cors',
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify({ action: actionName, payload: payloadObj })
         })
           .then(function(r) { return r.json(); })
@@ -2102,12 +2104,12 @@
     }
 
     function buildGoogleDriveFolderUrl(rawUrl, folderId) {
+      var cleanId = extractDriveFolderIdClient(rawUrl || '') || folderId;
+      if (cleanId && cleanId.length >= 10) {
+        return 'https://drive.google.com/drive/folders/' + cleanId;
+      }
       if (rawUrl && String(rawUrl).indexOf('http') === 0) {
         return rawUrl;
-      }
-      var cleanId = folderId || extractDriveFolderIdClient(rawUrl || '');
-      if (cleanId) {
-        return 'https://drive.google.com/drive/folders/' + cleanId;
       }
       return 'https://drive.google.com';
     }
@@ -2151,7 +2153,7 @@
 
       var constraints = {
         video: {
-          facingMode: APP_STATE.cameraFacingMode,
+          facingMode: { ideal: APP_STATE.cameraFacingMode },
           width: { ideal: 1280 },
           height: { ideal: 960 }
         },
@@ -2163,6 +2165,12 @@
           APP_STATE.cameraStream = stream;
           if (videoEl) {
             videoEl.srcObject = stream;
+            // Pastikan class mirror menyesuaikan status (default: false untuk kamera belakang)
+            if (APP_STATE.cameraMirrored) {
+              videoEl.classList.add('mirror-video');
+            } else {
+              videoEl.classList.remove('mirror-video');
+            }
             videoEl.style.display = 'block';
           }
           var previewImg = document.getElementById('capturedPreviewImg');
