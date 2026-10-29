@@ -845,11 +845,16 @@
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
       max-width: 94vw;
       overflow-x: auto;
-      scrollbar-width: none;
+      scrollbar-width: auto; /* Memungkinkan slide/scroll apabila tertutupi pada layar mobile */
+      -webkit-overflow-scrolling: touch;
     }
 
     .bottom-nav::-webkit-scrollbar {
-      display: none;
+      height: 4px;
+    }
+    .bottom-nav::-webkit-scrollbar-thumb {
+      background: rgba(0, 255, 170, 0.3);
+      border-radius: 99px;
     }
 
     .nav-tab {
@@ -1224,13 +1229,44 @@
       <div class="glass-card">
         <div class="section-header">
           <div class="section-title">
-            <i class="fa-solid fa-trophy"></i> Pemenang & Foto Terfavorit
+            <i class="fa-solid fa-trophy"></i> Pemenang & Polling Vote Kategori
           </div>
           <button type="button" class="btn btn-glass btn-sm" onclick="renderAwardsFeed()">
             <i class="fa-solid fa-rotate"></i> Segarkan
           </button>
         </div>
-        <div id="awardsPhotoGrid" class="photo-grid"></div>
+
+        <!-- Tab Navigasi Polling Kategori & Leaderboard -->
+        <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+          <button type="button" class="btn btn-neon btn-sm" onclick="switchVoteTab('gallery', this)"><i class="fa-solid fa-check-to-slot"></i> Vote Foto Kategori</button>
+          <button type="button" class="btn btn-glass btn-sm" onclick="switchVoteTab('leaderboard', this)"><i class="fa-solid fa-ranking-star"></i> Papan Hasil Vote Live</button>
+        </div>
+
+        <div id="voteSectionGallery" class="vote-subview active">
+          <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:14px;">
+            Pilih kategori di bawah ini lalu berikan dukungan (Vote) untuk foto terkeren / terfavorit pilihan Anda!
+          </div>
+          <div class="category-pills" id="voteCategoryPills" style="margin-bottom:16px;">
+            <button type="button" class="filter-chip active" onclick="filterVoteCategory('Selfie Tamu', this)">🤳 Selfie Tamu</button>
+            <button type="button" class="filter-chip" onclick="filterVoteCategory('Momen Pengantin', this)">💍 Momen Pengantin</button>
+            <button type="button" class="filter-chip" onclick="filterVoteCategory('Best Grup', this)">👯‍♀️ Best Grup</button>
+            <button type="button" class="filter-chip" onclick="filterVoteCategory('Candid Acara', this)">✨ Candid Acara</button>
+            <button type="button" class="filter-chip" onclick="filterVoteCategory('Keluarga & VIP', this)">👑 Keluarga & VIP</button>
+          </div>
+          <div id="votePhotoGrid" class="photo-grid"></div>
+        </div>
+
+        <div id="voteSectionLeaderboard" class="vote-subview" style="display:none;">
+          <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:14px;">
+            Peringkat perolehan jumlah vote terbanyak di setiap kategori acara aktif.
+          </div>
+          <div id="leaderboardContainer"></div>
+        </div>
+
+        <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border-subtle);">
+          <h4 style="font-size:0.95rem; margin-bottom:12px; color:var(--neon-green);"><i class="fa-solid fa-medal"></i> Hall of Fame (Pemenang Pilihan Admin)</h4>
+          <div id="awardsPhotoGrid" class="photo-grid"></div>
+        </div>
       </div>
     </section>
 
@@ -1589,8 +1625,8 @@
     <button type="button" id="navBtn-guestbook" class="nav-tab" onclick="switchMainView('guestbook')">
       <i class="fa-solid fa-book-open-reader"></i> <span>Buku Tamu</span>
     </button>
-    <button type="button" id="navBtn-awards" class="nav-tab" onclick="switchMainView('awards'); renderAwardsFeed();">
-      <i class="fa-solid fa-trophy"></i> <span>Pemenang</span>
+    <button type="button" id="navBtn-awards" class="nav-tab" onclick="switchMainView('awards'); renderAwardsFeed(); renderVoteSection();">
+      <i class="fa-solid fa-trophy"></i> <span>Pemenang & Vote</span>
     </button>
     <button type="button" id="navBtn-admin" class="nav-tab" onclick="switchMainView('admin')">
       <i class="fa-solid fa-user-shield"></i> <span>Menu Admin</span>
@@ -1705,7 +1741,9 @@
           driveFileId: 'DRV_DUMMY_001',
           directImageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=900&q=80',
           uploadedBy: 'Official Photographer',
-          uploadedAt: '29/10/2026 19:01:10'
+          uploadedAt: '29/10/2026 19:01:10',
+          voteCount: 14,
+          awardTitle: 'Foto Teromantis 🏆'
         },
         {
           photoId: 'PHT-0002',
@@ -1715,7 +1753,9 @@
           driveFileId: 'DRV_DUMMY_002',
           directImageUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=900&q=80',
           uploadedBy: 'Sahabat Kampus',
-          uploadedAt: '29/10/2026 19:15:42'
+          uploadedAt: '29/10/2026 19:15:42',
+          voteCount: 22,
+          awardTitle: ''
         },
         {
           photoId: 'PHT-0003',
@@ -1725,7 +1765,9 @@
           driveFileId: 'DRV_DUMMY_003',
           directImageUrl: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=900&q=80',
           uploadedBy: 'Tim Bridesmaid',
-          uploadedAt: '29/10/2026 19:30:05'
+          uploadedAt: '29/10/2026 19:30:05',
+          voteCount: 9,
+          awardTitle: ''
         }
       ],
       guestbook: [
@@ -2059,6 +2101,17 @@
           }
         }
         return { status: 'error', message: 'Foto tidak ditemukan.' };
+      }
+
+      if (action === 'votePhoto') {
+        for (var vIdx = 0; vIdx < LOCAL_MOCK_DB.photos.length; vIdx++) {
+          if (LOCAL_MOCK_DB.photos[vIdx].photoId === p.photoId) {
+            var currentVotes = parseInt(LOCAL_MOCK_DB.photos[vIdx].voteCount || 0, 10);
+            LOCAL_MOCK_DB.photos[vIdx].voteCount = currentVotes + 1;
+            return { status: 'success', message: 'Vote berhasil diberikan!', photoId: p.photoId, voteCount: LOCAL_MOCK_DB.photos[vIdx].voteCount };
+          }
+        }
+        return { status: 'error', message: 'Foto tidak ditemukan untuk divote.' };
       }
 
       return { status: 'success' };
@@ -2649,11 +2702,17 @@
         var safeFileName = escapeHtml(p.fileName || '');
         var safeDate = escapeHtml(p.uploadedAt || '');
         var safeId = escapeHtml(p.photoId || '');
+        var vCount = p.voteCount || 0;
         
         // Render Badge Award jika ada
         var awardBadge = (p.awardTitle && String(p.awardTitle).trim() !== '') 
           ? '<div style="position:absolute; bottom:10px; right:10px; background:var(--neon-green); color:#06120e; padding:4px 10px; border-radius:99px; font-size:0.7rem; font-weight:800; box-shadow:var(--neon-glow); z-index:10;"><i class="fa-solid fa-trophy"></i> ' + escapeHtml(p.awardTitle) + '</div>' 
           : '';
+
+        var isVoteGrid = (gridId === 'votePhotoGrid');
+        var voteActionBtn = isVoteGrid 
+          ? '<button type="button" class="btn btn-neon btn-sm" style="width:100%; margin-top:6px;" onclick="castPhotoVote(\'' + safeId + '\')"><i class="fa-solid fa-heart"></i> Vote (' + vCount + ')</button>'
+          : '<div style="font-size:0.75rem; color:var(--neon-green); font-weight:700;"><i class="fa-solid fa-heart"></i> ' + vCount + ' Votes</div>';
 
         html +=
           '<article class="photo-card">' +
@@ -2666,6 +2725,7 @@
               '<div>' +
                 '<div class="photo-uploader"><i class="fa-solid fa-user-check" style="color:var(--neon-green); font-size:0.75rem;"></i> ' + safeUploader + '</div>' +
                 '<div class="photo-filename" title="' + safeFileName + '">' + safeFileName + '</div>' +
+                voteActionBtn +
               '</div>' +
               '<div class="photo-footer">' +
                 '<span>' + safeDate + '</span>' +
@@ -2682,6 +2742,123 @@
       } else {
         gridEl.innerHTML = html;
       }
+    }
+
+    var currentVoteCat = 'Selfie Tamu';
+    function filterVoteCategory(catName, btnEl) {
+      currentVoteCat = catName;
+      var pills = document.querySelectorAll('#voteCategoryPills .filter-chip');
+      for (var i = 0; i < pills.length; i++) {
+        pills[i].classList.remove('active');
+      }
+      if (btnEl) btnEl.classList.add('active');
+      renderVoteSection();
+    }
+
+    function switchVoteTab(subKey, btnEl) {
+      var btns = document.querySelectorAll('#view-awards .glass-card > div > .btn');
+      for (var i = 0; i < btns.length; i++) {
+        if (btns[i].getAttribute('onclick') && btns[i].getAttribute('onclick').indexOf('switchVoteTab') > -1) {
+          btns[i].className = 'btn btn-glass btn-sm';
+        }
+      }
+      if (btnEl) btnEl.className = 'btn btn-neon btn-sm';
+
+      var secGallery = document.getElementById('voteSectionGallery');
+      var secLeaderboard = document.getElementById('voteSectionLeaderboard');
+
+      if (subKey === 'gallery') {
+        if (secGallery) secGallery.style.display = 'block';
+        if (secLeaderboard) secLeaderboard.style.display = 'none';
+        renderVoteSection();
+      } else {
+        if (secGallery) secGallery.style.display = 'none';
+        if (secLeaderboard) secLeaderboard.style.display = 'block';
+        renderLiveLeaderboard();
+      }
+    }
+
+    function renderVoteSection() {
+      var matchedPhotos = [];
+      for (var i = 0; i < APP_STATE.photos.length; i++) {
+        var ph = APP_STATE.photos[i];
+        if (ph.category === currentVoteCat) {
+          matchedPhotos.push(ph);
+        }
+      }
+      renderGalleryPhotoCards(matchedPhotos, false, 'votePhotoGrid');
+    }
+
+    function castPhotoVote(photoId) {
+      callBackendApi('votePhoto', { photoId: photoId }, function(res) {
+        if (!res || res.status !== 'success') {
+          showToast((res && res.message) || 'Gagal memberikan vote.', true);
+          return;
+        }
+        for (var i = 0; i < APP_STATE.photos.length; i++) {
+          if (APP_STATE.photos[i].photoId === photoId) {
+            APP_STATE.photos[i].voteCount = res.voteCount;
+            break;
+          }
+        }
+        renderVoteSection();
+        showToast(res.message);
+      });
+    }
+
+    function renderLiveLeaderboard() {
+      var container = document.getElementById('leaderboardContainer');
+      if (!container) return;
+
+      var categories = ['Selfie Tamu', 'Momen Pengantin', 'Best Grup', 'Candid Acara', 'Keluarga & VIP'];
+      var html = '';
+
+      for (var c = 0; c < categories.length; c++) {
+        var cat = categories[c];
+        var catPhotos = [];
+        for (var i = 0; i < APP_STATE.photos.length; i++) {
+          if (APP_STATE.photos[i].category === cat) {
+            catPhotos.push(APP_STATE.photos[i]);
+          }
+        }
+        // Urutkan berdasarkan jumlah vote terbanyak
+        catPhotos.sort(function(a, b) {
+          return (b.voteCount || 0) - (a.voteCount || 0);
+        });
+
+        var topPhoto = catPhotos[0];
+        html +=
+          '<div style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:14px; margin-bottom:14px;">' +
+            '<div style="font-weight:800; font-size:0.95rem; color:var(--neon-green); margin-bottom:10px;"><i class="fa-solid fa-folder-open"></i> Kategori: ' + escapeHtml(cat) + '</div>';
+
+        if (!topPhoto || (topPhoto.voteCount || 0) === 0) {
+          html += '<div style="font-size:0.8rem; color:var(--text-muted);">Belum ada vote untuk kategori ini.</div>';
+        } else {
+          html +=
+            '<div style="display:flex; align-items:center; gap:12px;">' +
+              '<img src="' + escapeHtml(topPhoto.directImageUrl) + '" style="width:64px; height:64px; object-fit:cover; border-radius:10px; border:1px solid var(--border-neon);" />' +
+              '<div>' +
+                '<div style="font-weight:700; font-size:0.86rem;"><i class="fa-solid fa-crown" style="color:var(--accent-amber);"></i> Pemenang Sementara: ' + escapeHtml(topPhoto.uploadedBy) + '</div>' +
+                '<div class="photo-filename">' + escapeHtml(topPhoto.fileName) + '</div>' +
+                '<span class="mono-badge" style="margin-top:4px;">🔥 ' + (topPhoto.voteCount || 0) + ' Votes</span>' +
+              '</div>' +
+            '</div>';
+        }
+        html += '</div>';
+      }
+      container.innerHTML = html;
+    }
+
+    function renderAwardsFeed() {
+      // Saring hanya foto-foto yang memiliki title penghargaan
+      var awardedPhotos = [];
+      for (var i = 0; i < APP_STATE.photos.length; i++) {
+        if (APP_STATE.photos[i].awardTitle && String(APP_STATE.photos[i].awardTitle).trim() !== '') {
+          awardedPhotos.push(APP_STATE.photos[i]);
+        }
+      }
+      renderGalleryPhotoCards(awardedPhotos, false, 'awardsPhotoGrid');
+      renderVoteSection();
     }
 
     function openPhotoLightbox(photoId) {
