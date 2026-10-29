@@ -222,57 +222,90 @@
     .vote-option-item.selected { border-color: var(--accent-neon); background: rgba(0, 255, 170, 0.14); box-shadow: 0 0 12px rgba(0, 255, 170, 0.18); }
     .vote-option-item.locked { opacity: 0.55; cursor: not-allowed; border-color: rgba(255, 255, 255, 0.08); }
 
-    /* Admin Table */
-    .table-responsive { overflow-x: auto; margin-top: 10px; border-radius: 12px; border: 1px solid var(--border-glass); }
-    .zett-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.82rem; }
-    .zett-table th { background: rgba(0, 255, 170, 0.1); color: var(--accent-neon); padding: 11px 12px; font-weight: 600; white-space: nowrap; }
-    .zett-table td { padding: 10px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: middle; }
-    .zett-table tr:last-child td { border-bottom: none; }
-    .mono-badge { background: rgba(255, 255, 255, 0.08); padding: 3px 8px; border-radius: 6px; font-family: monospace; font-size: 0.73rem; }
+    /* Tables & Badges */
+    .table-responsive { overflow-x: auto; width: 100%; border-radius: 12px; border: 1px solid var(--border-subtle); }
+    .zett-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; text-align: left; }
+    .zett-table th { background: rgba(0, 255, 170, 0.08); color: var(--accent-neon); padding: 11px 12px; font-weight: 700; white-space: nowrap; }
+    .zett-table td { padding: 11px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: middle; }
+    .mono-badge { font-family: monospace; background: rgba(255, 255, 255, 0.08); padding: 3px 7px; border-radius: 6px; font-size: 0.72rem; }
 
-    /* Modals & Loading */
-    .modal-overlay, .loading-overlay {
-      position: fixed; inset: 0;
-      background: rgba(7, 10, 18, 0.86); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-      z-index: 1000; display: none; align-items: center; justify-content: center; padding: 16px;
+    /* Modals & Overlays */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(5, 8, 15, 0.86); backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center; z-index: 200; padding: 16px;
     }
     .modal-card {
       background: #131926; border: 1px solid var(--border-glass); border-radius: 18px;
-      padding: 22px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto;
-      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.65);
+      width: 100%; max-width: 480px; padding: 22px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75);
+      max-height: 90vh; overflow-y: auto;
+    }
+
+    /* Loading & Toast */
+    .loading-overlay {
+      position: fixed; inset: 0; background: rgba(11, 15, 25, 0.88); backdrop-filter: blur(6px);
+      display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 300;
     }
     .spinner {
-      width: 42px; height: 42px; border: 4px solid rgba(0, 255, 170, 0.2);
-      border-top: 4px solid var(--accent-neon); border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 14px;
+      width: 42px; height: 42px; border: 3px solid rgba(0, 255, 170, 0.2); border-top-color: var(--accent-neon);
+      border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px;
     }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Toasts */
-    #toastContainer { position: fixed; top: 72px; right: 16px; left: 16px; z-index: 9999; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; pointer-events: none; }
+    #toastContainer { position: fixed; top: 18px; right: 18px; z-index: 400; display: flex; flex-direction: column; gap: 8px; max-width: calc(100vw - 36px); }
     .toast-msg {
-      pointer-events: auto; max-width: 380px; width: 100%;
-      background: #151c2c; border: 1px solid var(--border-glass); border-left: 4px solid var(--accent-neon); color: #fff;
-      padding: 12px 16px; border-radius: 10px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
-      font-size: 0.82rem; font-weight: 500; display: flex; align-items: center; gap: 10px;
-      animation: slideInRight 0.25s ease forwards; transition: opacity 0.25s ease;
+      background: #151c2c; border-left: 4px solid var(--accent-neon); color: #fff; padding: 12px 16px;
+      border-radius: 10px; font-size: 0.82rem; font-weight: 600; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+      display: flex; align-items: center; gap: 10px;
     }
     .toast-msg.error { border-left-color: var(--accent-danger); }
-    @keyframes slideInRight { from { transform: translateY(-12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    /* Mobile Responsive Overrides */
+    /* Progress Bar Upload */
+    .progress-wrap {
+      width: 100%; background: rgba(255, 255, 255, 0.08);
+      border-radius: 20px; height: 10px; overflow: hidden;
+      border: 1px solid rgba(0, 255, 170, 0.25);
+    }
+    .progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--accent-neon), var(--accent-gold));
+      border-radius: 20px; transition: width 0.22s ease;
+    }
+
+    /* Frame Spec Box */
+    .spec-badge-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 8px;
+      margin-top: 8px; margin-bottom: 12px;
+    }
+    .spec-item {
+      background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-subtle);
+      border-radius: 10px; padding: 8px 10px; font-size: 0.74rem;
+    }
+
+    /* Mobile Responsive Overrides - Compact 1 Page Vertical Layout */
     @media (max-width: 768px) {
-      .top-nav { padding: 10px 12px; }
-      .nav-logo-box { width: 58px; height: 42px; }
-      .nav-brand-title { font-size: 0.95rem; }
-      .nav-brand-subtitle { font-size: 0.66rem; }
-      .main-container { padding: 12px; }
-      .glass-card { padding: 15px; border-radius: 15px; }
+      .top-nav { padding: 8px 12px; }
+      .nav-logo-box { width: 54px; height: 38px; }
+      .nav-brand-title { font-size: 0.92rem; }
+      .nav-brand-subtitle { font-size: 0.64rem; }
+      .main-container { padding: 10px; max-width: 100vw; overflow-x: hidden; }
+      .glass-card { padding: 12px; border-radius: 14px; }
+      .hero-event-bar { padding: 10px 12px; margin-bottom: 10px; gap: 8px; }
+      .active-event-title { font-size: 0.98rem; margin-bottom: 2px; }
+      .hero-meta-row { font-size: 0.72rem; gap: 8px; }
       .layout-split-camera, .layout-split-guestbook, .admin-form-grid {
         grid-template-columns: 1fr;
-        gap: 14px;
+        gap: 10px;
       }
-      .photo-grid { grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; }
-      .active-event-title { font-size: 1.05rem; }
+      .camera-stage { aspect-ratio: 4/3; max-height: 36vh; }
+      #cameraFilterPills {
+        flex-wrap: wrap; overflow-x: hidden; justify-content: center; gap: 5px; padding-bottom: 2px;
+      }
+      #cameraFilterPills .filter-chip {
+        padding: 4px 9px; font-size: 0.68rem;
+      }
+      .form-group { margin-bottom: 10px; }
+      .form-input { padding: 8px 11px; font-size: 0.82rem; }
+      .photo-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
       .hero-btn-group { width: 100%; }
       .hero-btn-group .btn { flex: 1; justify-content: center; }
     }
@@ -280,11 +313,17 @@
 </head>
 <body>
 
-  <!-- OVERLAY LOADING & TOAST -->
+  <!-- OVERLAY LOADING & PROGRESS BAR % -->
   <div id="loadingOverlay" class="loading-overlay">
-    <div style="text-align:center;">
+    <div style="text-align:center; width:100%; max-width:320px; background:#131926; padding:22px; border-radius:18px; border:1px solid var(--border-glass);">
       <div class="spinner"></div>
-      <div id="loadingText" style="font-weight:600; color:var(--accent-neon); font-size:0.9rem;">Memproses...</div>
+      <div id="loadingText" style="font-weight:700; color:var(--accent-neon); font-size:0.9rem; margin-bottom:10px;">Memproses...</div>
+      <div id="loadingProgressBox" style="display:none;">
+        <div class="progress-wrap" style="margin-bottom:6px;">
+          <div id="loadingProgressBar" class="progress-fill"></div>
+        </div>
+        <div id="loadingProgressPercent" style="font-size:0.78rem; font-weight:800; color:var(--accent-gold);">0%</div>
+      </div>
     </div>
   </div>
   <div id="toastContainer"></div>
@@ -359,7 +398,7 @@
 
   <div class="main-container">
 
-    <!-- HERO BANNER ACARA AKTIF (TAMPIL DI SEMUA TAB PUBLIK) -->
+    <!-- HERO BANNER ACARA AKTIF (TOMBOL DRIVE & HASIL VOTE HANYA TAMPIL JIKA LOGIN) -->
     <div class="glass-card hero-event-bar">
       <div class="hero-event-info">
         <div class="active-event-title">Memuat Acara...</div>
@@ -369,25 +408,25 @@
           <span><i class="fa-solid fa-square-poll-vertical" style="color:var(--accent-gold);"></i> <span id="heroTotalVotesCount">0</span> Total Vote</span>
         </div>
       </div>
-      <div class="hero-btn-group">
-        <a href="#" target="_blank" class="btn btn-secondary btn-sm active-event-drive-btn">
+      <div class="hero-btn-group" id="heroAdminActionGroup" style="display:none;">
+        <a href="#" target="_blank" id="heroBtnFolderDrive" class="btn btn-secondary btn-sm active-event-drive-btn">
           <i class="fa-brands fa-google-drive" style="color:var(--accent-neon);"></i> Folder Drive
         </a>
-        <button type="button" class="btn btn-gold btn-sm" onclick="switchMainView('awards')">
+        <button type="button" id="heroBtnLihatHasilVote" class="btn btn-gold btn-sm" onclick="openVotingLeaderboardResult()">
           <i class="fa-solid fa-trophy"></i> Lihat Hasil Vote
         </button>
       </div>
     </div>
 
     <!-- =================================================================== -->
-    <!-- VIEW 1: LIVE CAMERA & INSTANT UPLOAD                                -->
+    <!-- VIEW 1: LIVE CAMERA & INSTANT UPLOAD (COMPACT 1-PAGE DI MOBILE)     -->
     <!-- =================================================================== -->
     <div id="viewPanel-camera" class="view-panel active">
       <div class="layout-split-camera">
         <!-- Kartu Live Camera Booth -->
-        <div class="glass-card" style="display:flex; flex-direction:column; gap:14px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-            <div style="font-weight:700; font-size:0.95rem;">
+        <div class="glass-card" style="display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+            <div style="font-weight:700; font-size:0.9rem;">
               <i class="fa-solid fa-video" style="color:var(--accent-neon);"></i> Live Camera Booth
             </div>
             <div style="display:flex; gap:6px;">
@@ -395,7 +434,7 @@
                 <i class="fa-solid fa-arrows-left-right"></i> Mirror
               </button>
               <button type="button" class="btn btn-secondary btn-sm" onclick="flipCameraFacing()" title="Ganti Kamera Depan/Belakang">
-                <i class="fa-solid fa-camera-rotate"></i> Putar Kamera
+                <i class="fa-solid fa-camera-rotate"></i> Putar
               </button>
             </div>
           </div>
@@ -408,59 +447,63 @@
               <span id="cameraStatusText">KAMERA SIAP</span>
             </div>
 
-            <div id="cameraPlaceholder" style="color:var(--text-muted); font-size:0.84rem; text-align:center; padding:20px; cursor:pointer;" onclick="startCameraStream()">
-              <div style="width:64px; height:64px; border-radius:50%; background:rgba(0,255,170,0.12); border:1px solid var(--accent-neon); display:flex; align-items:center; justify-content:center; margin:0 auto 12px; color:var(--accent-neon);">
-                <i class="fa-solid fa-camera" style="font-size:1.6rem;"></i>
+            <div id="cameraPlaceholder" style="color:var(--text-muted); font-size:0.8rem; text-align:center; padding:14px; cursor:pointer;" onclick="startCameraStream()">
+              <div style="width:52px; height:52px; border-radius:50%; background:rgba(0,255,170,0.12); border:1px solid var(--accent-neon); display:flex; align-items:center; justify-content:center; margin:0 auto 8px; color:var(--accent-neon);">
+                <i class="fa-solid fa-camera" style="font-size:1.35rem;"></i>
               </div>
-              <div style="font-weight:700; color:#fff; margin-bottom:4px;">Ketuk untuk Menyalakan Kamera Live</div>
-              <div style="font-size:0.75rem;">Atau gunakan tombol Pilih Galeri HP di bawah</div>
+              <div style="font-weight:700; color:#fff; margin-bottom:2px;">Ketuk untuk Menyalakan Kamera Live</div>
+              <div style="font-size:0.72rem;">Atau pilih foto dari Galeri HP di bawah</div>
             </div>
 
             <video id="cameraVideoFeed" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; display:none;"></video>
 
             <div id="cameraPreviewContainer" style="position:absolute; inset:0; background:#000; display:none; z-index:20;">
-              <img id="cameraPreviewImg" style="width:100%; height:100%; object-fit:cover;" />
-              <button type="button" class="btn btn-danger btn-sm" style="position:absolute; top:10px; right:10px; background:rgba(11,15,25,0.85);" onclick="retakeCameraPhoto()">
+              <img id="cameraPreviewImg" style="width:100%; height:100%; object-fit:contain; background:#05080f;" />
+              <button type="button" class="btn btn-danger btn-sm" style="position:absolute; top:8px; right:8px; background:rgba(11,15,25,0.88);" onclick="retakeCameraPhoto()">
                 <i class="fa-solid fa-rotate-left"></i> Foto Ulang
               </button>
             </div>
 
-            <div class="camera-watermark-tag" id="cameraWatermarkLabel">SatuAlbum • Runway WO</div>
+            <div class="camera-watermark-tag" id="cameraWatermarkLabel">SatuAlbum • Frame Aktif</div>
           </div>
 
-          <!-- Pilihan Filter Kamera -->
+          <!-- Pilihan Filter Kamera (Wrap tanpa perlu scroll samping di HP) -->
           <div class="category-pills" id="cameraFilterPills">
             <button type="button" class="filter-chip active" onclick="setCameraFilter('Normal', 'none', this)">✨ Normal</button>
-            <button type="button" class="filter-chip" onclick="setCameraFilter('Warm Vintage', 'sepia(0.35) contrast(1.1) brightness(1.06)', this)">🌅 Warm Vintage</button>
-            <button type="button" class="filter-chip" onclick="setCameraFilter('B&W Classic', 'grayscale(1) contrast(1.2)', this)">🎞️ B&W Classic</button>
-            <button type="button" class="filter-chip" onclick="setCameraFilter('Vivid Glow', 'saturate(1.45) contrast(1.08)', this)">🌈 Vivid Glow</button>
-            <button type="button" class="filter-chip" onclick="setCameraFilter('Soft Portrait', 'brightness(1.08) contrast(0.95) saturate(0.92)', this)">🌸 Soft Portrait</button>
+            <button type="button" class="filter-chip" onclick="setCameraFilter('Warm', 'sepia(0.35) contrast(1.1) brightness(1.06)', this)">🌅 Warm</button>
+            <button type="button" class="filter-chip" onclick="setCameraFilter('B&W', 'grayscale(1) contrast(1.2)', this)">🎞️ B&W</button>
+            <button type="button" class="filter-chip" onclick="setCameraFilter('Vivid', 'saturate(1.45) contrast(1.08)', this)">🌈 Vivid</button>
+            <button type="button" class="filter-chip" onclick="setCameraFilter('Soft', 'brightness(1.08) contrast(0.95) saturate(0.92)', this)">🌸 Soft</button>
           </div>
 
           <!-- Tombol Aksi Kamera -->
-          <div style="display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap; padding-top:4px;">
-            <button type="button" id="btnStartCam" class="btn btn-neon" onclick="startCameraStream()">
-              <i class="fa-solid fa-power-off"></i> Aktifkan Live Kamera
+          <div style="display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap;">
+            <button type="button" id="btnStartCam" class="btn btn-neon btn-sm" onclick="startCameraStream()">
+              <i class="fa-solid fa-power-off"></i> Nyalakan Kamera
             </button>
-            <button type="button" id="btnSnapCam" class="btn btn-neon" style="display:none; width:64px; height:64px; border-radius:50%; padding:0; box-shadow:0 0 0 5px rgba(0,255,170,0.25);" onclick="triggerCapturePhoto()" title="Jepret Foto">
-              <i class="fa-solid fa-camera" style="font-size:1.55rem;"></i>
+            <button type="button" id="btnSnapCam" class="btn btn-neon" style="display:none; width:56px; height:56px; border-radius:50%; padding:0; box-shadow:0 0 0 4px rgba(0,255,170,0.25);" onclick="triggerCapturePhoto()" title="Jepret Foto">
+              <i class="fa-solid fa-camera" style="font-size:1.4rem;"></i>
             </button>
-            <label class="btn btn-secondary" style="cursor:pointer; margin:0;">
-              <i class="fa-solid fa-image" style="color:var(--accent-neon);"></i> Pilih Galeri HP
+            <label class="btn btn-secondary btn-sm" style="cursor:pointer; margin:0;">
+              <i class="fa-solid fa-image" style="color:var(--accent-neon);"></i> Galeri HP
               <input type="file" accept="image/*" style="display:none;" onchange="handleGalleryFileInput(this)">
             </label>
           </div>
         </div>
 
-        <!-- Kartu Form Unggah Foto ke Google Drive -->
-        <div class="glass-card" style="display:flex; flex-direction:column; gap:14px;">
-          <div style="font-weight:700; font-size:0.95rem;">
-            <i class="fa-solid fa-cloud-arrow-up" style="color:var(--accent-neon);"></i> Unggah ke Google Drive Acara
+        <!-- Kartu Form Simpan Foto ke Album Digital (Tanpa Kata Google Drive) -->
+        <div class="glass-card" style="display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+            <div style="font-weight:700; font-size:0.9rem;">
+              <i class="fa-solid fa-sparkles" style="color:var(--accent-neon);"></i> Publikasikan ke Album Acara
+            </div>
+            <span id="userQuotaBadgeInfo" class="mono-badge" style="color:var(--accent-gold); font-size:0.68rem;">Kuota: Unlimited</span>
           </div>
+
           <form onsubmit="event.preventDefault(); submitUploadPhotoForm();">
             <div class="form-group">
               <label class="form-label">Nama Anda / Grup Tamu</label>
-              <input type="text" id="uploadUploaderName" class="form-input" required placeholder="Contoh: Rina & Sahabat Kampus" />
+              <input type="text" id="uploadUploaderName" class="form-input" required placeholder="Contoh: Rina & Sahabat" />
             </div>
             <div class="form-group">
               <label class="form-label">Kategori Momen Foto</label>
@@ -472,18 +515,25 @@
                 <option value="Keluarga & VIP">👨‍👩‍👧‍👦 Keluarga & VIP</option>
               </select>
             </div>
-            <div class="form-group">
-              <label class="form-label">Format Nama File Otomatis di Drive</label>
-              <div id="autoRenamePreviewText" style="font-family:monospace; font-size:0.72rem; background:rgba(0,255,170,0.08); border:1px solid var(--border-glass); color:var(--accent-neon); padding:8px 10px; border-radius:8px; word-break:break-all;">
-                Event_Selfie_Tamu_YYYYMMDD_HHMMSS.jpg
+
+            <!-- Indikator Progress Bar % Saat Upload -->
+            <div id="inlineUploadProgressBox" style="display:none; margin-bottom:12px; background:rgba(0,255,170,0.06); padding:10px; border-radius:10px; border:1px solid var(--border-glass);">
+              <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:700; margin-bottom:6px;">
+                <span id="inlineUploadStatusLabel" style="color:var(--accent-neon);">Menyimpan Foto & Bingkai...</span>
+                <span id="inlineUploadPercentLabel" style="color:var(--accent-gold);">0%</span>
+              </div>
+              <div class="progress-wrap">
+                <div id="inlineUploadProgressBar" class="progress-fill"></div>
               </div>
             </div>
-            <button type="submit" class="btn btn-neon" style="width:100%; padding:12px;">
-              <i class="fa-solid fa-paper-plane"></i> Unggah Foto ke Album & Ikut Voting
+
+            <button type="submit" id="btnSubmitPhotoUpload" class="btn btn-neon" style="width:100%; padding:11px;">
+              <i class="fa-solid fa-paper-plane"></i> Kirim Foto Berbingkai ke Galeri
             </button>
           </form>
-          <div style="font-size:0.74rem; color:var(--text-muted); background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:10px; border:1px solid var(--border-subtle);">
-            <i class="fa-solid fa-circle-info" style="color:var(--accent-neon);"></i> Foto yang diunggah langsung tampil di <strong>Galeri Foto</strong> dan otomatis terdaftar untuk dipilih pada menu <strong>Voting & Juara</strong>!
+          <div style="font-size:0.72rem; color:var(--text-muted); background:rgba(255,255,255,0.03); padding:8px 10px; border-radius:8px; border:1px solid var(--border-subtle);">
+            <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-gold);"></i> Setiap foto otomatis dipasang <strong>Bingkai Eksklusif Acara</strong> & siap di-vote!
+            <span id="autoRenamePreviewText" style="display:none;"></span>
           </div>
         </div>
       </div>
@@ -657,10 +707,10 @@
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button type="button" id="adminTabBtn-driveEvents" class="btn btn-secondary btn-sm admin-tab-btn active" onclick="switchAdminSubTab('driveEvents', this)">
-              <i class="fa-brands fa-google-drive"></i> 1. Event & Link Drive
+              <i class="fa-solid fa-calendar-check"></i> 1. Event, Kuota & Voting
             </button>
             <button type="button" id="adminTabBtn-config" class="btn btn-secondary btn-sm admin-tab-btn" onclick="switchAdminSubTab('config', this)">
-              <i class="fa-solid fa-palette"></i> 2. Nama App & Logo WO
+              <i class="fa-solid fa-frame"></i> 2. App, Logo & Custom Bingkai
             </button>
             <button type="button" id="adminTabBtn-users" class="btn btn-secondary btn-sm admin-tab-btn" onclick="switchAdminSubTab('users', this)">
               <i class="fa-solid fa-users-gear"></i> 3. User & Level
@@ -674,7 +724,7 @@
           </div>
         </div>
 
-        <!-- SUB-PANEL 1: MULTI-EVENT, TARGET GOOGLE DRIVE & KATEGORI VOTING -->
+        <!-- SUB-PANEL 1: MULTI-EVENT, TARGET GOOGLE DRIVE, LIMITASI KUOTA & KATEGORI VOTING -->
         <div id="adminSub-driveEvents" class="admin-panel-box">
           <!-- Card A: Target Link Google Drive Global -->
           <div class="glass-card" style="margin-bottom:16px;">
@@ -682,7 +732,7 @@
               <i class="fa-brands fa-google-drive"></i> Target / Link Google Drive Utama (Global Default)
             </div>
             <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:12px;">
-              Folder induk Google Drive tempat sistem otomatis membuat subfolder baru setiap kali Anda menambahkan Event baru.
+              Folder induk penyimpanan tempat sistem otomatis membuat subfolder baru setiap kali Anda menambahkan Event baru.
             </p>
             <form onsubmit="event.preventDefault(); saveGlobalDriveConfigForm();" style="display:flex; gap:10px; flex-wrap:wrap;">
               <input type="text" id="adminGlobalDriveUrl" class="form-input" style="flex:1; min-width:240px;" placeholder="https://drive.google.com/drive/folders/..." />
@@ -692,15 +742,62 @@
             </form>
           </div>
 
-          <!-- Card B: Daftar Multi-Event -->
+          <!-- Card B: Limitasi User Live Photo & Limitasi Upload per User -->
+          <div class="glass-card" style="margin-bottom:16px; border-color:rgba(245,197,66,0.35);">
+            <div style="font-weight:700; color:var(--accent-gold); font-size:1rem; margin-bottom:6px;">
+              <i class="fa-solid fa-sliders"></i> Pengaturan Limitasi User Live Photo & Kuota Upload per User
+            </div>
+            <p style="font-size:0.76rem; color:var(--text-muted); margin-bottom:12px;">
+              Atur berapa banyak tamu/device yang diizinkan menggunakan Live Photo pada suatu acara, serta batas maksimal upload foto untuk setiap 1 perangkat tamu (isi <strong>0</strong> untuk <strong>Unlimited</strong>).
+            </p>
+            <form onsubmit="event.preventDefault(); saveUploadLimitsConfigForm();" class="admin-form-grid">
+              <div class="form-group">
+                <label class="form-label">Batas Maksimal User Live Photo (Per Acara)</label>
+                <div style="display:flex; gap:8px;">
+                  <select id="adminMaxUsersPreset" class="form-input" onchange="onLimitPresetChange('users', this.value)">
+                    <option value="0">♾️ Unlimited (Tanpa Batas User)</option>
+                    <option value="10">👥 Maksimal 10 User</option>
+                    <option value="50">👥 Maksimal 50 User</option>
+                    <option value="100">👥 Maksimal 100 User</option>
+                    <option value="custom">✏️ Custom Jumlah User...</option>
+                  </select>
+                  <input type="number" id="adminMaxUsersCustomInput" class="form-input" min="0" style="max-width:110px;" placeholder="Angka" />
+                </div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Partisipan aktif saat ini: <strong id="adminCurrentUniqueUsersCount" style="color:var(--accent-neon);">0</strong> User</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Batas Upload Foto per 1 User / Device</label>
+                <div style="display:flex; gap:8px;">
+                  <select id="adminMaxUploadsPerUserPreset" class="form-input" onchange="onLimitPresetChange('uploads', this.value)">
+                    <option value="0">♾️ Unlimited (Bebas Upload)</option>
+                    <option value="3">📸 Maksimal 3x Upload / User</option>
+                    <option value="5">📸 Maksimal 5x Upload / User</option>
+                    <option value="10">📸 Maksimal 10x Upload / User</option>
+                    <option value="custom">✏️ Custom Batas Upload...</option>
+                  </select>
+                  <input type="number" id="adminMaxUploadsPerUserCustomInput" class="form-input" min="0" style="max-width:110px;" placeholder="Angka" />
+                </div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Isi angka 0 jika ingin membebaskan jumlah upload (Unlimited).</div>
+              </div>
+
+              <div style="grid-column:1/-1; display:flex; justify-content:flex-end;">
+                <button type="submit" class="btn btn-gold btn-sm">
+                  <i class="fa-solid fa-floppy-disk"></i> Simpan & Terapkan Limitasi Kuota
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Card C: Daftar Multi-Event -->
           <div class="glass-card" style="margin-bottom:16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
               <div>
                 <div style="font-weight:700; color:var(--accent-neon); font-size:1rem;">
-                  <i class="fa-solid fa-calendar-check"></i> Daftar Event & Folder Google Drive Spesifik
+                  <i class="fa-solid fa-calendar-check"></i> Daftar Event & Folder Penyimpanan Spesifik
                 </div>
                 <div style="font-size:0.75rem; color:var(--text-muted);">
-                  Klik "Pilih Aktif" untuk mengganti event yang dilihat publik, atau klik "Edit" untuk menyesuaikan link Drive acara.
+                  Klik "Pilih Aktif" untuk mengganti event yang dilihat publik, atau klik "Edit" untuk menyesuaikan acara.
                 </div>
               </div>
               <button type="button" class="btn btn-neon btn-sm" onclick="openEventModal()">
@@ -714,7 +811,7 @@
                     <th>ID Event</th>
                     <th>Nama Acara</th>
                     <th>Tanggal</th>
-                    <th>Folder Google Drive</th>
+                    <th>Folder Penyimpanan</th>
                     <th>Status</th>
                     <th>Aksi</th>
                   </tr>
@@ -724,7 +821,7 @@
             </div>
           </div>
 
-          <!-- Card C: Pengaturan Kategori Voting & Keterangan -->
+          <!-- Card D: Pengaturan Kategori Voting & Keterangan -->
           <div class="glass-card">
             <div style="font-weight:700; color:var(--accent-gold); font-size:1rem; margin-bottom:6px;">
               <i class="fa-solid fa-trophy"></i> Pengaturan Kategori Voting & Keterangan Pilihan
@@ -745,15 +842,15 @@
           </div>
         </div>
 
-        <!-- SUB-PANEL 2: NAMA APLIKASI & BRANDING LOGO RUNWAY WO -->
+        <!-- SUB-PANEL 2: NAMA APLIKASI, BRANDING LOGO & STUDIO CUSTOM BINGKAI FOTO -->
         <div id="adminSub-config" class="admin-panel-box" style="display:none;">
-          <div class="glass-card">
+          <div class="glass-card" style="margin-bottom:16px;">
             <div style="font-weight:700; color:var(--accent-neon); font-size:1rem; margin-bottom:14px;">
               <i class="fa-solid fa-palette"></i> Ganti Nama Aplikasi & Kustomisasi Branding WO
             </div>
             <form onsubmit="event.preventDefault(); saveGeneralConfigForm();" class="admin-form-grid">
               <div class="form-group">
-                <label class="form-label">Nama Aplikasi (Header & Watermark Kamera)</label>
+                <label class="form-label">Nama Aplikasi (Header & Watermark)</label>
                 <input type="text" id="adminAppName" class="form-input" required />
               </div>
               <div class="form-group">
@@ -773,7 +870,7 @@
                   </button>
                 </div>
                 <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px;">
-                  Mendukung URL gambar langsung maupun link share file gambar Google Drive. Ukuran bingkai ideal: rasio lebar/persegi (otomatis proporsional).
+                  Spesifikasi Logo Header: Rasio lebar/persegi (ideal <strong>320 x 220 px</strong> atau <strong>256 x 256 px</strong>, format PNG/SVG/JPG).
                 </div>
               </div>
               <div class="form-group">
@@ -786,7 +883,83 @@
               </div>
               <div style="grid-column:1/-1; display:flex; justify-content:flex-end;">
                 <button type="submit" class="btn btn-neon">
-                  <i class="fa-solid fa-floppy-disk"></i> Simpan & Terapkan Branding ke Server
+                  <i class="fa-solid fa-floppy-disk"></i> Simpan & Terapkan Branding
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- STUDIO KUSTOMISASI BINGKAI FOTO (CUSTOM PHOTO FRAME) & SPESIFIKASI -->
+          <div class="glass-card" style="border-color:rgba(245,197,66,0.4);">
+            <div style="font-weight:800; color:var(--accent-gold); font-size:1.05rem; margin-bottom:6px;">
+              <i class="fa-solid fa-crop-simple"></i> Studio Kustomisasi Bingkai Foto (Photo Frame) & Spesifikasi Teknis
+            </div>
+            <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px;">
+              Setiap foto yang diunggah oleh tamu akan secara otomatis dibungkus dengan bingkai di bawah ini. Anda dapat memilih tema bingkai dekoratif atau mengunggah desain bingkai <strong>PNG Transparan</strong> kustom.
+            </p>
+
+            <!-- Kotak Panduan Spesifikasi Desain Bingkai Custom -->
+            <div class="spec-badge-grid">
+              <div class="spec-item">
+                <div style="color:var(--accent-neon); font-weight:700;">📐 Dimensi & Rasio</div>
+                <div><strong>1280 x 960 px</strong> (Rasio <strong>4:3</strong> Landscape)</div>
+              </div>
+              <div class="spec-item">
+                <div style="color:var(--accent-gold); font-weight:700;">🖼️ Format File</div>
+                <div><strong>PNG Transparan (.png)</strong> bagian tengah kosong</div>
+              </div>
+              <div class="spec-item">
+                <div style="color:var(--accent-neon); font-weight:700;">📏 Area Aman (Safe Zone)</div>
+                <div>Tepi keliling <strong>28px</strong> & Banner bawah <strong>76px</strong></div>
+              </div>
+              <div class="spec-item">
+                <div style="color:var(--accent-gold); font-weight:700;">⚡ Ukuran Maksimal</div>
+                <div>Maks <strong>1.5 MB</strong> agar render kamera instan</div>
+              </div>
+            </div>
+
+            <form onsubmit="event.preventDefault(); saveFrameConfigForm();" class="admin-form-grid">
+              <div class="form-group">
+                <label class="form-label">Pilih Gaya Bingkai Foto</label>
+                <select id="adminFrameStyleSelect" class="form-input" onchange="renderAdminFrameLivePreview()">
+                  <option value="gold_luxury">👑 Gold Luxury Runway (Bingkai Emas & Ornamen Sudut)</option>
+                  <option value="neon_party">⚡ Neon Cyber Glow (Bingkai Garis Neon Modern)</option>
+                  <option value="polaroid_classic">📸 Polaroid White Classic (Bingkai Cetak Instan)</option>
+                  <option value="custom_png">🎨 Custom Overlay PNG + Bingkai Dekoratif</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Teks Sub-Label Bingkai Bawah</label>
+                <input type="text" id="adminFrameFooterText" class="form-input" placeholder="Contoh: Runway Wedding Organizer • Official Moment" oninput="renderAdminFrameLivePreview()" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Warna Utama Bingkai (Border & Ornamen)</label>
+                <input type="color" id="adminFramePrimaryColor" class="form-input" style="height:42px; padding:4px;" value="#f5c542" onchange="renderAdminFrameLivePreview()" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Warna Aksen / Teks Acara di Bingkai</label>
+                <input type="color" id="adminFrameAccentColor" class="form-input" style="height:42px; padding:4px;" value="#00ffaa" onchange="renderAdminFrameLivePreview()" />
+              </div>
+              <div class="form-group" style="grid-column:1/-1;">
+                <label class="form-label">URL Gambar Bingkai PNG Transparan / Upload File PNG (Opsional untuk Custom Overlay)</label>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <input type="text" id="adminFrameOverlayUrl" class="form-input" style="flex:1; min-width:200px;" placeholder="Paste URL PNG transparan (1280x960px) atau pilih file PNG..." oninput="renderAdminFrameLivePreview()" />
+                  <label class="btn btn-secondary btn-sm" style="cursor:pointer; margin:0;">
+                    <i class="fa-solid fa-upload"></i> Upload PNG Bingkai
+                    <input type="file" accept="image/png" style="display:none;" onchange="handleCustomFramePngUpload(this)" />
+                  </label>
+                </div>
+              </div>
+
+              <!-- Live Preview Canvas Bingkai -->
+              <div style="grid-column:1/-1; text-align:center; background:rgba(0,0,0,0.35); padding:12px; border-radius:12px; border:1px solid var(--border-subtle);">
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Pratinjau Langsung Bingkai Foto (Rasio 4:3 - 1280x960 px):</div>
+                <canvas id="adminFramePreviewCanvas" width="640" height="480" style="width:100%; max-width:380px; border-radius:10px; border:1px solid var(--border-glass);"></canvas>
+              </div>
+
+              <div style="grid-column:1/-1; display:flex; justify-content:flex-end;">
+                <button type="submit" class="btn btn-gold">
+                  <i class="fa-solid fa-floppy-disk"></i> Simpan & Aktifkan Bingkai Foto
                 </button>
               </div>
             </form>
@@ -891,15 +1064,13 @@
 
   </div>
 
-  <!-- FOOTER -->
-  <footer style="text-align:center; padding:20px 16px; font-size:0.74rem; color:var(--text-muted); margin-top:24px;">
-    <div class="footer-text">Official Digital Album Platform • Runway Wedding Organizer</div>
-    <div class="footer-contact" style="font-weight:700; color:var(--accent-gold); margin-top:4px;">0812-3456-7890 | @runway.wo</div>
+  <!-- FOOTER BRANDING WO -->
+  <footer style="text-align:center; padding:24px 16px; color:var(--text-muted); font-size:0.75rem; border-top:1px solid rgba(255,255,255,0.06); margin-top:30px;">
+    <div class="footer-text" style="font-weight:600; color:#cbd5e1;">Official Digital Album Platform • Runway Wedding Organizer</div>
+    <div class="footer-contact" style="color:var(--accent-gold); margin-top:4px; font-weight:600;">0812-3456-7890 | @runway.wo</div>
   </footer>
 
-  <!-- =================================================================== -->
-  <!-- MODAL 1: PILIH KATEGORI VOTING FOTO (DENGAN KETERANGAN & 1X LIMIT)  -->
-  <!-- =================================================================== -->
+  <!-- MODAL 1: PILIH KATEGORI VOTING (1 DEVICE 1X VOTE PER KATEGORI) -->
   <div id="voteSelectModal" class="modal-overlay">
     <div class="modal-card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -910,18 +1081,17 @@
       </div>
 
       <div style="display:flex; gap:12px; align-items:center; background:rgba(255,255,255,0.04); padding:10px; border-radius:12px; margin-bottom:14px;">
-        <img id="voteModalPhotoPreview" src="" style="width:68px; height:68px; border-radius:10px; object-fit:cover; flex-shrink:0;" />
+        <img id="voteModalPhotoPreview" src="" style="width:68px; height:68px; object-fit:cover; border-radius:8px; flex-shrink:0;" />
         <div style="min-width:0;">
-          <div style="font-size:0.72rem; color:var(--text-muted);">Karya Foto Dari:</div>
-          <div id="voteModalUploaderName" style="font-weight:700; font-size:0.95rem; color:#fff;">-</div>
-          <div id="voteModalPhotoCat" style="font-size:0.74rem; color:var(--accent-neon);">-</div>
+          <div id="voteModalUploaderName" style="font-weight:700; font-size:0.9rem; color:#fff;">-</div>
+          <div id="voteModalPhotoCat" style="font-size:0.75rem; color:var(--accent-neon);">-</div>
+          <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">1 perangkat hanya bisa 1x vote di tiap kategori.</div>
         </div>
       </div>
 
-      <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px;">
-        Pilih <strong>kategori penghargaan</strong> untuk foto ini (1 perangkat hanya bisa 1x vote di setiap kategori):
+      <div style="font-size:0.78rem; font-weight:600; color:var(--text-muted); margin-bottom:8px;">
+        Tentukan foto ini masuk ke nominasi kategori mana:
       </div>
-
       <div id="voteModalCategoriesContainer" style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;"></div>
 
       <div style="display:flex; justify-content:flex-end; gap:8px;">
@@ -1031,26 +1201,48 @@
     </div>
   </div>
 
-  <!-- MODAL 5: QR CODE UNDANGAN MEJA -->
+  <!-- MODAL 5: QR CODE UNDANGAN MEJA (BISA SHARE, COPY LINK & DOWNLOAD) -->
   <div id="qrModal" class="modal-overlay">
     <div class="modal-card" style="text-align:center;">
-      <div style="font-weight:800; color:var(--accent-neon); margin-bottom:12px; font-size:1.05rem;">
-        <i class="fa-solid fa-qrcode"></i> QR Code Undangan Acara
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div style="font-weight:800; color:var(--accent-neon); font-size:1.02rem;">
+          <i class="fa-solid fa-qrcode"></i> QRIS / Barcode Undangan Acara
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeQrModal()">✕</button>
       </div>
       <div id="qrModalContent" style="background:#fff; padding:14px; border-radius:14px; display:inline-block; margin-bottom:12px;"></div>
-      <div id="qrModalEventName" style="font-weight:700; margin-bottom:6px;"></div>
-      <div style="font-size:0.72rem; color:var(--text-muted); word-break:break-all; margin-bottom:16px;" id="qrModalUrlText"></div>
-      <button type="button" class="btn btn-secondary btn-sm" onclick="closeQrModal()">Tutup</button>
+      <div id="qrModalEventName" style="font-weight:800; font-size:1rem; color:var(--accent-gold); margin-bottom:6px;"></div>
+
+      <div style="display:flex; gap:6px; margin-bottom:14px;">
+        <input type="text" id="qrModalUrlInput" class="form-input" readonly style="font-size:0.74rem; text-align:center; background:rgba(255,255,255,0.06);" />
+      </div>
+
+      <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn btn-neon btn-sm" onclick="copyEventQrLink()">
+          <i class="fa-solid fa-copy"></i> Copy Link
+        </button>
+        <button type="button" class="btn btn-gold btn-sm" onclick="shareEventQrLink()">
+          <i class="fa-solid fa-share-nodes"></i> Share Acara
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="downloadQrCodeImage()">
+          <i class="fa-solid fa-download"></i> Unduh QR
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- MODAL 6: LIGHTBOX PREVIEW FOTO BESAR -->
+  <!-- MODAL 6: LIGHTBOX PREVIEW FOTO BESAR + TOMBOL DOWNLOAD -->
   <div id="lightboxModal" class="modal-overlay" onclick="closeImageLightBox()">
     <div class="modal-card" style="max-width:720px; padding:12px; text-align:center;" onclick="event.stopPropagation()">
       <img id="lightboxImgEl" src="" style="width:100%; max-height:72vh; object-fit:contain; border-radius:12px; background:#000;" />
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; gap:10px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; gap:10px; flex-wrap:wrap;">
         <div id="lightboxCaptionEl" style="font-size:0.84rem; font-weight:600; text-align:left;"></div>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="closeImageLightBox()">Tutup</button>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn btn-neon btn-sm" onclick="downloadCurrentLightboxPhoto()">
+            <i class="fa-solid fa-download"></i> Download Foto
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="closeImageLightBox()">Tutup</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1100,7 +1292,18 @@
           { name: 'Terkeren 🔥', desc: 'Gaya, pose, dan komposisi foto paling keren' },
           { name: 'Terlucu & Heboh 😂', desc: 'Ekspresi paling seru, kocak, dan menghibur' },
           { name: 'Kostum Terbaik 👗', desc: 'Busana dan penampilan paling serasi & menawan' }
-        ]
+        ],
+        uploadLimits: {
+          maxLiveUsers: 0,
+          maxUploadsPerUser: 10
+        },
+        frameConfig: {
+          style: 'gold_luxury',
+          primaryColor: '#f5c542',
+          accentColor: '#00ffaa',
+          customFooterText: 'Runway Wedding Organizer',
+          customOverlayUrl: ''
+        }
       },
       events: [],
       users: [],
@@ -1125,6 +1328,7 @@
       selectedVotePhotoId: '',
       selectedVoteCategoryChoice: '',
       activeVoteFilterCat: 'ALL',
+      customFrameOverlayImg: null,
       remoteGasUrl: 'https://script.google.com/macros/s/AKfycby_rqWwEjq2Nfrg4L6jJnVMUJwDDc11dTBkFaZw7QHoPMSBjVKkBf0tl7Gz86CFxVIEhA/exec'
     };
 
@@ -1316,6 +1520,12 @@
             if (!Array.isArray(APP_STATE.config.voteCategories) || APP_STATE.config.voteCategories.length === 0) {
               APP_STATE.config.voteCategories = MOCK_INITIAL_BUNDLE.config.voteCategories;
             }
+            if (!APP_STATE.config.uploadLimits) {
+              APP_STATE.config.uploadLimits = { maxLiveUsers: 0, maxUploadsPerUser: 10 };
+            }
+            if (!APP_STATE.config.frameConfig) {
+              APP_STATE.config.frameConfig = { style: 'gold_luxury', primaryColor: '#f5c542', accentColor: '#00ffaa', customFooterText: 'Runway Wedding Organizer', customOverlayUrl: '' };
+            }
           }
           APP_STATE.events = res.events || [];
           if (APP_STATE.events.length > 0) {
@@ -1341,6 +1551,8 @@
 
     function executeUiUpdates() {
       applyBrandingToDom();
+      populateUploadLimitsFormAdmin();
+      populateFrameConfigFormAdmin();
       renderEventSelectorDropdown();
       updateActiveEventHeroBanner();
       updateAutoRenamePreview();
@@ -1437,10 +1649,12 @@
       var badgeEl = document.getElementById('adminUserRoleBadge');
       var containerEl = document.getElementById('adminLoggedInContainer');
       var loginBoxEl = document.getElementById('adminLoginBox');
+      var heroAdminBtns = document.getElementById('heroAdminActionGroup');
 
       if (APP_STATE.currentUser) {
         if (loginBoxEl) loginBoxEl.style.display = 'none';
         if (containerEl) containerEl.style.display = 'block';
+        if (heroAdminBtns) heroAdminBtns.style.display = 'flex';
         if (badgeEl) badgeEl.textContent = APP_STATE.currentUser.fullName + ' [' + APP_STATE.currentUser.roleLevel + ']';
 
         var role = APP_STATE.currentUser.roleLevel;
@@ -1467,7 +1681,18 @@
       } else {
         if (loginBoxEl) loginBoxEl.style.display = 'block';
         if (containerEl) containerEl.style.display = 'none';
+        if (heroAdminBtns) heroAdminBtns.style.display = 'none';
         renderEventSelectorDropdown();
+      }
+    }
+
+    // ARAHKAN TOMBOL "LIHAT HASIL VOTE" LANGSUNG KE SUB-TAB HASIL VOTING (LEADERBOARD)
+    function openVotingLeaderboardResult() {
+      switchMainView('awards');
+      switchVoteTab('leaderboard');
+      var leadEl = document.getElementById('voteSectionLeaderboard');
+      if (leadEl && leadEl.scrollIntoView) {
+        leadEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
 
@@ -1542,68 +1767,92 @@
     function updateHeroCounters() {
       var photos = APP_STATE.photos || [];
       var totalVotes = 0;
+      var uniqueUploaders = {};
+      var uniqueCount = 0;
+      var myDevId = getOrCreateDeviceId();
+      var myUploadCount = 0;
+
       for (var i = 0; i < photos.length; i++) {
         totalVotes += (parseInt(photos[i].votes, 10) || 0);
+        var uKey = photos[i].deviceId || photos[i].uploadedBy || ('P_' + i);
+        if (!uniqueUploaders[uKey]) {
+          uniqueUploaders[uKey] = true;
+          uniqueCount++;
+        }
+        if (photos[i].deviceId === myDevId) {
+          myUploadCount++;
+        }
       }
+
+      var localCount = parseInt(localStorage.getItem('SATUALBUM_UPLOAD_COUNT_' + APP_STATE.activeEventId), 10) || 0;
+      if (localCount > myUploadCount) myUploadCount = localCount;
+
       var pEl = document.getElementById('heroTotalPhotosCount');
       if (pEl) pEl.textContent = photos.length;
       var vEl = document.getElementById('heroTotalVotesCount');
       if (vEl) vEl.textContent = totalVotes;
       var bEl = document.getElementById('badgeTotalVoteCount');
       if (bEl) bEl.textContent = totalVotes;
+
+      var adminUniqueEl = document.getElementById('adminCurrentUniqueUsersCount');
+      if (adminUniqueEl) adminUniqueEl.textContent = uniqueCount;
+
+      var quotaBadge = document.getElementById('userQuotaBadgeInfo');
+      if (quotaBadge) {
+        var lim = (APP_STATE.config && APP_STATE.config.uploadLimits) || { maxLiveUsers: 0, maxUploadsPerUser: 0 };
+        var maxPerUser = parseInt(lim.maxUploadsPerUser, 10) || 0;
+        if (maxPerUser > 0) {
+          var rem = Math.max(0, maxPerUser - myUploadCount);
+          quotaBadge.textContent = 'Kuota Upload Anda: ' + myUploadCount + ' / ' + maxPerUser + ' (Sisa ' + rem + ')';
+        } else {
+          quotaBadge.textContent = 'Kuota Upload: Unlimited (' + myUploadCount + ' Terkirim)';
+        }
+      }
     }
 
-    // KOMUNIKASI BACKEND DUAL-MODE (GOOGLE.SCRIPT.RUN & REMOTE FETCH CORS-SAFE)
-    function callBackendApi(action, payload, callback, errCallback) {
+    // KOMUNIKASI API BACKEND (MENDUKUNG GAS INTERNAL & FETCH REMOTE GITHUB PAGES)
+    function callBackendApi(actionName, payloadObj, onSuccess, onError) {
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
-          .withSuccessHandler(function(res) {
-            if (typeof callback === 'function') callback(res);
-          })
+          .withSuccessHandler(function(res) { if (onSuccess) onSuccess(res); })
           .withFailureHandler(function(err) {
-            if (typeof errCallback === 'function') errCallback(err);
-          })[action](payload);
+            if (onError) onError(err);
+            else showToast('Gagal memproses di server: ' + err, true);
+          })[actionName](payloadObj);
         return;
       }
 
-      var url = APP_STATE.remoteGasUrl;
-      if (!url || url.indexOf('script.google.com') === -1) {
-        if (typeof errCallback === 'function') errCallback('Endpoint URL belum diatur.');
+      if (APP_STATE.remoteGasUrl && APP_STATE.remoteGasUrl.indexOf('https://script.google.com') === 0) {
+        fetch(APP_STATE.remoteGasUrl, {
+          method: 'POST',
+          mode: 'cors',
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ action: actionName, payload: payloadObj })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          setLiveSyncIndicator(true);
+          if (onSuccess) onSuccess(data);
+        })
+        .catch(function(err) {
+          setLiveSyncIndicator(false);
+          if (onError) onError(err);
+        });
         return;
       }
-      var fullUrl = url + (url.indexOf('?') > -1 ? '&' : '?') + 'api=1&action=' + encodeURIComponent(action);
 
-      fetch(fullUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: action, payload: payload }),
-        redirect: 'follow'
-      })
-      .then(function(res) { return res.json(); })
-      .then(function(data) {
-        if (typeof callback === 'function') callback(data);
-      })
-      .catch(function(err) {
-        if (typeof errCallback === 'function') errCallback(err);
-      });
+      if (onError) onError(new Error('Simulasi Lokal'));
     }
 
-    function showLoadingOverlay(show, text) {
-      var ov = document.getElementById('loadingOverlay');
+    function showLoadingOverlay(show, textMsg) {
+      var overlay = document.getElementById('loadingOverlay');
       var txt = document.getElementById('loadingText');
-      if (!ov) return;
-      if (show) {
-        if (txt) txt.textContent = text || 'Memproses...';
-        ov.style.display = 'flex';
-      } else {
-        ov.style.display = 'none';
-      }
+      if (txt && textMsg) txt.textContent = textMsg;
+      if (overlay) overlay.style.display = show ? 'flex' : 'none';
     }
 
     function showToast(msg, isError) {
-      if (isError && msg && msg.toString().toLowerCase().indexOf('networkerror') > -1) {
-        return;
-      }
       var container = document.getElementById('toastContainer');
       if (!container) return;
       var toast = document.createElement('div');
@@ -1659,7 +1908,7 @@
     }
 
     // =====================================================================
-    // MODUL 1: LIVE CAMERA WEBRTC (DENGAN AUTO FALLBACK KAMERA)
+    // MODUL 1: LIVE CAMERA WEBRTC & STUDIO BINGKAI FOTO OTOMATIS
     // =====================================================================
     function startCameraStream(isSilentAuto) {
       var videoEl = document.getElementById('cameraVideoFeed');
@@ -1670,7 +1919,7 @@
       var statusText = document.getElementById('cameraStatusText');
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        if (!isSilentAuto) showToast('Browser ini membutuhkan HTTPS atau gunakan tombol Pilih Galeri HP.', true);
+        if (!isSilentAuto) showToast('Browser ini membutuhkan HTTPS atau gunakan tombol Galeri HP.', true);
         return;
       }
 
@@ -1686,16 +1935,15 @@
           onCameraStreamReady(stream, videoEl, placeholderEl, btnStart, btnSnap, statusDot, statusText);
         })
         .catch(function() {
-          // Fallback ke kamera apapun yang tersedia di perangkat (misal webcam laptop)
           navigator.mediaDevices.getUserMedia({ video: true, audio: false })
             .then(function(stream2) {
               onCameraStreamReady(stream2, videoEl, placeholderEl, btnStart, btnSnap, statusDot, statusText);
             })
-            .catch(function(err2) {
+            .catch(function() {
               if (statusDot) statusDot.style.background = '#ff5252';
               if (statusText) statusText.textContent = 'IZIN KAMERA DIPERLUKAN';
               if (!isSilentAuto) {
-                showToast('Ketuk Izinkan Kamera pada browser atau gunakan tombol Pilih Galeri HP.', true);
+                showToast('Ketuk Izinkan Kamera pada browser atau gunakan tombol Galeri HP.', true);
               }
             });
         });
@@ -1764,7 +2012,6 @@
         return;
       }
 
-      // Efek Shutter Flash
       var flashEl = document.getElementById('shutterFlashEl');
       if (flashEl) {
         flashEl.classList.add('active');
@@ -1772,15 +2019,8 @@
       }
 
       var canvas = document.createElement('canvas');
-      var rawW = videoEl.videoWidth || 1280;
-      var rawH = videoEl.videoHeight || 960;
-      var maxDim = 1280;
-      if (rawW > maxDim || rawH > maxDim) {
-        if (rawW > rawH) { rawH = Math.round(rawH * (maxDim / rawW)); rawW = maxDim; }
-        else { rawW = Math.round(rawW * (maxDim / rawH)); rawH = maxDim; }
-      }
-      canvas.width = rawW;
-      canvas.height = rawH;
+      canvas.width = 1280;
+      canvas.height = 960;
       var ctx = canvas.getContext('2d');
 
       ctx.save();
@@ -1791,23 +2031,25 @@
       if (APP_STATE.cameraFilterCss && APP_STATE.cameraFilterCss !== 'none') {
         ctx.filter = APP_STATE.cameraFilterCss;
       }
-      ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+
+      var vW = videoEl.videoWidth || 1280;
+      var vH = videoEl.videoHeight || 960;
+      var scale = Math.max(canvas.width / vW, canvas.height / vH);
+      var dW = vW * scale;
+      var dH = vH * scale;
+      var oX = (canvas.width - dW) / 2;
+      var oY = (canvas.height - dH) / 2;
+      ctx.drawImage(videoEl, oX, oY, dW, dH);
       ctx.restore();
 
-      // Watermark Acara & WO
-      var ev = getActiveEventObject();
-      ctx.fillStyle = 'rgba(11, 15, 25, 0.65)';
-      ctx.fillRect(0, canvas.height - 48, canvas.width, 48);
-      ctx.font = 'bold 18px Inter, sans-serif';
-      ctx.fillStyle = '#00ffaa';
-      ctx.fillText('✨ ' + (ev.eventName || APP_STATE.config.appName) + ' • ' + (APP_STATE.config.woName || 'Runway WO'), 20, canvas.height - 18);
+      drawPhotoFrameOnCanvas(ctx, canvas.width, canvas.height);
 
-      APP_STATE.capturedDataUrl = canvas.toDataURL('image/jpeg', 0.84);
+      APP_STATE.capturedDataUrl = canvas.toDataURL('image/jpeg', 0.86);
       var previewContainer = document.getElementById('cameraPreviewContainer');
       var previewImg = document.getElementById('cameraPreviewImg');
       if (previewImg) previewImg.src = APP_STATE.capturedDataUrl;
       if (previewContainer) previewContainer.style.display = 'block';
-      showToast('Foto berhasil dijepret! Isi nama Anda lalu klik Unggah.');
+      showToast('Foto berbingkai siap! Isi nama Anda lalu klik Kirim.');
     }
 
     function retakeCameraPhoto() {
@@ -1825,34 +2067,137 @@
           var img = new Image();
           img.onload = function() {
             var canvas = document.createElement('canvas');
-            var maxW = 1280, maxH = 1280;
-            var w = img.width, h = img.height;
-            if (w > maxW || h > maxH) {
-              if (w > h) { h = Math.round(h * (maxW / w)); w = maxW; }
-              else { w = Math.round(w * (maxH / h)); h = maxH; }
-            }
-            canvas.width = w; canvas.height = h;
+            var maxW = 1280, maxH = 960;
+            canvas.width = maxW;
+            canvas.height = maxH;
             var ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, w, h);
 
-            var ev = getActiveEventObject();
-            ctx.fillStyle = 'rgba(11, 15, 25, 0.65)';
-            ctx.fillRect(0, canvas.height - 44, canvas.width, 44);
-            ctx.font = 'bold 16px Inter, sans-serif';
-            ctx.fillStyle = '#00ffaa';
-            ctx.fillText('✨ ' + (ev.eventName || APP_STATE.config.appName) + ' • ' + (APP_STATE.config.woName || 'Runway WO'), 16, canvas.height - 16);
+            ctx.fillStyle = '#070a12';
+            ctx.fillRect(0, 0, maxW, maxH);
+            var scale = Math.max(maxW / img.width, maxH / img.height);
+            var drawW = img.width * scale;
+            var drawH = img.height * scale;
+            var offsetX = (maxW - drawW) / 2;
+            var offsetY = (maxH - drawH) / 2;
+            ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
 
-            APP_STATE.capturedDataUrl = canvas.toDataURL('image/jpeg', 0.84);
+            drawPhotoFrameOnCanvas(ctx, canvas.width, canvas.height);
+
+            APP_STATE.capturedDataUrl = canvas.toDataURL('image/jpeg', 0.86);
             var previewContainer = document.getElementById('cameraPreviewContainer');
             var previewImg = document.getElementById('cameraPreviewImg');
             if (previewImg) previewImg.src = APP_STATE.capturedDataUrl;
             if (previewContainer) previewContainer.style.display = 'block';
-            showToast('Foto dari galeri siap diunggah!');
+            showToast('Foto galeri telah dipasang bingkai acara!');
           };
           img.src = e.target.result;
         };
         reader.readAsDataURL(file);
       }
+    }
+
+    function drawPhotoFrameOnCanvas(ctx, w, h, customConfigOverride) {
+      var fCfg = customConfigOverride || (APP_STATE.config && APP_STATE.config.frameConfig) || {
+        style: 'gold_luxury',
+        primaryColor: '#f5c542',
+        accentColor: '#00ffaa',
+        customFooterText: 'Runway Wedding Organizer',
+        customOverlayUrl: ''
+      };
+      var ev = getActiveEventObject();
+      var eventTitle = ev.eventName || APP_STATE.config.appName || 'SatuAlbum Event';
+      var eventDate = ev.eventDate || '';
+      var footerSub = fCfg.customFooterText || APP_STATE.config.woName || 'Runway Wedding Organizer';
+      var pCol = fCfg.primaryColor || '#f5c542';
+      var aCol = fCfg.accentColor || '#00ffaa';
+      var style = fCfg.style || 'gold_luxury';
+
+      ctx.save();
+
+      if (style === 'polaroid_classic') {
+        var sidePad = Math.round(w * 0.032);
+        var bottomPad = Math.round(h * 0.125);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, sidePad);
+        ctx.fillRect(0, 0, sidePad, h);
+        ctx.fillRect(w - sidePad, 0, sidePad, h);
+        ctx.fillRect(0, h - bottomPad, w, bottomPad);
+
+        ctx.strokeStyle = pCol;
+        ctx.lineWidth = Math.max(2, Math.round(w * 0.003));
+        ctx.strokeRect(sidePad, sidePad, w - sidePad * 2, h - sidePad - bottomPad);
+
+        ctx.fillStyle = '#0b0f19';
+        ctx.font = 'bold ' + Math.round(h * 0.032) + 'px Georgia, serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(eventTitle + (eventDate ? (' • ' + eventDate) : ''), w / 2, h - Math.round(bottomPad * 0.52));
+
+        ctx.fillStyle = '#475569';
+        ctx.font = '600 ' + Math.round(h * 0.021) + 'px Inter, sans-serif';
+        ctx.fillText('✨ ' + footerSub, w / 2, h - Math.round(bottomPad * 0.22));
+      } else if (style === 'neon_party') {
+        var pad = Math.round(w * 0.022);
+        var bannerH = Math.round(h * 0.095);
+        ctx.fillStyle = 'rgba(11, 15, 25, 0.85)';
+        ctx.fillRect(0, h - bannerH, w, bannerH);
+
+        ctx.strokeStyle = aCol;
+        ctx.lineWidth = Math.max(4, Math.round(w * 0.006));
+        ctx.strokeRect(pad, pad, w - pad * 2, h - pad * 2);
+
+        ctx.strokeStyle = pCol;
+        ctx.lineWidth = Math.max(2, Math.round(w * 0.003));
+        ctx.strokeRect(pad + 6, pad + 6, w - (pad + 6) * 2, h - (pad + 6) * 2);
+
+        ctx.fillStyle = aCol;
+        ctx.font = '800 ' + Math.round(h * 0.028) + 'px Inter, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('⚡ ' + eventTitle, pad + 18, h - Math.round(bannerH * 0.50));
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '600 ' + Math.round(h * 0.02) + 'px Inter, sans-serif';
+        ctx.fillText(footerSub + (eventDate ? (' | ' + eventDate) : ''), pad + 18, h - Math.round(bannerH * 0.20));
+      } else {
+        var borderW = Math.round(w * 0.018);
+        var footerH = Math.round(h * 0.10);
+
+        ctx.fillStyle = 'rgba(11, 15, 25, 0.88)';
+        ctx.fillRect(0, 0, w, borderW);
+        ctx.fillRect(0, 0, borderW, h);
+        ctx.fillRect(w - borderW, 0, borderW, h);
+        ctx.fillRect(0, h - footerH, w, footerH);
+
+        ctx.strokeStyle = pCol;
+        ctx.lineWidth = Math.max(3, Math.round(w * 0.0045));
+        ctx.strokeRect(borderW, borderW, w - borderW * 2, h - borderW - footerH);
+
+        ctx.strokeStyle = aCol;
+        ctx.lineWidth = Math.max(1, Math.round(w * 0.002));
+        ctx.strokeRect(borderW + 6, borderW + 6, w - (borderW + 6) * 2, h - (borderW + 6) - footerH);
+
+        var cLen = Math.round(w * 0.045);
+        ctx.strokeStyle = pCol;
+        ctx.lineWidth = Math.max(4, Math.round(w * 0.006));
+        ctx.beginPath(); ctx.moveTo(borderW + 12, borderW + 12 + cLen); ctx.lineTo(borderW + 12, borderW + 12); ctx.lineTo(borderW + 12 + cLen, borderW + 12); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(w - borderW - 12 - cLen, borderW + 12); ctx.lineTo(w - borderW - 12, borderW + 12); ctx.lineTo(w - borderW - 12, borderW + 12 + cLen); ctx.stroke();
+
+        ctx.fillStyle = pCol;
+        ctx.font = 'bold ' + Math.round(h * 0.03) + 'px Georgia, serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('✨ ' + eventTitle + ' ✨', w / 2, h - Math.round(footerH * 0.52));
+
+        ctx.fillStyle = aCol;
+        ctx.font = '600 ' + Math.round(h * 0.02) + 'px Inter, sans-serif';
+        ctx.fillText(footerSub + (eventDate ? (' • ' + eventDate) : ''), w / 2, h - Math.round(footerH * 0.18));
+      }
+
+      if (APP_STATE.customFrameOverlayImg && APP_STATE.customFrameOverlayImg.complete && fCfg.customOverlayUrl) {
+        try {
+          ctx.drawImage(APP_STATE.customFrameOverlayImg, 0, 0, w, h);
+        } catch (ignoreDrawErr) {}
+      }
+
+      ctx.restore();
     }
 
     function updateAutoRenamePreview() {
@@ -1877,25 +2222,60 @@
         showToast('Masukkan Nama Anda / Grup Tamu terlebih dahulu.', true);
         return;
       }
+
+      var lim = (APP_STATE.config && APP_STATE.config.uploadLimits) || { maxLiveUsers: 0, maxUploadsPerUser: 0 };
+      var maxUsers = parseInt(lim.maxLiveUsers, 10) || 0;
+      var maxPerUser = parseInt(lim.maxUploadsPerUser, 10) || 0;
+      var myDevId = getOrCreateDeviceId();
+
+      var existingPhotos = APP_STATE.photos || [];
+      var uniqueDevs = {};
+      var uniqueCount = 0;
+      var myCount = 0;
+      for (var i = 0; i < existingPhotos.length; i++) {
+        var dKey = existingPhotos[i].deviceId || existingPhotos[i].uploadedBy;
+        if (dKey && !uniqueDevs[dKey]) {
+          uniqueDevs[dKey] = true;
+          uniqueCount++;
+        }
+        if (existingPhotos[i].deviceId === myDevId) {
+          myCount++;
+        }
+      }
+      var localUploaded = parseInt(localStorage.getItem('SATUALBUM_UPLOAD_COUNT_' + APP_STATE.activeEventId), 10) || 0;
+      if (localUploaded > myCount) myCount = localUploaded;
+
+      if (maxUsers > 0 && !uniqueDevs[myDevId] && uniqueCount >= maxUsers) {
+        showToast('Maaf, kuota maksimal partisipan Live Photo (' + maxUsers + ' user) untuk acara ini telah penuh.', true);
+        return;
+      }
+      if (maxPerUser > 0 && myCount >= maxPerUser) {
+        showToast('Batas maksimal upload foto Anda (' + maxPerUser + 'x upload) pada acara ini telah tercapai.', true);
+        return;
+      }
+
       var category = categorySelect ? categorySelect.value : 'Selfie Tamu';
-      showLoadingOverlay(true, 'Mengunggah foto ke Google Drive Acara...');
+      startUploadProgressAnimation();
 
       var payload = {
         eventId: APP_STATE.activeEventId,
         category: category,
         uploadedBy: uploaderName,
-        base64Data: APP_STATE.capturedDataUrl
+        base64Data: APP_STATE.capturedDataUrl,
+        deviceId: myDevId
       };
 
       callBackendApi('uploadEventPhoto', payload, function(res) {
-        showLoadingOverlay(false);
+        finishUploadProgressAnimation();
         if (res && res.status === 'success') {
+          localStorage.setItem('SATUALBUM_UPLOAD_COUNT_' + APP_STATE.activeEventId, String(myCount + 1));
           if (res.photo) {
             res.photo.votes = res.photo.votes || 0;
             res.photo.votesByCategory = res.photo.votesByCategory || {};
+            res.photo.deviceId = myDevId;
             APP_STATE.photos.unshift(res.photo);
           }
-          showToast(res.message || 'Foto berhasil diunggah ke Google Drive!');
+          showToast('Foto berbingkai berhasil dipublikasikan ke Galeri Acara!');
           retakeCameraPhoto();
           if (uploaderInput) uploaderInput.value = '';
           renderGalleryGrid();
@@ -1903,24 +2283,26 @@
           updateHeroCounters();
           switchMainView('gallery');
         } else {
-          showToast((res && res.message) || 'Gagal mengunggah foto.', true);
+          showToast((res && res.message) || 'Gagal menyimpan foto.', true);
         }
-      }, function(err) {
-        showLoadingOverlay(false);
+      }, function() {
+        finishUploadProgressAnimation();
+        localStorage.setItem('SATUALBUM_UPLOAD_COUNT_' + APP_STATE.activeEventId, String(myCount + 1));
         var mockPhoto = {
           photoId: 'PHT-' + Math.floor(Math.random() * 9000 + 1000),
           eventId: APP_STATE.activeEventId,
           category: category,
-          fileName: 'Upload_' + Date.now() + '.jpg',
+          fileName: 'Moment_' + Date.now() + '.jpg',
           directImageUrl: APP_STATE.capturedDataUrl,
           uploadedBy: uploaderName,
           uploadedAt: 'Baru saja',
           awardTitle: '',
           votes: 0,
-          votesByCategory: {}
+          votesByCategory: {},
+          deviceId: myDevId
         };
         APP_STATE.photos.unshift(mockPhoto);
-        showToast('Foto ditambahkan ke Galeri!');
+        showToast('Foto berbingkai berhasil ditambahkan ke Galeri Acara!');
         retakeCameraPhoto();
         if (uploaderInput) uploaderInput.value = '';
         renderGalleryGrid();
@@ -1930,8 +2312,67 @@
       });
     }
 
+    var uploadProgressTimer = null;
+    function startUploadProgressAnimation() {
+      var inlineBox = document.getElementById('inlineUploadProgressBox');
+      var inlineBar = document.getElementById('inlineUploadProgressBar');
+      var inlinePct = document.getElementById('inlineUploadPercentLabel');
+      var overlayBox = document.getElementById('loadingProgressBox');
+      var overlayBar = document.getElementById('loadingProgressBar');
+      var overlayPct = document.getElementById('loadingProgressPercent');
+      var btnSubmit = document.getElementById('btnSubmitPhotoUpload');
+
+      if (inlineBox) inlineBox.style.display = 'block';
+      if (overlayBox) overlayBox.style.display = 'block';
+      if (btnSubmit) btnSubmit.disabled = true;
+      showLoadingOverlay(true, 'Menyimpan Foto ke Album Digital Acara...');
+
+      var pct = 8;
+      var updateBars = function(val) {
+        if (inlineBar) inlineBar.style.width = val + '%';
+        if (inlinePct) inlinePct.textContent = val + '%';
+        if (overlayBar) overlayBar.style.width = val + '%';
+        if (overlayPct) overlayPct.textContent = val + '%';
+      };
+      updateBars(pct);
+
+      if (uploadProgressTimer) clearInterval(uploadProgressTimer);
+      uploadProgressTimer = setInterval(function() {
+        if (pct < 92) {
+          pct += Math.floor(Math.random() * 11) + 4;
+          if (pct > 92) pct = 92;
+          updateBars(pct);
+        }
+      }, 220);
+    }
+
+    function finishUploadProgressAnimation() {
+      if (uploadProgressTimer) {
+        clearInterval(uploadProgressTimer);
+        uploadProgressTimer = null;
+      }
+      var inlineBar = document.getElementById('inlineUploadProgressBar');
+      var inlinePct = document.getElementById('inlineUploadPercentLabel');
+      var overlayBar = document.getElementById('loadingProgressBar');
+      var overlayPct = document.getElementById('loadingProgressPercent');
+      if (inlineBar) inlineBar.style.width = '100%';
+      if (inlinePct) inlinePct.textContent = '100%';
+      if (overlayBar) overlayBar.style.width = '100%';
+      if (overlayPct) overlayPct.textContent = '100%';
+
+      setTimeout(function() {
+        showLoadingOverlay(false);
+        var inlineBox = document.getElementById('inlineUploadProgressBox');
+        var overlayBox = document.getElementById('loadingProgressBox');
+        var btnSubmit = document.getElementById('btnSubmitPhotoUpload');
+        if (inlineBox) inlineBox.style.display = 'none';
+        if (overlayBox) overlayBox.style.display = 'none';
+        if (btnSubmit) btnSubmit.disabled = false;
+      }, 280);
+    }
+
     // =====================================================================
-    // MODUL 2: GALERI PUBLIK & TOMBOL VOTE LANGSUNG
+    // MODUL 2: GALERI PUBLIK, UNDUH FOTO & TOMBOL VOTE LANGSUNG
     // =====================================================================
     function reloadGalleryFeed(reset) {
       if (reset) {
@@ -2021,15 +2462,65 @@
             html += '<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px;">' + breakdownHtml + '</div>';
           }
           html += '</div>';
-          html += '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px; padding-top:8px; border-top:1px solid var(--border-subtle);">';
-          html += '<span style="font-size:0.76rem; font-weight:700; color:var(--accent-gold);"><i class="fa-solid fa-fire"></i> ' + totalV + ' Suara</span>';
-          html += '<button type="button" class="btn btn-neon btn-sm" onclick="openVoteCategoryModal(\'' + escapeHtml(p.photoId) + '\')"><i class="fa-solid fa-check-to-slot"></i> Vote Foto</button>';
+          html += '<div style="display:flex; justify-content:space-between; align-items:center; gap:6px; padding-top:8px; border-top:1px solid var(--border-subtle);">';
+          html += '<span style="font-size:0.75rem; font-weight:700; color:var(--accent-gold);"><i class="fa-solid fa-fire"></i> ' + totalV + ' Suara</span>';
+          html += '<div style="display:flex; gap:6px;">';
+          html += '<button type="button" class="btn btn-secondary btn-sm" onclick="downloadPhotoById(\'' + escapeHtml(p.photoId) + '\')" title="Download Foto"><i class="fa-solid fa-download"></i></button>';
+          html += '<button type="button" class="btn btn-neon btn-sm" onclick="openVoteCategoryModal(\'' + escapeHtml(p.photoId) + '\')"><i class="fa-solid fa-check-to-slot"></i> Vote</button>';
+          html += '</div>';
           html += '</div>';
           html += '</div>';
         }
       }
       gridEl.innerHTML = html;
       if (loadMoreBtn) loadMoreBtn.style.display = APP_STATE.galleryHasMore ? 'inline-flex' : 'none';
+    }
+
+    function downloadPhotoById(photoId) {
+      var target = null;
+      for (var i = 0; i < APP_STATE.photos.length; i++) {
+        if (APP_STATE.photos[i].photoId === photoId) {
+          target = APP_STATE.photos[i];
+          break;
+        }
+      }
+      if (!target) return;
+      triggerImageDownload(target.directImageUrl, target.fileName || ('SatuAlbum_' + photoId + '.jpg'));
+    }
+
+    function downloadCurrentLightboxPhoto() {
+      var imgEl = document.getElementById('lightboxImgEl');
+      if (!imgEl || !imgEl.src) return;
+      triggerImageDownload(imgEl.src, 'SatuAlbum_Photo_' + Date.now() + '.jpg');
+    }
+
+    function triggerImageDownload(imgUrl, fileName) {
+      if (!imgUrl) return;
+      if (imgUrl.indexOf('data:image') === 0) {
+        var a = document.createElement('a');
+        a.href = imgUrl;
+        a.download = fileName || 'SatuAlbum_Foto.jpg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('Mengunduh foto ke perangkat Anda...');
+        return;
+      }
+      var matchId = imgUrl.match(/[?&]id=([a-zA-Z0-9_-]{10,})/) || imgUrl.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
+      if (matchId && matchId[1]) {
+        var dlUrl = 'https://drive.google.com/uc?export=download&id=' + matchId[1];
+        window.open(dlUrl, '_blank');
+        showToast('Membuka unduhan foto resolusi penuh...');
+        return;
+      }
+      var link = document.createElement('a');
+      link.href = imgUrl;
+      link.target = '_blank';
+      link.download = fileName || 'SatuAlbum_Foto.jpg';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Mengunduh foto...');
     }
 
     // =====================================================================
@@ -2610,12 +3101,21 @@
         customFooter: APP_STATE.config.customFooter,
         globalDriveFolderUrl: APP_STATE.config.globalDriveFolderUrl,
         globalDriveFolderId: extractDriveFolderIdClient(APP_STATE.config.globalDriveFolderUrl),
-        voteCategories: getNormalizedVoteCategories()
+        voteCategories: getNormalizedVoteCategories(),
+        uploadLimits: APP_STATE.config.uploadLimits || { maxLiveUsers: 0, maxUploadsPerUser: 10 },
+        frameConfig: APP_STATE.config.frameConfig || {
+          style: 'gold_luxury',
+          primaryColor: '#f5c542',
+          accentColor: '#00ffaa',
+          customFooterText: 'Runway Wedding Organizer',
+          customOverlayUrl: ''
+        }
       };
       callBackendApi('saveAppConfig', payload, function(res) {
         if (res && res.status === 'success' && res.config) {
           APP_STATE.config = res.config;
           applyBrandingToDom();
+          updateHeroCounters();
           showToast(successToastMsg || res.message);
         } else {
           showToast(successToastMsg || 'Tersimpan.', false);
@@ -2623,6 +3123,163 @@
       }, function() {
         showToast(successToastMsg || 'Perubahan diterapkan.', false);
       });
+    }
+
+    // PENGATURAN LIMITASI USER LIVE PHOTO & UPLOAD PER USER
+    function populateUploadLimitsFormAdmin() {
+      var lim = (APP_STATE.config && APP_STATE.config.uploadLimits) || { maxLiveUsers: 0, maxUploadsPerUser: 10 };
+      var maxU = parseInt(lim.maxLiveUsers, 10) || 0;
+      var maxP = parseInt(lim.maxUploadsPerUser, 10) || 0;
+
+      var uPreset = document.getElementById('adminMaxUsersPreset');
+      var uCustom = document.getElementById('adminMaxUsersCustomInput');
+      if (uPreset && uCustom) {
+        uCustom.value = maxU;
+        if (maxU === 0 || maxU === 10 || maxU === 50 || maxU === 100) {
+          uPreset.value = String(maxU);
+        } else {
+          uPreset.value = 'custom';
+        }
+      }
+
+      var pPreset = document.getElementById('adminMaxUploadsPerUserPreset');
+      var pCustom = document.getElementById('adminMaxUploadsPerUserCustomInput');
+      if (pPreset && pCustom) {
+        pCustom.value = maxP;
+        if (maxP === 0 || maxP === 3 || maxP === 5 || maxP === 10) {
+          pPreset.value = String(maxP);
+        } else {
+          pPreset.value = 'custom';
+        }
+      }
+    }
+
+    function onLimitPresetChange(type, val) {
+      if (type === 'users') {
+        var uInput = document.getElementById('adminMaxUsersCustomInput');
+        if (uInput && val !== 'custom') uInput.value = parseInt(val, 10) || 0;
+        else if (uInput && val === 'custom') uInput.focus();
+      } else {
+        var pInput = document.getElementById('adminMaxUploadsPerUserCustomInput');
+        if (pInput && val !== 'custom') pInput.value = parseInt(val, 10) || 0;
+        else if (pInput && val === 'custom') pInput.focus();
+      }
+    }
+
+    function saveUploadLimitsConfigForm() {
+      var uCustom = document.getElementById('adminMaxUsersCustomInput');
+      var pCustom = document.getElementById('adminMaxUploadsPerUserCustomInput');
+      var maxLiveUsersVal = Math.max(0, parseInt(uCustom ? uCustom.value : 0, 10) || 0);
+      var maxUploadsVal = Math.max(0, parseInt(pCustom ? pCustom.value : 0, 10) || 0);
+
+      APP_STATE.config.uploadLimits = {
+        maxLiveUsers: maxLiveUsersVal,
+        maxUploadsPerUser: maxUploadsVal
+      };
+      populateUploadLimitsFormAdmin();
+      updateHeroCounters();
+      syncConfigToBackend('Limitasi Kuota User & Upload berhasil disimpan!');
+    }
+
+    // STUDIO BINGKAI FOTO (CUSTOM FRAME) DI ADMIN PANEL
+    function populateFrameConfigFormAdmin() {
+      var fCfg = (APP_STATE.config && APP_STATE.config.frameConfig) || {
+        style: 'gold_luxury',
+        primaryColor: '#f5c542',
+        accentColor: '#00ffaa',
+        customFooterText: 'Runway Wedding Organizer',
+        customOverlayUrl: ''
+      };
+      var styleEl = document.getElementById('adminFrameStyleSelect');
+      var footerEl = document.getElementById('adminFrameFooterText');
+      var pColEl = document.getElementById('adminFramePrimaryColor');
+      var aColEl = document.getElementById('adminFrameAccentColor');
+      var urlEl = document.getElementById('adminFrameOverlayUrl');
+
+      if (styleEl) styleEl.value = fCfg.style || 'gold_luxury';
+      if (footerEl) footerEl.value = (fCfg.customFooterText !== undefined) ? fCfg.customFooterText : 'Runway Wedding Organizer';
+      if (pColEl) pColEl.value = fCfg.primaryColor || '#f5c542';
+      if (aColEl) aColEl.value = fCfg.accentColor || '#00ffaa';
+      if (urlEl) urlEl.value = fCfg.customOverlayUrl || '';
+
+      loadCustomFrameOverlayImage(fCfg.customOverlayUrl);
+      renderAdminFrameLivePreview();
+    }
+
+    function loadCustomFrameOverlayImage(url) {
+      if (!url || !String(url).trim()) {
+        APP_STATE.customFrameOverlayImg = null;
+        return;
+      }
+      var img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = function() {
+        APP_STATE.customFrameOverlayImg = img;
+        renderAdminFrameLivePreview();
+      };
+      img.src = resolveLogoImageUrl(url);
+    }
+
+    function handleCustomFramePngUpload(inputEl) {
+      if (inputEl.files && inputEl.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var dataUrl = e.target.result;
+          var urlInput = document.getElementById('adminFrameOverlayUrl');
+          var styleSelect = document.getElementById('adminFrameStyleSelect');
+          if (urlInput) urlInput.value = dataUrl;
+          if (styleSelect) styleSelect.value = 'custom_png';
+          loadCustomFrameOverlayImage(dataUrl);
+          showToast('File PNG Bingkai berhasil dimuat! Klik Simpan untuk menerapkan.');
+        };
+        reader.readAsDataURL(inputEl.files[0]);
+      }
+    }
+
+    function renderAdminFrameLivePreview() {
+      var canvas = document.getElementById('adminFramePreviewCanvas');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      var w = canvas.width;
+      var h = canvas.height;
+
+      // Gambar latar simulasi foto acara
+      var grad = ctx.createLinearGradient(0, 0, w, h);
+      grad.addColorStop(0, '#1a2438');
+      grad.addColorStop(1, '#0f172a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.font = 'bold 22px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('📸 AREA FOTO TAMU (1280 x 960 px)', w / 2, h / 2 - 10);
+      ctx.font = '14px Inter, sans-serif';
+      ctx.fillText('Bingkai otomatis menyatu pada setiap foto yang diunggah', w / 2, h / 2 + 18);
+
+      var tempCfg = {
+        style: document.getElementById('adminFrameStyleSelect') ? document.getElementById('adminFrameStyleSelect').value : 'gold_luxury',
+        customFooterText: document.getElementById('adminFrameFooterText') ? document.getElementById('adminFrameFooterText').value : 'Runway Wedding Organizer',
+        primaryColor: document.getElementById('adminFramePrimaryColor') ? document.getElementById('adminFramePrimaryColor').value : '#f5c542',
+        accentColor: document.getElementById('adminFrameAccentColor') ? document.getElementById('adminFrameAccentColor').value : '#00ffaa',
+        customOverlayUrl: document.getElementById('adminFrameOverlayUrl') ? document.getElementById('adminFrameOverlayUrl').value.trim() : ''
+      };
+
+      drawPhotoFrameOnCanvas(ctx, w, h, tempCfg);
+    }
+
+    function saveFrameConfigForm() {
+      var newFrameCfg = {
+        style: document.getElementById('adminFrameStyleSelect').value,
+        customFooterText: document.getElementById('adminFrameFooterText').value.trim(),
+        primaryColor: document.getElementById('adminFramePrimaryColor').value,
+        accentColor: document.getElementById('adminFrameAccentColor').value,
+        customOverlayUrl: document.getElementById('adminFrameOverlayUrl').value.trim()
+      };
+      APP_STATE.config.frameConfig = newFrameCfg;
+      loadCustomFrameOverlayImage(newFrameCfg.customOverlayUrl);
+      renderAdminFrameLivePreview();
+      syncConfigToBackend('Desain Bingkai Foto Acara berhasil disimpan & diaktifkan!');
     }
 
     function saveGlobalDriveConfigForm() {
@@ -3019,49 +3676,87 @@
       renderVoteSection();
       renderLiveLeaderboard();
       updateHeroCounters();
-      showToast('Foto berhasil dihapus.');
-
+      showToast('Foto dihapus.');
       callBackendApi('deletePhotoItem', { photoId: photoId });
     }
 
     function renderAdminGuestbookTable() {
       var tbody = document.getElementById('adminGuestbookTableBody');
       if (!tbody) return;
-      var list = APP_STATE.guestbook || [], html = '';
-      if (list.length === 0) {
+      var gb = APP_STATE.guestbook || [], html = '';
+      if (gb.length === 0) {
         html = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Belum ada ucapan buku tamu.</td></tr>';
       } else {
-        for (var i = 0; i < list.length; i++) {
-          var g = list[i];
+        for (var i = 0; i < gb.length; i++) {
+          var g = gb[i];
           html += '<tr>';
           html += '<td style="font-weight:700;">' + escapeHtml(g.guestName) + '</td>';
           html += '<td>' + escapeHtml(g.attendanceStatus) + '</td>';
           html += '<td>' + escapeHtml(g.message) + '</td>';
           html += '<td style="font-size:0.72rem; color:var(--text-muted);">' + escapeHtml(g.submittedAt) + '</td>';
-          html += '<td><button type="button" class="btn btn-danger btn-sm" onclick="deleteGuestbookItemAdmin(\'' + escapeHtml(g.guestId) + '\')"><i class="fa-solid fa-trash"></i></button></td>';
+          html += '<td><button type="button" class="btn btn-danger btn-sm" onclick="deleteGuestbookItem(\'' + escapeHtml(g.guestId) + '\')"><i class="fa-solid fa-trash"></i></button></td>';
           html += '</tr>';
         }
       }
       tbody.innerHTML = html;
     }
 
-    function deleteGuestbookItemAdmin(guestId) {
+    function deleteGuestbookItem(guestId) {
       APP_STATE.guestbook = APP_STATE.guestbook.filter(function(g) { return g.guestId !== guestId; });
       renderAdminGuestbookTable();
       renderGuestbookList();
       showToast('Ucapan dihapus.');
-
       callBackendApi('deleteGuestbookItem', { guestId: guestId });
     }
 
-    // QR CODE & LIGHTBOX MODAL
+    // QR CODE UNDANGAN MEJA (SHARE, COPY LINK & DOWNLOAD) & LIGHTBOX MODAL
+    function getActiveEventInviteUrl() {
+      var ev = getActiveEventObject();
+      return window.location.href.split('?')[0] + '?event=' + encodeURIComponent(ev.eventId);
+    }
+
     function openQrModal() {
       var ev = getActiveEventObject();
-      var currentUrl = window.location.href.split('?')[0] + '?event=' + encodeURIComponent(ev.eventId);
+      var currentUrl = getActiveEventInviteUrl();
       document.getElementById('qrModalEventName').textContent = ev.eventName;
-      document.getElementById('qrModalUrlText').textContent = currentUrl;
-      document.getElementById('qrModalContent').innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(currentUrl) + '" alt="QR Acara" style="width:190px; height:190px; display:block;" />';
+      var inputEl = document.getElementById('qrModalUrlInput');
+      if (inputEl) inputEl.value = currentUrl;
+      document.getElementById('qrModalContent').innerHTML = '<img id="qrCodeGeneratedImg" src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=' + encodeURIComponent(currentUrl) + '" alt="QR Acara" style="width:190px; height:190px; display:block;" />';
       document.getElementById('qrModal').style.display = 'flex';
+    }
+
+    function copyEventQrLink() {
+      var inputEl = document.getElementById('qrModalUrlInput');
+      if (!inputEl) return;
+      inputEl.select();
+      inputEl.setSelectionRange(0, 99999);
+      try {
+        document.execCommand('copy');
+        showToast('Link undangan acara berhasil disalin ke Clipboard!');
+      } catch (e) {
+        showToast('Gagal menyalin link secara otomatis.', true);
+      }
+    }
+
+    function shareEventQrLink() {
+      var ev = getActiveEventObject();
+      var shareUrl = getActiveEventInviteUrl();
+      if (navigator.share) {
+        navigator.share({
+          title: ev.eventName + ' • ' + (APP_STATE.config.appName || 'SatuAlbum'),
+          text: 'Yuk abadikan foto momen seru & ikuti voting foto terbaik di acara ' + ev.eventName + '!',
+          url: shareUrl
+        }).catch(function() {});
+      } else {
+        copyEventQrLink();
+      }
+    }
+
+    function downloadQrCodeImage() {
+      var ev = getActiveEventObject();
+      var currentUrl = getActiveEventInviteUrl();
+      var qrImgUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=' + encodeURIComponent(currentUrl);
+      triggerImageDownload(qrImgUrl, 'QR_' + (ev.eventName || 'Acara').replace(/[^a-zA-Z0-9]/g, '_') + '.png');
     }
 
     function closeQrModal() {
