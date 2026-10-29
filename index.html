@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SatuAlbum - Disposable Camera</title>
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    :root {
+      --bg-dark: #151b26;
+      --bg-darker: #0b0f19;
+      --neon-green: #00ffaa;
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+    
+    body {
+      background-color: var(--bg-dark);
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .glass-panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 1rem;
+    }
+    
+    .text-neon { color: var(--neon-green); }
+    .bg-neon { background-color: var(--neon-green); color: var(--bg-darker); }
+    .border-neon { border-color: var(--neon-green); }
+    
+    .btn-neon {
+      background-color: var(--neon-green);
+      color: var(--bg-darker);
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+    .btn-neon:hover {
+      box-shadow: 0 0 15px var(--neon-green);
+      transform: translateY(-2px);
+    }
+    .btn-neon:active { transform: translateY(0); }
+    
+    /* Camera UI Specifics */
+    #camera-container {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-color: black;
+      z-index: 10;
+      display: none;
+    }
+    #camera-stream {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .camera-controls {
+      position: absolute;
+      bottom: 30px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      z-index: 20;
+    }
+    
+    .shutter-btn {
+      width: 75px;
+      height: 75px;
+      border-radius: 50%;
+      background-color: rgba(255,255,255,0.3);
+      border: 4px solid white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .shutter-btn:active {
+      transform: scale(0.9);
+      background-color: white;
+    }
+    
+    #flash-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-color: white;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 30;
+      transition: opacity 0.1s ease-out;
+    }
+    
+    #custom-toast {
+      position: fixed;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      transition: top 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- CUSTOM TOAST -->
+  <div id="custom-toast" class="glass-panel px-6 py-3 shadow-lg shadow-[var(--neon-green)]/20 flex items-center gap-3">
+    <div id="toast-icon" class="text-neon text-xl">ℹ️</div>
+    <div id="toast-message" class="text-sm font-medium">Memuat sistem...</div>
+  </div>
+
+  <!-- VIEW 1: HOST DASHBOARD -->
+  <div id="host-view" class="min-h-screen flex flex-col items-center justify-center p-6">
+    <div class="glass-panel p-8 w-full max-w-md text-center">
+      <h1 class="text-3xl font-bold mb-2">Satu<span class="text-neon">Album</span></h1>
+      <p class="text-gray-400 text-sm mb-6">Disposable Camera untuk Event Kamu</p>
+      
+      <!-- Pengaturan API Web App Apps Script -->
+      <div class="mb-6 text-left bg-black/40 p-4 rounded-xl border border-gray-700">
+        <label class="block text-xs font-semibold text-neon mb-1">🔗 Web App API URL (Google Apps Script):</label>
+        <input type="text" id="api-url-input" placeholder="https://script.google.com/macros/s/.../exec"
+          class="w-full bg-black/60 border border-gray-600 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[var(--neon-green)] transition mb-1">
+        <p class="text-[10px] text-gray-400">Masukkan URL hasil Deploy Web App Google Apps Script kamu di sini.</p>
+      </div>
+
+      <form id="create-event-form" class="flex flex-col gap-4 text-left" onsubmit="event.preventDefault(); submitCreateEvent();">
+        <div>
+          <label class="block text-sm text-gray-300 mb-1">Nama Acara / Pasangan</label>
+          <input type="text" id="event-name" required placeholder="Cth: Budi & Susi Wedding"
+            class="w-full bg-black/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[var(--neon-green)] transition">
+        </div>
+        
+        <button type="submit" id="btn-create" class="btn-neon rounded-lg py-3 mt-2 w-full">
+          Buat Album & Generate Link
+        </button>
+      </form>
+      
+      <!-- Hasil Generate Link -->
+      <div id="result-container" class="mt-6 hidden flex-col gap-3">
+        <p class="text-neon font-bold text-sm">Berhasil Dibuat!</p>
+        <p class="text-xs text-gray-300">Bagikan link ini ke tamu acara kamu:</p>
+        <input type="text" id="result-url" readonly 
+          class="w-full bg-black/50 border border-[var(--neon-green)] rounded-lg px-3 py-2 text-white text-xs text-center">
+        <button onclick="copyLink()" class="glass-panel py-2 text-sm hover:bg-white/10 transition mt-1">
+          Salin Tautan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW 2: GUEST CAMERA -->
+  <div id="camera-container">
+    <video id="camera-stream" playsinline autoplay></video>
+    <div id="flash-overlay"></div>
+    
+    <!-- Input Kamera Native Cadangan -->
+    <input type="file" id="native-camera-input" accept="image/*" capture="environment" style="display: none;" onchange="handleNativePhoto(event)">
+
+    <!-- Panel Error Kamera -->
+    <div id="camera-error-panel" class="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-6 text-center z-30 hidden">
+      <div class="glass-panel p-6 max-w-sm w-full border border-red-500/50">
+        <div class="text-4xl mb-3">📸</div>
+        <h3 class="text-lg font-bold text-red-400 mb-2">Akses Kamera Terhalang</h3>
+        <p class="text-xs text-gray-300 mb-4 leading-relaxed">
+          Izin kamera belum aktif. Kamu tetap bisa mengambil foto menggunakan kamera HP di bawah ini:
+        </p>
+        
+        <button onclick="triggerNativeCamera()" class="btn-neon w-full py-3 rounded-lg text-sm mb-3">
+          📷 Ambil Foto via Kamera HP
+        </button>
+      </div>
+    </div>
+    
+    <!-- Canvas tersembunyi untuk proses retro -->
+    <canvas id="photo-canvas" style="display: none;"></canvas>
+    
+    <!-- Header Informasi -->
+    <div class="absolute top-6 w-full px-6 flex justify-between items-center z-20">
+      <div class="glass-panel px-4 py-2 text-xs font-bold text-white shadow-md">
+        LIVE REC <span class="text-red-500 animate-pulse">●</span>
+      </div>
+      <button onclick="switchCamera()" class="glass-panel p-2 rounded-full hover:bg-white/20 transition">
+        🔄
+      </button>
+    </div>
+    
+    <!-- Camera Controls (Shutter) -->
+    <div class="camera-controls pb-6">
+      <div class="shutter-btn" onclick="capturePhoto()">
+        <div class="w-12 h-12 bg-white rounded-full opacity-80 pointer-events-none"></div>
+      </div>
+    </div>
+    
+    <!-- Preview Foto Instant (Optimistic UI) -->
+    <img id="temp-preview" class="absolute bottom-6 right-6 w-16 h-20 object-cover rounded-lg border-2 border-white shadow-lg z-20" 
+      style="display: none; transform: rotate(5deg);">
+  </div>
+
+
+  <!-- CORE JAVASCRIPT -->
+  <script>
+    // URL Parameter & Local Storage Setup
+    var urlParams = new URLSearchParams(window.location.search);
+    var EVENT_PARAM = urlParams.get('event') || "";
+    
+    // Simpan/Muat API URL Apps Script dari Local Storage
+    var savedApiUrl = localStorage.getItem('SATU_ALBUM_API_URL') || "";
+    
+    // Element References
+    var videoElement = document.getElementById('camera-stream');
+    var canvasElement = document.getElementById('photo-canvas');
+    var currentStream = null;
+    var facingMode = 'environment';
+
+    function initApp() {
+      var apiUrlInput = document.getElementById('api-url-input');
+      if (apiUrlInput && savedApiUrl) {
+        apiUrlInput.value = savedApiUrl;
+      }
+
+      if (EVENT_PARAM === "") {
+        // Mode Host Dashboard
+        document.getElementById('host-view').style.display = 'flex';
+        document.getElementById('camera-container').style.display = 'none';
+      } else {
+        // Mode Tamu (Kamera)
+        document.getElementById('host-view').style.display = 'none';
+        document.getElementById('camera-container').style.display = 'block';
+        startCamera();
+      }
+    }
+
+    function getApiUrl() {
+      var inputVal = document.getElementById('api-url-input') ? document.getElementById('api-url-input').value.trim() : "";
+      var finalUrl = inputVal || savedApiUrl;
+      if (finalUrl) {
+        localStorage.setItem('SATU_ALBUM_API_URL', finalUrl);
+      }
+      return finalUrl;
+    }
+
+    function showToast(message, isError) {
+      var toast = document.getElementById('custom-toast');
+      var icon = document.getElementById('toast-icon');
+      var msgBox = document.getElementById('toast-message');
+      
+      icon.innerHTML = isError ? '⚠️' : '✅';
+      msgBox.innerHTML = message;
+      toast.style.borderColor = isError ? 'red' : 'var(--neon-green)';
+      icon.className = isError ? 'text-red-500 text-xl' : 'text-neon text-xl';
+      
+      toast.style.top = '20px';
+      setTimeout(function() {
+        toast.style.top = '-100px';
+      }, 3000);
+    }
+
+    // FUNGSI HOST: Membuat Event via REST API
+    function submitCreateEvent() {
+      var eventName = document.getElementById('event-name').value;
+      var btn = document.getElementById('btn-create');
+      var apiUrl = getApiUrl();
+      
+      if (!apiUrl) {
+        showToast("Masukkan URL Web App Apps Script terlebih dahulu!", true);
+        return;
+      }
+      
+      btn.innerHTML = 'Memproses...';
+      btn.disabled = true;
+      
+      fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'createEvent', eventName: eventName, dateOpen: 'Segera' })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(response) {
+        btn.innerHTML = 'Buat Album & Generate Link';
+        btn.disabled = false;
+        
+        if (response.status === 'success') {
+          var shareUrl = window.location.origin + window.location.pathname + '?event=' + response.eventId;
+          document.getElementById('result-container').style.display = 'flex';
+          document.getElementById('result-url').value = shareUrl;
+          showToast("Berhasil membuat event!", false);
+        } else {
+          showToast(response.message, true);
+        }
+      })
+      .catch(function(err) {
+        btn.innerHTML = 'Buat Album & Generate Link';
+        btn.disabled = false;
+        showToast("Gagal koneksi ke server: " + err.message, true);
+      });
+    }
+    
+    function copyLink() {
+      var copyText = document.getElementById('result-url');
+      copyText.select();
+      document.execCommand('copy');
+      showToast("Tautan disalin ke clipboard", false);
+    }
+
+    // FUNGSI GUEST: Akses Kamera Standalone
+    function startCamera() {
+      var errPanel = document.getElementById('camera-error-panel');
+      if (errPanel) errPanel.classList.add('hidden');
+
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        var constraints = {
+          video: { facingMode: { ideal: facingMode } }
+        };
+        
+        navigator.mediaDevices.getUserMedia(constraints)
+          .then(function(stream) {
+            currentStream = stream;
+            videoElement.srcObject = stream;
+          })
+          .catch(function(err) {
+            showToast("Akses kamera terhalang: " + err.message, true);
+            showCameraErrorPanel();
+          });
+      } else {
+        showToast("Browser tidak mendukung streaming kamera", true);
+        showCameraErrorPanel();
+      }
+    }
+
+    function showCameraErrorPanel() {
+      var errPanel = document.getElementById('camera-error-panel');
+      if (errPanel) errPanel.classList.remove('hidden');
+    }
+
+    function triggerNativeCamera() {
+      document.getElementById('native-camera-input').click();
+    }
+
+    function handleNativePhoto(event) {
+      var file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var img = new Image();
+        img.onload = function() {
+          processAndUploadImage(img);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    function switchCamera() {
+      facingMode = (facingMode === 'environment') ? 'user' : 'environment';
+      if (currentStream) {
+        currentStream.getTracks().forEach(function(track) { track.stop(); });
+      }
+      startCamera();
+    }
+    
+    function capturePhoto() {
+      if (!videoElement.videoWidth || !videoElement.videoHeight) {
+        showToast("Kamera tidak aktif. Gunakan kamera HP.", true);
+        showCameraErrorPanel();
+        return;
+      }
+      processAndUploadImage(videoElement);
+    }
+
+    // Process & Upload Image via REST API
+    function processAndUploadImage(sourceElement) {
+      var apiUrl = getApiUrl();
+      if (!apiUrl) {
+        showToast("URL API Server belum dikonfigurasi!", true);
+        return;
+      }
+
+      var flash = document.getElementById('flash-overlay');
+      if (flash) {
+        flash.style.opacity = '1';
+        setTimeout(function() { flash.style.opacity = '0'; }, 100);
+      }
+      
+      var context = canvasElement.getContext('2d');
+      var width = sourceElement.videoWidth || sourceElement.width || 1280;
+      var height = sourceElement.videoHeight || sourceElement.height || 720;
+
+      canvasElement.width = width;
+      canvasElement.height = height;
+      
+      // Filter Retro
+      context.filter = 'sepia(0.5) contrast(1.2) saturate(1.3) brightness(0.9)';
+      
+      if (sourceElement === videoElement && facingMode === 'user') {
+        context.translate(canvasElement.width, 0);
+        context.scale(-1, 1);
+      }
+      
+      context.drawImage(sourceElement, 0, 0, canvasElement.width, canvasElement.height);
+      
+      context.filter = 'none';
+      context.setTransform(1, 0, 0, 1, 0, 0);
+      
+      // Timestamp Kodak Retro
+      var d = new Date();
+      var timeStr = d.getFullYear() + " " + (d.getMonth() + 1) + " " + d.getDate();
+      
+      var fontSize = Math.floor(canvasElement.height * 0.04);
+      context.font = 'bold ' + fontSize + 'px Courier New, Courier, monospace';
+      context.fillStyle = '#ffa500';
+      context.textAlign = 'right';
+      context.shadowColor = 'black';
+      context.shadowBlur = 4;
+      
+      context.fillText(timeStr, canvasElement.width - fontSize, canvasElement.height - fontSize);
+      
+      var base64Image = canvasElement.toDataURL('image/jpeg', 0.7);
+      
+      // Optimistic UI Preview
+      var preview = document.getElementById('temp-preview');
+      preview.src = base64Image;
+      preview.style.display = 'block';
+      showToast("Menyimpan ke Drive...", false);
+      
+      // REST API Fetch Upload
+      fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'uploadPhoto', base64Data: base64Image, eventId: EVENT_PARAM })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(response) {
+        if(response.status === 'success') {
+          showToast("Foto berhasil tersimpan!", false);
+          setTimeout(function(){ preview.style.display = 'none'; }, 2000);
+        } else {
+          showToast("Error: " + response.message, true);
+          preview.style.display = 'none';
+        }
+      })
+      .catch(function(err) {
+        showToast("Gagal koneksi saat upload", true);
+        preview.style.display = 'none';
+      });
+    }
+
+    window.onload = initApp;
+  </script>
+</body>
+</html>
