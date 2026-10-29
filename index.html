@@ -3005,6 +3005,11 @@
       var tbody = document.getElementById('adminEventsTableBody');
       if (!tbody) return;
 
+      if (!APP_STATE.events || APP_STATE.events.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:20px;">Belum ada event terdaftar. Buat event baru di atas.</td></tr>';
+        return;
+      }
+
       var html = '';
       for (var i = 0; i < APP_STATE.events.length; i++) {
         var ev = APP_STATE.events[i];
