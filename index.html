@@ -210,12 +210,19 @@
 
   <!-- CORE JAVASCRIPT -->
   <script>
+    // OPSIONAL: Isi URL Web App Google Apps Script kamu di sini jika ingin hardcode default API URL
+    var DEFAULT_API_URL = "";
+
     // URL Parameter & Local Storage Setup
     var urlParams = new URLSearchParams(window.location.search);
     var EVENT_PARAM = urlParams.get('event') || "";
+    var API_PARAM = urlParams.get('api') || "";
     
-    // Simpan/Muat API URL Apps Script dari Local Storage
-    var savedApiUrl = localStorage.getItem('SATU_ALBUM_API_URL') || "";
+    // Auto-save API URL jika disertakan dalam URL parameter tamu
+    if (API_PARAM) {
+      localStorage.setItem('SATU_ALBUM_API_URL', API_PARAM);
+    }
+    var savedApiUrl = API_PARAM || localStorage.getItem('SATU_ALBUM_API_URL') || DEFAULT_API_URL;
     
     // Element References
     var videoElement = document.getElementById('camera-stream');
@@ -243,7 +250,7 @@
 
     function getApiUrl() {
       var inputVal = document.getElementById('api-url-input') ? document.getElementById('api-url-input').value.trim() : "";
-      var finalUrl = inputVal || savedApiUrl;
+      var finalUrl = inputVal || urlParams.get('api') || localStorage.getItem('SATU_ALBUM_API_URL') || DEFAULT_API_URL;
       if (finalUrl) {
         localStorage.setItem('SATU_ALBUM_API_URL', finalUrl);
       }
@@ -291,7 +298,8 @@
         btn.disabled = false;
         
         if (response.status === 'success') {
-          var shareUrl = window.location.origin + window.location.pathname + '?event=' + response.eventId;
+          // Otomatis menyisipkan parameter &api= pada tautan untuk tamu
+          var shareUrl = window.location.origin + window.location.pathname + '?event=' + response.eventId + '&api=' + encodeURIComponent(apiUrl);
           document.getElementById('result-container').style.display = 'flex';
           document.getElementById('result-url').value = shareUrl;
           showToast("Berhasil membuat event!", false);
