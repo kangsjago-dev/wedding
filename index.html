@@ -507,6 +507,18 @@
       box-shadow: 0 0 0 3px rgba(0, 255, 170, 0.14);
     }
 
+    /* Penyesuaian ikon kalender native untuk Dark Mode */
+    .form-input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      opacity: 0.7;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .form-input[type="date"]::-webkit-calendar-picker-indicator:hover {
+      opacity: 1;
+    }
+
     .mono-badge {
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.75rem;
@@ -1372,8 +1384,8 @@
                   <input type="text" id="evtFormName" class="form-input" placeholder="Contoh: The Wedding of Karyn & Dimas" required />
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Tanggal Acara (DD/MM/YYYY)</label>
-                  <input type="text" id="evtFormDate" class="form-input" placeholder="29/10/2026" required />
+                  <label class="form-label">Tanggal Acara</label>
+                  <input type="date" id="evtFormDate" class="form-input" required />
                 </div>
                 <div class="form-group">
                   <label class="form-label">Target Link / URL Folder Google Drive Acara Ini</label>
@@ -2882,11 +2894,19 @@
         if (ev.eventId === eventId) {
           document.getElementById('evtFormId').value = ev.eventId;
           document.getElementById('evtFormName').value = ev.eventName;
-          document.getElementById('evtFormDate').value = ev.eventDate;
+          
+          // Konversi format DD/MM/YYYY (dari DB) menjadi YYYY-MM-DD (untuk input type="date")
+          var rawDate = ev.eventDate || '';
+          if (rawDate.indexOf('/') > -1) {
+            var dParts = rawDate.split('/');
+            if (dParts.length === 3) rawDate = dParts[2] + '-' + dParts[1] + '-' + dParts[0];
+          }
+          document.getElementById('evtFormDate').value = rawDate;
+
           document.getElementById('evtFormDriveUrl').value = ev.targetDriveFolderUrl || '';
           document.getElementById('evtFormStatus').value = ev.eventStatus || 'Active';
           document.getElementById('previewEventDriveId').textContent = ev.targetDriveFolderId || extractDriveFolderIdClient(ev.targetDriveFolderUrl || '');
-          showToast('Mengedit Event ' + ev.eventId);
+          showToast('Mengedit Event ' + ev.eventName);
           break;
         }
       }
@@ -2903,7 +2923,15 @@
     function submitEventForm() {
       var eventId = String(document.getElementById('evtFormId').value || '').trim();
       var eventName = String(document.getElementById('evtFormName').value || '').trim();
-      var eventDate = String(document.getElementById('evtFormDate').value || '').trim();
+      var rawDate = String(document.getElementById('evtFormDate').value || '').trim();
+      
+      // Konversi kembali dari YYYY-MM-DD (dari input date) menjadi DD/MM/YYYY (untuk ke Sheet DB)
+      var eventDate = rawDate;
+      if (rawDate.indexOf('-') > -1) {
+        var dParts = rawDate.split('-');
+        if (dParts.length === 3) eventDate = dParts[2] + '/' + dParts[1] + '/' + dParts[0];
+      }
+
       var targetDriveUrl = String(document.getElementById('evtFormDriveUrl').value || '').trim();
       var eventStatus = String(document.getElementById('evtFormStatus').value || 'Active').trim();
 
