@@ -473,7 +473,7 @@
     }
     .event-scope-summary-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 10px;
       margin-bottom: 12px;
     }
@@ -485,11 +485,17 @@
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex; align-items: center; gap: 10px;
+      position: relative;
     }
     .event-scope-card:hover {
       border-color: var(--accent-gold);
       background: rgba(245, 197, 66, 0.06);
       transform: translateY(-1px);
+    }
+    .event-scope-card.active-scope-card {
+      border-color: var(--accent-neon);
+      background: linear-gradient(135deg, rgba(0, 255, 170, 0.14) 0%, rgba(245, 197, 66, 0.08) 100%);
+      box-shadow: 0 4px 15px rgba(0, 255, 170, 0.15);
     }
     .event-scope-card-icon {
       width: 36px; height: 36px; border-radius: 10px;
@@ -507,8 +513,39 @@
       background: rgba(245, 197, 66, 0.14);
       border: 1px solid rgba(245, 197, 66, 0.4);
       color: var(--accent-gold);
-      padding: 3px 10px; border-radius: 20px;
+      padding: 4px 11px; border-radius: 20px;
       font-size: 0.72rem; font-weight: 700;
+    }
+    /* Navigasi Tab Menu 1-5 Admin yang Menyatu dengan Panel */
+    .admin-main-tabs-bar {
+      display: flex; gap: 8px; overflow-x: auto;
+      padding: 10px 12px; margin-bottom: 14px;
+      background: rgba(15, 22, 36, 0.95);
+      border: 1px solid rgba(0, 255, 170, 0.28);
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+      scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .admin-main-tabs-bar::-webkit-scrollbar { display: none; }
+    .admin-main-tabs-bar .admin-tab-btn {
+      flex: 1; min-width: max-content;
+      padding: 9px 14px; border-radius: 11px;
+      font-size: 0.78rem; font-weight: 700;
+      white-space: nowrap; transition: all 0.22s ease;
+    }
+    .admin-main-tabs-bar .admin-tab-btn.active {
+      background: var(--accent-neon);
+      color: #0b0f19;
+      border-color: var(--accent-neon);
+      box-shadow: 0 4px 14px rgba(0, 255, 170, 0.32);
+    }
+    /* Banner Konteks Event pada Setiap Menu 1-5 */
+    .admin-section-context-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 10px;
+      background: linear-gradient(135deg, rgba(0, 255, 170, 0.1) 0%, rgba(245, 197, 66, 0.08) 100%);
+      border: 1px solid rgba(0, 255, 170, 0.3);
+      border-radius: 14px; padding: 12px 16px; margin-bottom: 14px;
     }
 
     /* Mobile Responsive Overrides - Compact 1 Page Vertical Layout */
@@ -543,6 +580,10 @@
       .hero-btn-group .btn { width: 100%; justify-content: center; }
       .event-scope-header { flex-direction: column; align-items: stretch; }
       .event-scope-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
+      .event-scope-summary-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .admin-main-tabs-bar { padding: 8px; gap: 6px; }
+      .admin-main-tabs-bar .admin-tab-btn { padding: 8px 11px; font-size: 0.73rem; }
+      .admin-section-context-bar { padding: 10px 12px; flex-direction: column; align-items: stretch; }
       .bottom-nav { width: calc(100% - 12px); padding: 5px 6px; gap: 4px; bottom: 8px; }
       .bottom-nav-btn { min-width: 58px; padding: 5px 4px; font-size: 0.6rem; }
       .bottom-nav-btn .nav-icon-wrap { width: 28px; height: 24px; margin-bottom: 2px; }
@@ -972,27 +1013,20 @@
 
       <!-- Kontainer Dashboard Setelah Login -->
       <div id="adminLoggedInContainer" style="display:none;">
-        <!-- Bar Navigasi Sub-Menu Admin (Dikelompokkan Sesuai Fungsi Kebutuhan Admin) -->
-        <div class="glass-card" style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-          <div>
-            <div style="font-size:0.72rem; color:var(--text-muted);" id="adminIdleStatusLabel">Login Aktif (Idle Timeout: 60 Menit):</div>
-            <div style="font-weight:800; color:var(--accent-neon); font-size:1rem;" id="adminUserRoleBadge">-</div>
+        <!-- Bar Status Sesi Login Admin -->
+        <div class="glass-card" style="margin-bottom:14px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:36px; height:36px; border-radius:10px; background:rgba(0,255,170,0.12); border:1px solid var(--accent-neon); display:flex; align-items:center; justify-content:center; color:var(--accent-neon);">
+              <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <div>
+              <div style="font-size:0.7rem; color:var(--text-muted);" id="adminIdleStatusLabel">Login Aktif (Idle Timeout: 60 Menit):</div>
+              <div style="font-weight:800; color:var(--accent-neon); font-size:0.95rem;" id="adminUserRoleBadge">-</div>
+            </div>
           </div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button type="button" id="adminTabBtn-driveEvents" class="btn btn-secondary btn-sm admin-tab-btn active" onclick="switchAdminSubTab('driveEvents', this)">
-              <i class="fa-solid fa-calendar-check"></i> 1. Event & Drive Acara
-            </button>
-            <button type="button" id="adminTabBtn-quotaDevices" class="btn btn-secondary btn-sm admin-tab-btn" onclick="switchAdminSubTab('quotaDevices', this)">
-              <i class="fa-solid fa-mobile-screen-button"></i> 2. Kuota & Device
-            </button>
-            <button type="button" id="adminTabBtn-config" class="btn btn-secondary btn-sm admin-tab-btn" onclick="switchAdminSubTab('config', this)">
-              <i class="fa-solid fa-crop-simple"></i> 3. Bingkai & Branding
-            </button>
-            <button type="button" id="adminTabBtn-mod" class="btn btn-secondary btn-sm admin-tab-btn" onclick="switchAdminSubTab('mod', this)">
-              <i class="fa-solid fa-list-check"></i> 4. Moderasi & Galeri
-            </button>
-            <button type="button" id="adminTabBtn-users" class="btn btn-secondary btn-sm admin-tab-btn" onclick="switchAdminSubTab('users', this)">
-              <i class="fa-solid fa-users-gear"></i> 5. User & Database
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button type="button" class="btn btn-gold btn-sm" onclick="saveCurrentEventAllSettingsManual()" title="Simpan & Sinkronkan Pengaturan Event Aktif">
+              <i class="fa-solid fa-floppy-disk"></i> Simpan Settingan Event
             </button>
             <button type="button" class="btn btn-danger btn-sm" onclick="adminLogout()">
               <i class="fa-solid fa-power-off"></i> Keluar
@@ -1000,7 +1034,7 @@
           </div>
         </div>
 
-        <!-- Panel Kontrol Mode Konfigurasi Spesifik Per-Event Aktif -->
+        <!-- Panel Utama Mode Konfigurasi Spesifik Per-Event (Terhubung Langsung ke Menu 1 s/d 5) -->
         <div class="event-scope-panel">
           <div class="event-scope-header">
             <div style="display:flex; align-items:flex-start; gap:12px; min-width:0; flex:1;">
@@ -1009,15 +1043,15 @@
               </div>
               <div style="min-width:0; flex:1;">
                 <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:3px;">
-                  <span style="font-size:0.86rem; color:#ffffff; font-weight:800; letter-spacing:0.2px;">
+                  <span style="font-size:0.88rem; color:#ffffff; font-weight:800; letter-spacing:0.2px;">
                     Mode Konfigurasi Spesifik Per-Event
                   </span>
                   <span class="brand-badge" style="background:rgba(245,197,66,0.16); color:var(--accent-gold); border-color:var(--accent-gold);">
                     TERISOLASI PER ACARA
                   </span>
                 </div>
-                <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.4;">
-                  Klik salah satu event di bawah untuk mengatur <strong>Bingkai Foto</strong>, <strong>Kategori Momen</strong>, <strong>Kuota & Device</strong>, serta <strong>Moderasi Galeri</strong> secara terpisah untuk masing-masing acara:
+                <div style="font-size:0.74rem; color:var(--text-muted); line-height:1.4;">
+                  Pilih acara di bawah ini terlebih dahulu. Seluruh pengaturan pada menu <strong>1. Event & Drive</strong>, <strong>2. Kuota & Device</strong>, <strong>3. Bingkai & Branding</strong>, hingga <strong>4. Moderasi & Galeri</strong> otomatis diterapkan khusus untuk acara yang dipilih:
                 </div>
               </div>
             </div>
@@ -1031,13 +1065,13 @@
           <!-- Tombol Kapsul Pilihan Cepat Antar-Event -->
           <div id="adminEventQuickPills" class="event-Switcher-pills"></div>
 
-          <!-- Ringkasan Status Konfigurasi Event yang Sedang Dipilih -->
+          <!-- Ringkasan Status Konfigurasi Event (Kartu Pintasan Menu 1 s/d 5) -->
           <div id="adminEventScopeSummaryGrid" class="event-scope-summary-grid"></div>
 
-          <!-- Toolbar Aksi Cepat (Salin Konfigurasi Antar-Event, Edit Event & Simpan) -->
+          <!-- Toolbar Aksi Cepat (Salin Konfigurasi Antar-Event, Buat/Edit Event & Simpan) -->
           <div class="event-scope-toolbar">
             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; flex:1; min-width:220px;">
-              <span style="font-size:0.72rem; color:var(--text-muted); font-weight:600;"><i class="fa-solid fa-copy" style="color:var(--accent-gold);"></i> Salin Pengaturan Dari:</span>
+              <span style="font-size:0.72rem; color:var(--text-muted); font-weight:600;"><i class="fa-solid fa-copy" style="color:var(--accent-gold);"></i> Salin Settingan Dari:</span>
               <select id="adminCopyFromEventSelect" class="form-input" style="padding:5px 10px; font-size:0.74rem; width:auto; max-width:210px; background:#0b0f19;">
               </select>
               <button type="button" class="btn btn-secondary btn-sm" style="padding:5px 10px; font-size:0.72rem;" onclick="copyEventSettingsFromOtherEvent()">
@@ -1045,20 +1079,57 @@
               </button>
             </div>
             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-              <button type="button" class="btn btn-secondary btn-sm" onclick="openEventModal(APP_STATE.activeEventId)" title="Edit Nama, Tanggal & Folder Drive Event Ini">
-                <i class="fa-solid fa-pen-to-square" style="color:var(--accent-neon);"></i> Edit Event
+              <button type="button" class="btn btn-neon btn-sm" onclick="openEventModal()" title="Tambah Acara Baru">
+                <i class="fa-solid fa-plus"></i> Buat Event Baru
               </button>
-              <button type="button" class="btn btn-gold btn-sm" onclick="saveCurrentEventAllSettingsManual()" title="Simpan & Sinkronkan Seluruh Konfigurasi Event Ini">
-                <i class="fa-solid fa-floppy-disk"></i> Simpan Konfigurasi Event
+              <button type="button" class="btn btn-secondary btn-sm" onclick="openEventModal(APP_STATE.activeEventId)" title="Edit Nama, Tanggal & Folder Drive Event Ini">
+                <i class="fa-solid fa-pen-to-square" style="color:var(--accent-neon);"></i> Edit Event Aktif
               </button>
             </div>
           </div>
+        </div>
+
+        <!-- Bar Navigasi Utama Menu 1 s/d 5 (Berada Tepat di Atas Panel Konten) -->
+        <div class="admin-main-tabs-bar">
+          <button type="button" id="adminTabBtn-driveEvents" class="btn btn-secondary btn-sm admin-tab-btn active" onclick="switchAdminSubTab('driveEvents', this)">
+            <i class="fa-solid fa-calendar-check"></i> 1. Event & Drive Acara
+          </button>
+          <button type="button" id="adminTabBtn-quotaDevices" class="btn btn-secondary btn-sm admin-tab-btn" onclick="switchAdminSubTab('quotaDevices', this)">
+            <i class="fa-solid fa-mobile-screen-button"></i> 2. Kuota & Device
+          </button>
+          <button type="button" id="adminTabBtn-config" class="btn btn-secondary btn-sm admin-tab-btn" onclick="switchAdminSubTab('config', this)">
+            <i class="fa-solid fa-crop-simple"></i> 3. Bingkai & Branding
+          </button>
+          <button type="button" id="adminTabBtn-mod" class="btn btn-secondary btn-sm admin-tab-btn" onclick="switchAdminSubTab('mod', this)">
+            <i class="fa-solid fa-list-check"></i> 4. Moderasi & Galeri
+          </button>
+          <button type="button" id="adminTabBtn-users" class="btn btn-secondary btn-sm admin-tab-btn" onclick="switchAdminSubTab('users', this)">
+            <i class="fa-solid fa-users-gear"></i> 5. User & Database
+          </button>
         </div>
 
         <!-- =============================================================== -->
         <!-- KELOMPOK 1: MANAJEMEN EVENT, GOOGLE DRIVE PER-EVENT & KATEGORI  -->
         <!-- =============================================================== -->
         <div id="adminSub-driveEvents" class="admin-panel-box">
+          <!-- Banner Konteks Menu 1 -->
+          <div class="admin-section-context-bar">
+            <div>
+              <div style="font-weight:800; font-size:0.92rem; color:var(--accent-neon);">
+                <i class="fa-solid fa-calendar-check"></i> Menu 1: Pengaturan Event, Google Drive & Kategori Acara
+              </div>
+              <div style="font-size:0.73rem; color:var(--text-muted);">
+                Mengatur daftar acara, folder Google Drive, serta <strong>Kategori Momen & Kategori Voting</strong> khusus untuk event aktif.
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span class="event-target-pill"><i class="fa-solid fa-bolt"></i> Event Aktif: <span class="active-event-title" style="font-size:0.74rem; color:#fff; margin:0;">-</span></span>
+              <button type="button" class="btn btn-gold btn-sm" onclick="saveCurrentEventAllSettingsManual()">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Menu 1
+              </button>
+            </div>
+          </div>
+
           <!-- Card 1A: Daftar Multi-Event & Drive Per-Event -->
           <div class="glass-card" style="margin-bottom:16px; border-color:rgba(0,255,170,0.38);">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
@@ -1145,6 +1216,24 @@
         <!-- KELOMPOK 2: KUOTA UPLOAD, LIMITASI USER & MANAJEMEN DEVICE      -->
         <!-- =============================================================== -->
         <div id="adminSub-quotaDevices" class="admin-panel-box" style="display:none;">
+          <!-- Banner Konteks Menu 2 -->
+          <div class="admin-section-context-bar">
+            <div>
+              <div style="font-weight:800; font-size:0.92rem; color:var(--accent-gold);">
+                <i class="fa-solid fa-mobile-screen-button"></i> Menu 2: Pengaturan Kuota Live Photo & Manajemen Device Per-Event
+              </div>
+              <div style="font-size:0.73rem; color:var(--text-muted);">
+                Batas partisipan Live Photo, batas upload per HP, dan bonus/reset kuota device di bawah ini berlaku khusus untuk event aktif.
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span class="event-target-pill"><i class="fa-solid fa-calendar-check"></i> Event Aktif: <span class="active-event-title" style="font-size:0.74rem; color:#fff; margin:0;">-</span></span>
+              <button type="button" class="btn btn-gold btn-sm" onclick="saveUploadLimitsConfigForm()">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Menu 2
+              </button>
+            </div>
+          </div>
+
           <!-- Card 2A: Limitasi User Live Photo, Limitasi Upload per User & Waktu Idle Admin -->
           <div class="glass-card" style="margin-bottom:16px; border-color:rgba(245,197,66,0.35);">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
@@ -1293,6 +1382,24 @@
         <!-- KELOMPOK 3: STUDIO CUSTOM BINGKAI FOTO & BRANDING APLIKASI WO   -->
         <!-- =============================================================== -->
         <div id="adminSub-config" class="admin-panel-box" style="display:none;">
+          <!-- Banner Konteks Menu 3 -->
+          <div class="admin-section-context-bar">
+            <div>
+              <div style="font-weight:800; font-size:0.92rem; color:var(--accent-gold);">
+                <i class="fa-solid fa-crop-simple"></i> Menu 3: Studio Kustomisasi Bingkai Per-Event & Branding WO
+              </div>
+              <div style="font-size:0.73rem; color:var(--text-muted);">
+                Desain bingkai, warna, tulisan pasangan, dan PNG transparan diterapkan khusus pada event aktif.
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span class="event-target-pill"><i class="fa-solid fa-wand-magic-sparkles"></i> Event Aktif: <span class="active-event-title" style="font-size:0.74rem; color:#fff; margin:0;">-</span></span>
+              <button type="button" class="btn btn-gold btn-sm" onclick="saveFrameConfigForm()">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Bingkai Event
+              </button>
+            </div>
+          </div>
+
           <!-- STUDIO KUSTOMISASI BINGKAI FOTO DILETAKKAN PALING ATAS AGAR MUDAH DIGUNAKAN -->
           <div class="glass-card" style="border-color:rgba(245,197,66,0.4); margin-bottom:16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
@@ -1485,6 +1592,24 @@
         <!-- KELOMPOK 4: MODERASI FOTO GALERI, GELAR JURI & BUKU TAMU        -->
         <!-- =============================================================== -->
         <div id="adminSub-mod" class="admin-panel-box" style="display:none;">
+          <!-- Banner Konteks Menu 4 -->
+          <div class="admin-section-context-bar">
+            <div>
+              <div style="font-weight:800; font-size:0.92rem; color:var(--accent-neon);">
+                <i class="fa-solid fa-list-check"></i> Menu 4: Moderasi Galeri Foto, Gelar Juri & Buku Tamu Per-Event
+              </div>
+              <div style="font-size:0.73rem; color:var(--text-muted);">
+                Menampilkan dan memoderasi foto serta ucapan buku tamu khusus untuk event yang sedang dipilih.
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span class="event-target-pill"><i class="fa-solid fa-images"></i> Event Aktif: <span class="active-event-title" style="font-size:0.74rem; color:#fff; margin:0;">-</span></span>
+              <button type="button" class="btn btn-neon btn-sm" onclick="reloadGalleryFeed(true); reloadGuestbookFeed(true);">
+                <i class="fa-solid fa-arrows-rotate"></i> Refresh Data Event
+              </button>
+            </div>
+          </div>
+
           <div class="glass-card" style="margin-bottom:16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
               <div style="font-weight:700; color:var(--accent-neon); font-size:0.95rem;">
@@ -1533,6 +1658,23 @@
         <!-- KELOMPOK 5: MANAJEMEN USER & KONEKSI DATABASE                   -->
         <!-- =============================================================== -->
         <div id="adminSub-users" class="admin-panel-box" style="display:none;">
+          <!-- Banner Konteks Menu 5 -->
+          <div class="admin-section-context-bar">
+            <div>
+              <div style="font-weight:800; font-size:0.92rem; color:var(--accent-neon);">
+                <i class="fa-solid fa-users-gear"></i> Menu 5: Manajemen Akun User Crew & Koneksi Database Global
+              </div>
+              <div style="font-size:0.73rem; color:var(--text-muted);">
+                Mengelola hak akses login (Super Admin, Admin Event, Operator) dan sinkronisasi penuh ke Google Sheets.
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <button type="button" class="btn btn-gold btn-sm" onclick="syncVotesWithDatabase(true)">
+                <i class="fa-solid fa-database"></i> Sync Penuh Database
+              </button>
+            </div>
+          </div>
+
           <div class="glass-card" style="margin-bottom:16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
               <div>
@@ -2011,7 +2153,7 @@
     }
 
     // =====================================================================
-    // ISOLASI KONFIGURASI SPESIFIK PER-EVENT (BINGKAI, KUOTA, DEVICE & KATEGORI)
+    // ISOLASI KONFIGURASI SPESIFIK PER-EVENT (TANPA REKURSI / BEBAS FREEZE)
     // =====================================================================
     function getDefaultEventScopedSettings(eventId) {
       var isSecondMock = (eventId === 'EVT-0002');
@@ -2053,23 +2195,44 @@
       };
     }
 
+    function buildLightweightFrameConfigForStorage(rawFrameCfg, evId) {
+      var fCfg = rawFrameCfg || {};
+      var overlayUrl = String(fCfg.customOverlayUrl || '');
+      if (overlayUrl.indexOf('data:image') === 0 && overlayUrl.length > 25000) {
+        try {
+          localStorage.setItem('SATUALBUM_CUSTOM_FRAME_PNG_' + evId, overlayUrl);
+        } catch (e) {}
+        overlayUrl = '';
+      }
+      return {
+        style: fCfg.style || 'royal_wedding_floral',
+        textMode: fCfg.textMode || 'default',
+        primaryColor: fCfg.primaryColor || '#f5c542',
+        accentColor: fCfg.accentColor || '#00ffaa',
+        titleColor: fCfg.titleColor || '#f5c542',
+        customHeaderTitle: fCfg.customHeaderTitle || '',
+        customGreetingText: (fCfg.customGreetingText !== undefined) ? fCfg.customGreetingText : 'Terima Kasih Atas Kehadiran & Doa Restu Anda',
+        customFooterText: (fCfg.customFooterText !== undefined) ? fCfg.customFooterText : 'Runway Wedding Organizer',
+        customOverlayUrl: overlayUrl,
+        _updatedAt: fCfg._updatedAt || Date.now()
+      };
+    }
+
     function saveActiveEventScopedSettings(markModified) {
       var evId = APP_STATE.activeEventId || 'EVT-0001';
       if (!APP_STATE.eventSettingsMap) APP_STATE.eventSettingsMap = {};
-      
-      var cur = APP_STATE.eventSettingsMap[evId];
-      if (!cur) {
-        cur = getDefaultEventScopedSettings(evId);
-      }
+
+      var cur = APP_STATE.eventSettingsMap[evId] || getDefaultEventScopedSettings(evId);
       var nowTs = Date.now();
 
-      var fCfgCopy = JSON.parse(JSON.stringify((APP_STATE.config && APP_STATE.config.frameConfig) || cur.frameConfig));
-      if (fCfgCopy.customOverlayUrl && fCfgCopy.customOverlayUrl.length > 38000) {
-        try {
-          localStorage.setItem('SATUALBUM_CUSTOM_FRAME_PNG_' + evId, fCfgCopy.customOverlayUrl);
-        } catch (e) {}
-        fCfgCopy.customOverlayUrl = '';
-      }
+      var fCfgCopy = buildLightweightFrameConfigForStorage((APP_STATE.config && APP_STATE.config.frameConfig) || cur.frameConfig, evId);
+      var limSource = (APP_STATE.config && APP_STATE.config.uploadLimits) || cur.uploadLimits || { maxLiveUsers: 0, maxUploadsPerUser: 10, idleTimeoutMinutes: 60 };
+      var limCopy = {
+        maxLiveUsers: parseInt(limSource.maxLiveUsers, 10) || 0,
+        maxUploadsPerUser: parseInt(limSource.maxUploadsPerUser, 10) || 0,
+        idleTimeoutMinutes: (limSource.idleTimeoutMinutes !== undefined) ? (parseInt(limSource.idleTimeoutMinutes, 10) || 0) : 60,
+        _updatedAt: markModified ? nowTs : (limSource._updatedAt || nowTs)
+      };
 
       if (markModified) {
         cur._updatedAt = nowTs;
@@ -2077,18 +2240,16 @@
       }
 
       cur.frameConfig = fCfgCopy;
-      cur.uploadLimits = JSON.parse(JSON.stringify((APP_STATE.config && APP_STATE.config.uploadLimits) || cur.uploadLimits));
-      if (markModified) cur.uploadLimits._updatedAt = nowTs;
-      cur.photoCategories = JSON.parse(JSON.stringify(getNormalizedPhotoCategories()));
-      cur.voteCategories = JSON.parse(JSON.stringify(getNormalizedVoteCategories()));
-      cur.deviceQuotaMap = JSON.parse(JSON.stringify(APP_STATE.deviceQuotaMap || {}));
-      cur.deviceLogs = JSON.parse(JSON.stringify((APP_STATE.deviceLogs || []).slice(0, 35)));
+      cur.uploadLimits = limCopy;
+      cur.photoCategories = getNormalizedPhotoCategories();
+      cur.voteCategories = getNormalizedVoteCategories();
+      cur.deviceQuotaMap = APP_STATE.deviceQuotaMap || {};
+      cur.deviceLogs = (APP_STATE.deviceLogs || []).slice(0, 20);
 
       APP_STATE.eventSettingsMap[evId] = cur;
       try {
         localStorage.setItem('SATUALBUM_EVENT_SCOPED_' + evId, JSON.stringify(cur));
       } catch (ignoreStorageErr) {}
-      saveExtendedConfigCache(false);
     }
 
     function loadActiveEventScopedSettings(eventId) {
@@ -2099,7 +2260,12 @@
         var rawLocalScoped = localStorage.getItem('SATUALBUM_EVENT_SCOPED_' + evId);
         if (rawLocalScoped) {
           var parsedLocalScoped = JSON.parse(rawLocalScoped);
-          APP_STATE.eventSettingsMap[evId] = parsedLocalScoped;
+          if (parsedLocalScoped && typeof parsedLocalScoped === 'object') {
+            var existingMem = APP_STATE.eventSettingsMap[evId];
+            if (!existingMem || (parsedLocalScoped._updatedAt || 0) >= (existingMem._updatedAt || 0)) {
+              APP_STATE.eventSettingsMap[evId] = parsedLocalScoped;
+            }
+          }
         }
       } catch (e) {}
 
@@ -2124,20 +2290,25 @@
       APP_STATE.deviceLogs = JSON.parse(JSON.stringify(scoped.deviceLogs || []));
     }
 
-    // CACHE SINKRONISASI PENGATURAN LOKAL & DATABASE
+    // CACHE SINKRONISASI PENGATURAN LOKAL & DATABASE (AMAN TANPA LOOP REKURSIF)
     function saveExtendedConfigCache(markModified) {
       try {
         saveActiveEventScopedSettings(Boolean(markModified));
+        var evId = APP_STATE.activeEventId || 'EVT-0001';
+        var lightFrame = buildLightweightFrameConfigForStorage(APP_STATE.config.frameConfig, evId);
+        var safeLogo = String(APP_STATE.config.woLogoUrl || '');
+        if (safeLogo.length > 25000) safeLogo = '';
+
         var cacheObj = {
           uploadLimits: APP_STATE.config.uploadLimits,
-          frameConfig: APP_STATE.config.frameConfig,
+          frameConfig: lightFrame,
           voteCategories: APP_STATE.config.voteCategories,
           photoCategories: APP_STATE.config.photoCategories,
           deviceQuotaMap: APP_STATE.deviceQuotaMap,
-          deviceLogs: APP_STATE.deviceLogs,
+          deviceLogs: (APP_STATE.deviceLogs || []).slice(0, 20),
           eventDriveConfigMap: APP_STATE.eventDriveConfigMap,
           eventSettingsMap: APP_STATE.eventSettingsMap,
-          woLogoUrl: APP_STATE.config.woLogoUrl
+          woLogoUrl: safeLogo
         };
         localStorage.setItem('SATUALBUM_EXT_CONFIG_CACHE', JSON.stringify(cacheObj));
       } catch (e) {}
@@ -2276,10 +2447,29 @@
     }
 
     function packCustomFooterWithDbSync(cleanFooterText) {
-      saveActiveEventScopedSettings();
+      saveActiveEventScopedSettings(false);
       var baseFooter = String(cleanFooterText || '').split('||DBSYNC:')[0].trim();
       if (!baseFooter) baseFooter = 'Official Digital Album Platform • Runway Wedding Organizer';
       var fCfg = (APP_STATE.config && APP_STATE.config.frameConfig) || {};
+
+      // Buat salinan ringkas eventSettingsMap agar ukuran karakter selalu aman di bawah batas sel Google Sheets
+      var compactEsm = {};
+      if (APP_STATE.eventSettingsMap) {
+        for (var evKey in APP_STATE.eventSettingsMap) {
+          if (APP_STATE.eventSettingsMap.hasOwnProperty(evKey) && APP_STATE.eventSettingsMap[evKey]) {
+            var srcEs = APP_STATE.eventSettingsMap[evKey];
+            compactEsm[evKey] = {
+              _updatedAt: srcEs._updatedAt || Date.now(),
+              frameConfig: buildLightweightFrameConfigForStorage(srcEs.frameConfig, evKey),
+              uploadLimits: srcEs.uploadLimits || { maxLiveUsers: 0, maxUploadsPerUser: 10, idleTimeoutMinutes: 60 },
+              photoCategories: srcEs.photoCategories || [],
+              voteCategories: srcEs.voteCategories || [],
+              deviceQuotaMap: srcEs.deviceQuotaMap || {}
+            };
+          }
+        }
+      }
+
       var syncObj = {
         vl: buildCompactVotesLedgerForDb(),
         al: APP_STATE.awardsLedger || {},
@@ -2297,9 +2487,9 @@
         vc: getNormalizedVoteCategories(),
         pc: getNormalizedPhotoCategories(),
         dq: APP_STATE.deviceQuotaMap || {},
-        dl: (APP_STATE.deviceLogs || []).slice(0, 25),
+        dl: (APP_STATE.deviceLogs || []).slice(0, 15),
         edm: APP_STATE.eventDriveConfigMap || {},
-        esm: APP_STATE.eventSettingsMap || {}
+        esm: compactEsm
       };
       return baseFooter + ' ||DBSYNC:' + JSON.stringify(syncObj);
     }
@@ -3352,37 +3542,51 @@
         var lim = (APP_STATE.config && APP_STATE.config.uploadLimits) || {};
         var photoCats = getNormalizedPhotoCategories();
         var voteCats = getNormalizedVoteCategories();
+        var activeSubTab = localStorage.getItem('SATUALBUM_LAST_ADMIN_SUBTAB') || 'driveEvents';
 
         var frameLabel = getFrameStyleReadableLabel(fCfg.style);
         var textModeLabel = fCfg.textMode === 'none' ? 'Polos Tanpa Teks' : (fCfg.textMode === 'custom' ? 'Teks Kustom' : 'Harmoni Otomatis');
         var maxU = parseInt(lim.maxLiveUsers, 10) || 0;
         var maxP = parseInt(lim.maxUploadsPerUser, 10) || 0;
         var quotaLabel = (maxU === 0 ? 'User: Unl' : ('Max ' + maxU + ' User')) + ' • ' + (maxP === 0 ? 'Foto: Unl' : (maxP + ' Foto/HP'));
+        var totalEventPhotos = (APP_STATE.allEventPhotos || []).length;
+        var totalGuestbook = (APP_STATE.guestbook || []).length;
 
         var cardsHtml = '';
-        cardsHtml += '<div class="event-scope-card" onclick="switchAdminSubTab(\'config\', document.getElementById(\'adminTabBtn-config\'))" title="Klik untuk mengatur Bingkai Foto event ini">';
+        // Kartu 1 -> Menu 1. Event & Drive Acara
+        cardsHtml += '<div class="event-scope-card' + (activeSubTab === 'driveEvents' ? ' active-scope-card' : '') + '" onclick="switchAdminSubTab(\'driveEvents\', document.getElementById(\'adminTabBtn-driveEvents\'))" title="Buka Menu 1: Event, Drive, Kategori Momen & Voting">';
+        cardsHtml += '<div class="event-scope-card-icon"><i class="fa-solid fa-calendar-check"></i></div>';
+        cardsHtml += '<div style="min-width:0;"><div style="font-size:0.66rem; color:var(--accent-neon); font-weight:700;">1. Event & Drive Acara</div>';
+        cardsHtml += '<div style="font-size:0.78rem; font-weight:700; color:#fff;">' + photoCats.length + ' Momen • ' + voteCats.length + ' Vote</div>';
+        cardsHtml += '<div style="font-size:0.65rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Drive & Kategori Event</div></div></div>';
+
+        // Kartu 2 -> Menu 2. Kuota & Device
+        cardsHtml += '<div class="event-scope-card' + (activeSubTab === 'quotaDevices' ? ' active-scope-card' : '') + '" onclick="switchAdminSubTab(\'quotaDevices\', document.getElementById(\'adminTabBtn-quotaDevices\'))" title="Buka Menu 2: Kuota Upload & Manajemen Device">';
+        cardsHtml += '<div class="event-scope-card-icon" style="color:var(--accent-gold); background:rgba(245,197,66,0.12);"><i class="fa-solid fa-mobile-screen-button"></i></div>';
+        cardsHtml += '<div style="min-width:0;"><div style="font-size:0.66rem; color:var(--accent-gold); font-weight:700;">2. Kuota & Device</div>';
+        cardsHtml += '<div style="font-size:0.78rem; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(quotaLabel) + '</div>';
+        cardsHtml += '<div style="font-size:0.65rem; color:var(--text-muted);">Reset & Bonus Kuota HP</div></div></div>';
+
+        // Kartu 3 -> Menu 3. Bingkai & Branding
+        cardsHtml += '<div class="event-scope-card' + (activeSubTab === 'config' ? ' active-scope-card' : '') + '" onclick="switchAdminSubTab(\'config\', document.getElementById(\'adminTabBtn-config\'))" title="Buka Menu 3: Studio Bingkai Foto & Branding">';
         cardsHtml += '<div class="event-scope-card-icon"><i class="fa-solid fa-crop-simple"></i></div>';
-        cardsHtml += '<div style="min-width:0;"><div style="font-size:0.68rem; color:var(--text-muted);">Desain Bingkai Event Ini</div>';
+        cardsHtml += '<div style="min-width:0;"><div style="font-size:0.66rem; color:var(--accent-neon); font-weight:700;">3. Bingkai & Branding</div>';
         cardsHtml += '<div style="font-size:0.78rem; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(frameLabel) + '</div>';
-        cardsHtml += '<div style="font-size:0.66rem; color:var(--accent-gold);">Mode: ' + escapeHtml(textModeLabel) + '</div></div></div>';
+        cardsHtml += '<div style="font-size:0.65rem; color:var(--text-muted);">Mode: ' + escapeHtml(textModeLabel) + '</div></div></div>';
 
-        cardsHtml += '<div class="event-scope-card" onclick="switchAdminSubTab(\'driveEvents\', document.getElementById(\'adminTabBtn-driveEvents\'))" title="Klik untuk mengatur Kategori Momen Foto event ini">';
-        cardsHtml += '<div class="event-scope-card-icon" style="color:var(--accent-gold); background:rgba(245,197,66,0.12);"><i class="fa-solid fa-tags"></i></div>';
-        cardsHtml += '<div style="min-width:0;"><div style="font-size:0.68rem; color:var(--text-muted);">Kategori Momen Foto</div>';
-        cardsHtml += '<div style="font-size:0.78rem; font-weight:700; color:#fff;">' + photoCats.length + ' Kategori Aktif</div>';
-        cardsHtml += '<div style="font-size:0.66rem; color:var(--accent-neon); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(photoCats.map(function(x){return x.name;}).join(', ')) + '</div></div></div>';
+        // Kartu 4 -> Menu 4. Moderasi & Galeri
+        cardsHtml += '<div class="event-scope-card' + (activeSubTab === 'mod' ? ' active-scope-card' : '') + '" onclick="switchAdminSubTab(\'mod\', document.getElementById(\'adminTabBtn-mod\'))" title="Buka Menu 4: Moderasi Foto Galeri & Buku Tamu">';
+        cardsHtml += '<div class="event-scope-card-icon" style="color:var(--accent-gold); background:rgba(245,197,66,0.12);"><i class="fa-solid fa-list-check"></i></div>';
+        cardsHtml += '<div style="min-width:0;"><div style="font-size:0.66rem; color:var(--accent-gold); font-weight:700;">4. Moderasi & Galeri</div>';
+        cardsHtml += '<div style="font-size:0.78rem; font-weight:700; color:#fff;">' + totalEventPhotos + ' Foto • ' + totalGuestbook + ' Tamu</div>';
+        cardsHtml += '<div style="font-size:0.65rem; color:var(--text-muted);">Kelola Foto & Gelar Juri</div></div></div>';
 
-        cardsHtml += '<div class="event-scope-card" onclick="switchAdminSubTab(\'quotaDevices\', document.getElementById(\'adminTabBtn-quotaDevices\'))" title="Klik untuk mengatur Kuota & Device event ini">';
-        cardsHtml += '<div class="event-scope-card-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>';
-        cardsHtml += '<div style="min-width:0;"><div style="font-size:0.68rem; color:var(--text-muted);">Kuota & Limitasi Event</div>';
-        cardsHtml += '<div style="font-size:0.78rem; font-weight:700; color:#fff;">' + escapeHtml(quotaLabel) + '</div>';
-        cardsHtml += '<div style="font-size:0.66rem; color:var(--accent-gold);">Klik untuk kelola device</div></div></div>';
-
-        cardsHtml += '<div class="event-scope-card" onclick="switchAdminSubTab(\'driveEvents\', document.getElementById(\'adminTabBtn-driveEvents\'))" title="Klik untuk mengatur Kategori Voting event ini">';
-        cardsHtml += '<div class="event-scope-card-icon" style="color:var(--accent-gold); background:rgba(245,197,66,0.12);"><i class="fa-solid fa-trophy"></i></div>';
-        cardsHtml += '<div style="min-width:0;"><div style="font-size:0.68rem; color:var(--text-muted);">Kategori Voting & Juara</div>';
-        cardsHtml += '<div style="font-size:0.78rem; font-weight:700; color:#fff;">' + voteCats.length + ' Nominasi Voting</div>';
-        cardsHtml += '<div style="font-size:0.66rem; color:var(--accent-neon); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(voteCats.map(function(x){return x.name;}).join(', ')) + '</div></div></div>';
+        // Kartu 5 -> Menu 5. User & Database
+        cardsHtml += '<div class="event-scope-card' + (activeSubTab === 'users' ? ' active-scope-card' : '') + '" onclick="switchAdminSubTab(\'users\', document.getElementById(\'adminTabBtn-users\'))" title="Buka Menu 5: Manajemen User & Koneksi Database">';
+        cardsHtml += '<div class="event-scope-card-icon"><i class="fa-solid fa-users-gear"></i></div>';
+        cardsHtml += '<div style="min-width:0;"><div style="font-size:0.66rem; color:var(--accent-neon); font-weight:700;">5. User & Database</div>';
+        cardsHtml += '<div style="font-size:0.78rem; font-weight:700; color:#fff;">Role & Sync Server</div>';
+        cardsHtml += '<div style="font-size:0.65rem; color:var(--text-muted);">Akun Crew & Endpoint</div></div></div>';
 
         summaryGrid.innerHTML = cardsHtml;
       }
@@ -6167,10 +6371,17 @@
       if (targetBox) targetBox.style.display = 'block';
       var tabBtns = document.querySelectorAll('.admin-tab-btn');
       for (var j = 0; j < tabBtns.length; j++) tabBtns[j].classList.remove('active');
-      if (btnEl) btnEl.classList.add('active');
+      if (btnEl) {
+        btnEl.classList.add('active');
+      } else {
+        var fallbackBtn = document.getElementById('adminTabBtn-' + subKey);
+        if (fallbackBtn) fallbackBtn.classList.add('active');
+      }
 
+      renderAdminEventScopeSummary();
       if (subKey === 'users') loadAdminUsersList();
       if (subKey === 'config') renderAdminFrameLivePreview();
+      if (subKey === 'quotaDevices') renderAdminDeviceManagementAndLogs();
       if (subKey === 'mod') {
         renderAdminModerationTable();
         renderAdminGuestbookTable();
