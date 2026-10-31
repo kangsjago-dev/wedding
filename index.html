@@ -3475,54 +3475,6 @@
       var evObj = getActiveEventObject();
       showToast('Mengonfigurasi Event: ' + (evObj ? evObj.eventName : eventId));
     }
-      for (var j = 0; j < selects.length; j++) {
-        selects[j].innerHTML = html;
-        selects[j].value = APP_STATE.activeEventId;
-        if (!APP_STATE.currentUser) {
-          selects[j].style.display = 'none';
-          selects[j].disabled = true;
-        } else {
-          selects[j].style.display = 'inline-block';
-          selects[j].disabled = false;
-          selects[j].title = 'Pilih event aktif (Mode Admin)';
-        }
-      }
-    }
-
-    function onEventDropdownChange(selectEl) {
-      var newId = selectEl.value;
-      setActiveEventByAdmin(newId);
-    }
-
-    function setActiveEventByAdmin(eventId) {
-      // Simpan konfigurasi event sebelumnya sebelum berpindah
-      saveActiveEventScopedSettings();
-
-      APP_STATE.activeEventId = eventId;
-      localStorage.setItem('SATUALBUM_LOCKED_EVENT_ID', eventId);
-
-      // Muat konfigurasi spesifik untuk event yang baru dipilih (Bingkai, Kuota, Device, Kategori Momen & Voting)
-      loadActiveEventScopedSettings(eventId);
-      saveExtendedConfigCache();
-
-      var selects = document.querySelectorAll('.event-selector-dropdown');
-      for (var i = 0; i < selects.length; i++) selects[i].value = eventId;
-
-      updateActiveEventHeroBanner();
-      populateUploadLimitsFormAdmin();
-      populateFrameConfigFormAdmin();
-      renderPhotoMomentCategoriesUI();
-      renderVoteCategoryPills();
-      renderCustomVoteCategoriesAdmin();
-      renderAdminDeviceManagementAndLogs();
-      updateAutoRenamePreview();
-      renderAdminEventsTable();
-      reloadGalleryFeed(true);
-      reloadGuestbookFeed(true);
-
-      var evObj = getActiveEventObject();
-      showToast('Event aktif dialihkan ke: ' + (evObj ? evObj.eventName : eventId) + ' (Bingkai, Kuota & Kategori disesuaikan).');
-    }
 
     function getActiveEventObject() {
       for (var i = 0; i < APP_STATE.events.length; i++) {
@@ -4123,20 +4075,6 @@
       renderAdminEventScopeSummary();
       updateAutoRenamePreview();
       syncConfigToBackend('Kategori momen foto event ini dikembalikan ke pengaturan default.');
-    }
-
-    function resetPhotoMomentCategoriesToDefault() {
-      APP_STATE.config.photoCategories = [
-        { name: 'Selfie Tamu', icon: '🤳' },
-        { name: 'Momen Pengantin', icon: '💍' },
-        { name: 'Best Grup', icon: '👯' },
-        { name: 'Candid Acara', icon: '📸' },
-        { name: 'Keluarga & VIP', icon: '👨‍👩‍👧‍👦' }
-      ];
-      cancelEditPhotoMomentCategory();
-      renderPhotoMomentCategoriesUI();
-      updateAutoRenamePreview();
-      syncConfigToBackend('Kategori momen foto dikembalikan ke pengaturan default.');
     }
 
     // KOMUNIKASI API BACKEND (MENDUKUNG GAS INTERNAL & FETCH REMOTE GITHUB PAGES)
@@ -6016,19 +5954,6 @@
       renderVoteCategoryPills();
       renderAdminEventScopeSummary();
       syncConfigToBackend('Kategori voting event ini diperbarui!');
-    }
-
-    function removeVoteCategory(idx) {
-      var cats = getNormalizedVoteCategories();
-      if (cats.length <= 1) {
-        showToast('Minimal harus ada 1 kategori voting aktif.', true);
-        return;
-      }
-      cats.splice(idx, 1);
-      APP_STATE.config.voteCategories = cats;
-      renderCustomVoteCategoriesAdmin();
-      renderVoteCategoryPills();
-      syncConfigToBackend('Kategori voting diperbarui!');
     }
 
     // =====================================================================
