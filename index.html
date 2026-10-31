@@ -427,6 +427,90 @@
       border-radius: 10px; padding: 8px 10px; font-size: 0.74rem;
     }
 
+    /* Per-Event Configuration Control Panel */
+    .event-scope-panel {
+      background: linear-gradient(145deg, rgba(16, 24, 40, 0.96) 0%, rgba(11, 16, 28, 0.98) 100%);
+      border: 1px solid rgba(0, 255, 170, 0.38);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .event-scope-panel::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent-neon), var(--accent-gold), var(--accent-neon));
+    }
+    .event-scope-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      flex-wrap: wrap; gap: 12px; margin-bottom: 12px;
+    }
+    .event-Switcher-pills {
+      display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px;
+      margin-bottom: 12px; scrollbar-width: none;
+    }
+    .event-Switcher-pills::-webkit-scrollbar { display: none; }
+    .event-pill-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-muted); font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap; transition: all 0.22s ease;
+    }
+    .event-pill-btn:hover {
+      border-color: rgba(0, 255, 170, 0.45);
+      color: #ffffff;
+      background: rgba(0, 255, 170, 0.06);
+    }
+    .event-pill-btn.active {
+      background: linear-gradient(135deg, rgba(0, 255, 170, 0.18) 0%, rgba(245, 197, 66, 0.14) 100%);
+      border-color: var(--accent-neon);
+      color: #ffffff; font-weight: 800;
+      box-shadow: 0 4px 15px rgba(0, 255, 170, 0.2);
+    }
+    .event-scope-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .event-scope-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .event-scope-card:hover {
+      border-color: var(--accent-gold);
+      background: rgba(245, 197, 66, 0.06);
+      transform: translateY(-1px);
+    }
+    .event-scope-card-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0, 255, 170, 0.1); color: var(--accent-neon);
+      font-size: 0.95rem; flex-shrink: 0;
+    }
+    .event-scope-toolbar {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 8px; padding-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .event-target-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(245, 197, 66, 0.14);
+      border: 1px solid rgba(245, 197, 66, 0.4);
+      color: var(--accent-gold);
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 700;
+    }
+
     /* Mobile Responsive Overrides - Compact 1 Page Vertical Layout */
     @media (max-width: 768px) {
       .top-nav { padding: 8px 12px; }
@@ -910,25 +994,58 @@
           </div>
         </div>
 
-        <!-- Bar Konteks Event Aktif (Memastikan Menu 1, 2, 3, dan 4 Diterapkan Spesifik Per-Event) -->
-        <div class="glass-card" style="margin-bottom:16px; padding:12px 16px; background:linear-gradient(135deg, rgba(0,255,170,0.08) 0%, rgba(245,197,66,0.06) 100%); border-color:rgba(245,197,66,0.4); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-          <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
-            <div style="width:36px; height:36px; border-radius:10px; background:rgba(245,197,66,0.15); border:1px solid var(--accent-gold); display:flex; align-items:center; justify-content:center; color:var(--accent-gold); flex-shrink:0;">
-              <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <!-- Panel Kontrol Mode Konfigurasi Spesifik Per-Event Aktif -->
+        <div class="event-scope-panel">
+          <div class="event-scope-header">
+            <div style="display:flex; align-items:flex-start; gap:12px; min-width:0; flex:1;">
+              <div style="width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg, rgba(0,255,170,0.2), rgba(245,197,66,0.2)); border:1px solid var(--accent-neon); display:flex; align-items:center; justify-content:center; color:var(--accent-neon); font-size:1.1rem; flex-shrink:0; box-shadow:0 0 15px rgba(0,255,170,0.2);">
+                <i class="fa-solid fa-sliders"></i>
+              </div>
+              <div style="min-width:0; flex:1;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:3px;">
+                  <span style="font-size:0.86rem; color:#ffffff; font-weight:800; letter-spacing:0.2px;">
+                    Mode Konfigurasi Spesifik Per-Event
+                  </span>
+                  <span class="brand-badge" style="background:rgba(245,197,66,0.16); color:var(--accent-gold); border-color:var(--accent-gold);">
+                    TERISOLASI PER ACARA
+                  </span>
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.4;">
+                  Klik salah satu event di bawah untuk mengatur <strong>Bingkai Foto</strong>, <strong>Kategori Momen</strong>, <strong>Kuota & Device</strong>, serta <strong>Moderasi Galeri</strong> secara terpisah untuk masing-masing acara:
+                </div>
+              </div>
             </div>
-            <div style="min-width:0;">
-              <div style="font-size:0.72rem; color:var(--accent-gold); font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">
-                Mode Konfigurasi Spesifik Per-Event Aktif
-              </div>
-              <div style="font-size:0.76rem; color:#e2e8f0;">
-                Pengaturan <strong>Kategori Momen Foto</strong>, <strong>Kuota & Device</strong>, <strong>Desain Bingkai Foto</strong>, dan <strong>Moderasi Galeri</strong> diterapkan khusus untuk event: <strong class="active-event-title" style="color:var(--accent-neon); font-size:0.84rem;">-</strong>
-              </div>
+
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; width:100%; max-width:290px;">
+              <select class="form-input event-selector-dropdown" style="padding:8px 12px; font-size:0.8rem; width:100%; background:#0b0f19; border-color:var(--accent-neon); font-weight:700; color:var(--accent-neon);" onchange="onEventDropdownChange(this)">
+              </select>
             </div>
           </div>
-          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <span style="font-size:0.74rem; color:var(--text-muted); font-weight:600;">Pilih Event:</span>
-            <select class="form-input event-selector-dropdown" style="padding:7px 12px; font-size:0.8rem; min-width:210px; background:#0b0f19; border-color:var(--accent-neon); font-weight:700; color:var(--accent-neon);" onchange="onEventDropdownChange(this)">
-            </select>
+
+          <!-- Tombol Kapsul Pilihan Cepat Antar-Event -->
+          <div id="adminEventQuickPills" class="event-Switcher-pills"></div>
+
+          <!-- Ringkasan Status Konfigurasi Event yang Sedang Dipilih -->
+          <div id="adminEventScopeSummaryGrid" class="event-scope-summary-grid"></div>
+
+          <!-- Toolbar Aksi Cepat (Salin Konfigurasi Antar-Event, Edit Event & Simpan) -->
+          <div class="event-scope-toolbar">
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; flex:1; min-width:220px;">
+              <span style="font-size:0.72rem; color:var(--text-muted); font-weight:600;"><i class="fa-solid fa-copy" style="color:var(--accent-gold);"></i> Salin Pengaturan Dari:</span>
+              <select id="adminCopyFromEventSelect" class="form-input" style="padding:5px 10px; font-size:0.74rem; width:auto; max-width:210px; background:#0b0f19;">
+              </select>
+              <button type="button" class="btn btn-secondary btn-sm" style="padding:5px 10px; font-size:0.72rem;" onclick="copyEventSettingsFromOtherEvent()">
+                <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-gold);"></i> Terapkan ke Event Ini
+              </button>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="openEventModal(APP_STATE.activeEventId)" title="Edit Nama, Tanggal & Folder Drive Event Ini">
+                <i class="fa-solid fa-pen-to-square" style="color:var(--accent-neon);"></i> Edit Event
+              </button>
+              <button type="button" class="btn btn-gold btn-sm" onclick="saveCurrentEventAllSettingsManual()" title="Simpan & Sinkronkan Seluruh Konfigurasi Event Ini">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Konfigurasi Event
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1024,8 +1141,11 @@
         <div id="adminSub-quotaDevices" class="admin-panel-box" style="display:none;">
           <!-- Card 2A: Limitasi User Live Photo, Limitasi Upload per User & Waktu Idle Admin -->
           <div class="glass-card" style="margin-bottom:16px; border-color:rgba(245,197,66,0.35);">
-            <div style="font-weight:700; color:var(--accent-gold); font-size:1rem; margin-bottom:6px;">
-              <i class="fa-solid fa-sliders"></i> Pengaturan Limitasi User Live Photo, Kuota Upload & Waktu Idle Login
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
+              <div style="font-weight:700; color:var(--accent-gold); font-size:1rem;">
+                <i class="fa-solid fa-sliders"></i> Pengaturan Limitasi User Live Photo, Kuota Upload & Waktu Idle Login
+              </div>
+              <span class="event-target-pill"><i class="fa-solid fa-calendar-check"></i> Event: <span class="active-event-title" style="font-size:0.74rem; color:#fff; margin:0;">-</span></span>
             </div>
             <p style="font-size:0.76rem; color:var(--text-muted); margin-bottom:12px;">
               Atur kuota partisipan Live Photo per acara, batas maksimal upload per perangkat tamu, serta durasi *auto-logout* sesi login Admin jika tidak ada aktivitas (*Idle Timeout*).
@@ -1169,11 +1289,14 @@
         <div id="adminSub-config" class="admin-panel-box" style="display:none;">
           <!-- STUDIO KUSTOMISASI BINGKAI FOTO DILETAKKAN PALING ATAS AGAR MUDAH DIGUNAKAN -->
           <div class="glass-card" style="border-color:rgba(245,197,66,0.4); margin-bottom:16px;">
-            <div style="font-weight:800; color:var(--accent-gold); font-size:1.05rem; margin-bottom:6px;">
-              <i class="fa-solid fa-crop-simple"></i> Studio Kustomisasi Bingkai Foto (FHD 1920×1080) & Pengaturan Teks
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
+              <div style="font-weight:800; color:var(--accent-gold); font-size:1.05rem;">
+                <i class="fa-solid fa-crop-simple"></i> Studio Kustomisasi Bingkai Foto (FHD 1920×1080) & Pengaturan Teks
+              </div>
+              <span class="event-target-pill"><i class="fa-solid fa-wand-magic-sparkles"></i> Bingkai Event: <span class="active-event-title" style="font-size:0.74rem; color:#fff; margin:0;">-</span></span>
             </div>
             <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px;">
-              Setiap foto yang diambil atau diunggah oleh tamu akan otomatis dibungkus dengan bingkai di bawah ini dalam resolusi <strong>FHD 1920 × 1080 px</strong>.
+              Setiap event memiliki desain bingkai tersendiri. Setiap foto yang diambil atau diunggah pada event <strong class="active-event-title" style="font-size:0.8rem; color:var(--accent-neon);">-</strong> akan otomatis dibungkus dengan bingkai di bawah ini.
             </p>
 
             <!-- Kotak Panduan Spesifikasi Desain Bingkai Custom -->
@@ -1357,8 +1480,11 @@
         <!-- =============================================================== -->
         <div id="adminSub-mod" class="admin-panel-box" style="display:none;">
           <div class="glass-card" style="margin-bottom:16px;">
-            <div style="font-weight:700; color:var(--accent-neon); font-size:0.95rem; margin-bottom:10px;">
-              <i class="fa-solid fa-images"></i> Moderasi Foto, Suara Masuk & Gelar Juri
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+              <div style="font-weight:700; color:var(--accent-neon); font-size:0.95rem;">
+                <i class="fa-solid fa-images"></i> Moderasi Foto, Suara Masuk & Gelar Juri
+              </div>
+              <span class="event-target-pill"><i class="fa-solid fa-images"></i> Galeri Event: <span class="active-event-title" style="font-size:0.74rem; color:#fff; margin:0;">-</span></span>
             </div>
             <div class="table-responsive">
               <table class="zett-table">
@@ -1884,6 +2010,7 @@
     function getDefaultEventScopedSettings(eventId) {
       var isSecondMock = (eventId === 'EVT-0002');
       return {
+        _updatedAt: 0,
         frameConfig: {
           style: isSecondMock ? 'rustic_botanical' : 'royal_wedding_floral',
           textMode: 'default',
@@ -1920,10 +2047,11 @@
       };
     }
 
-    function saveActiveEventScopedSettings() {
+    function saveActiveEventScopedSettings(markModified) {
       var evId = APP_STATE.activeEventId || 'EVT-0001';
       if (!APP_STATE.eventSettingsMap) APP_STATE.eventSettingsMap = {};
       var cur = APP_STATE.eventSettingsMap[evId] || getDefaultEventScopedSettings(evId);
+      var nowTs = Date.now();
 
       var fCfgCopy = JSON.parse(JSON.stringify((APP_STATE.config && APP_STATE.config.frameConfig) || cur.frameConfig));
       if (fCfgCopy.customOverlayUrl && fCfgCopy.customOverlayUrl.length > 38000) {
@@ -1933,19 +2061,42 @@
         fCfgCopy.customOverlayUrl = '';
       }
 
+      if (markModified) {
+        cur._updatedAt = nowTs;
+        fCfgCopy._updatedAt = nowTs;
+      } else if (!cur._updatedAt) {
+        cur._updatedAt = fCfgCopy._updatedAt || 1;
+      }
+
       cur.frameConfig = fCfgCopy;
       cur.uploadLimits = JSON.parse(JSON.stringify((APP_STATE.config && APP_STATE.config.uploadLimits) || cur.uploadLimits));
+      if (markModified) cur.uploadLimits._updatedAt = nowTs;
       cur.photoCategories = JSON.parse(JSON.stringify(getNormalizedPhotoCategories()));
       cur.voteCategories = JSON.parse(JSON.stringify(getNormalizedVoteCategories()));
       cur.deviceQuotaMap = JSON.parse(JSON.stringify(APP_STATE.deviceQuotaMap || {}));
       cur.deviceLogs = JSON.parse(JSON.stringify((APP_STATE.deviceLogs || []).slice(0, 35)));
 
       APP_STATE.eventSettingsMap[evId] = cur;
+      try {
+        localStorage.setItem('SATUALBUM_EVENT_SCOPED_' + evId, JSON.stringify(cur));
+      } catch (ignoreStorageErr) {}
     }
 
     function loadActiveEventScopedSettings(eventId) {
       var evId = eventId || APP_STATE.activeEventId || 'EVT-0001';
       if (!APP_STATE.eventSettingsMap) APP_STATE.eventSettingsMap = {};
+
+      // Cek penyimpanan lokal spesifik per-event agar konfigurasi tidak pernah hilang
+      try {
+        var rawLocalScoped = localStorage.getItem('SATUALBUM_EVENT_SCOPED_' + evId);
+        if (rawLocalScoped) {
+          var parsedLocalScoped = JSON.parse(rawLocalScoped);
+          var existingInMem = APP_STATE.eventSettingsMap[evId];
+          if (!existingInMem || ((parsedLocalScoped._updatedAt || 0) >= (existingInMem._updatedAt || 0))) {
+            APP_STATE.eventSettingsMap[evId] = parsedLocalScoped;
+          }
+        }
+      } catch (e) {}
 
       if (!APP_STATE.eventSettingsMap[evId]) {
         APP_STATE.eventSettingsMap[evId] = getDefaultEventScopedSettings(evId);
@@ -1969,9 +2120,9 @@
     }
 
     // CACHE SINKRONISASI PENGATURAN LOKAL & DATABASE
-    function saveExtendedConfigCache() {
+    function saveExtendedConfigCache(markModified) {
       try {
-        saveActiveEventScopedSettings();
+        saveActiveEventScopedSettings(Boolean(markModified));
         var cacheObj = {
           uploadLimits: APP_STATE.config.uploadLimits,
           frameConfig: APP_STATE.config.frameConfig,
@@ -2168,7 +2319,9 @@
                 if (parsed.esm.hasOwnProperty(evKey)) {
                   var localExisting = APP_STATE.eventSettingsMap[evKey];
                   var srvScoped = parsed.esm[evKey];
-                  if (!localExisting || ((srvScoped.frameConfig && srvScoped.frameConfig._updatedAt || 0) >= (localExisting.frameConfig && localExisting.frameConfig._updatedAt || 0))) {
+                  var srvTs = (srvScoped && (srvScoped._updatedAt || (srvScoped.frameConfig && srvScoped.frameConfig._updatedAt))) || 0;
+                  var locTs = (localExisting && (localExisting._updatedAt || (localExisting.frameConfig && localExisting.frameConfig._updatedAt))) || 0;
+                  if (!localExisting || srvTs > locTs) {
                     APP_STATE.eventSettingsMap[evKey] = srvScoped;
                   }
                 }
@@ -2240,7 +2393,9 @@
               }
               if (evData && evData.es && list[i].eventId) {
                 var locEs = APP_STATE.eventSettingsMap[list[i].eventId];
-                if (!locEs || ((evData.es.frameConfig && evData.es.frameConfig._updatedAt || 0) >= (locEs.frameConfig && locEs.frameConfig._updatedAt || 0))) {
+                var srvEsTs = (evData.es && (evData.es._updatedAt || (evData.es.frameConfig && evData.es.frameConfig._updatedAt))) || 0;
+                var locEsTs = (locEs && (locEs._updatedAt || (locEs.frameConfig && locEs.frameConfig._updatedAt))) || 0;
+                if (!locEs || srvEsTs > locEsTs) {
                   APP_STATE.eventSettingsMap[list[i].eventId] = evData.es;
                 }
               }
@@ -2853,10 +3008,6 @@
           if (res.config) {
             res.config.customFooter = unpackCustomFooterAndRestoreDbSync(res.config.customFooter, res.config);
             APP_STATE.config = mergeServerConfigWithLocalExt(res.config);
-            if (APP_STATE.config.uploadLimits && APP_STATE.config.uploadLimits.idleTimeoutMinutes !== undefined) {
-              localStorage.setItem('SATUALBUM_IDLE_TIMEOUT_MIN', String(APP_STATE.config.uploadLimits.idleTimeoutMinutes));
-            }
-            saveExtendedConfigCache();
           }
           if (APP_STATE.events.length > 0) {
             var resolvedActive = resolveEventIdFromInputOrQuery(APP_STATE.activeEventId);
@@ -2868,6 +3019,10 @@
               }
             }
             if (!exists) APP_STATE.activeEventId = APP_STATE.events[0].eventId;
+          }
+          loadActiveEventScopedSettings(APP_STATE.activeEventId);
+          if (APP_STATE.config.uploadLimits && APP_STATE.config.uploadLimits.idleTimeoutMinutes !== undefined) {
+            localStorage.setItem('SATUALBUM_IDLE_TIMEOUT_MIN', String(APP_STATE.config.uploadLimits.idleTimeoutMinutes));
           }
           setLiveSyncIndicator(true);
           setVoteDbSyncIndicator('Tersinkronisasi dengan Database (LIVE)', false);
@@ -2895,6 +3050,7 @@
       renderVoteCategoryPills();
       renderCustomVoteCategoriesAdmin();
       renderAdminDeviceManagementAndLogs();
+      renderAdminEventScopeSummary();
       reloadGalleryFeed(true);
       reloadGuestbookFeed(true);
       if (APP_STATE.currentUser) {
@@ -3120,9 +3276,205 @@
       var html = '';
       for (var i = 0; i < APP_STATE.events.length; i++) {
         var ev = APP_STATE.events[i];
+        var dispId = getEventDisplayId(ev);
         var sel = (ev.eventId === APP_STATE.activeEventId) ? ' selected' : '';
-        html += '<option value="' + escapeHtml(ev.eventId) + '"' + sel + '>' + escapeHtml(ev.eventName) + '</option>';
+        html += '<option value="' + escapeHtml(ev.eventId) + '"' + sel + '>📅 ' + escapeHtml(ev.eventName) + ' (' + escapeHtml(dispId) + ')</option>';
       }
+      for (var j = 0; j < selects.length; j++) {
+        selects[j].innerHTML = html;
+        selects[j].value = APP_STATE.activeEventId;
+        if (!APP_STATE.currentUser) {
+          selects[j].style.display = 'none';
+          selects[j].disabled = true;
+        } else {
+          selects[j].style.display = 'inline-block';
+          selects[j].disabled = false;
+          selects[j].title = 'Pilih event aktif (Mode Admin)';
+        }
+      }
+      renderAdminEventScopeSummary();
+    }
+
+    function getFrameStyleReadableLabel(styleKey) {
+      var map = {
+        'royal_wedding_floral': '💍 Royal Wedding Floral',
+        'minimalist_wedding_vow': '🕊️ Minimalist White & Rose',
+        'emerald_islamic_walimah': '🌙 Emerald Walimatul Ursy',
+        'rustic_botanical': '🌿 Rustic Botanical Garden',
+        'gold_luxury': '👑 Gold Luxury Runway',
+        'neon_party': '⚡ Neon Cyber Glow',
+        'polaroid_classic': '📸 Polaroid Classic',
+        'custom_png': '🎨 Custom PNG Overlay'
+      };
+      return map[styleKey] || '💍 Royal Wedding Floral';
+    }
+
+    function renderAdminEventScopeSummary() {
+      var pillsContainer = document.getElementById('adminEventQuickPills');
+      var summaryGrid = document.getElementById('adminEventScopeSummaryGrid');
+      var copySelect = document.getElementById('adminCopyFromEventSelect');
+      var events = APP_STATE.events || [];
+
+      if (pillsContainer) {
+        var pillsHtml = '';
+        for (var i = 0; i < events.length; i++) {
+          var ev = events[i];
+          var isAct = (ev.eventId === APP_STATE.activeEventId);
+          var dispId = getEventDisplayId(ev);
+          pillsHtml += '<button type="button" class="event-pill-btn' + (isAct ? ' active' : '') + '" onclick="setActiveEventByAdmin(\'' + escapeHtml(ev.eventId) + '\')">';
+          pillsHtml += '<i class="fa-solid ' + (isAct ? 'fa-circle-check' : 'fa-calendar-day') + '" style="color:' + (isAct ? 'var(--accent-neon)' : 'var(--accent-gold)') + ';"></i>';
+          pillsHtml += '<span>' + escapeHtml(ev.eventName) + '</span>';
+          pillsHtml += '<span class="mono-badge" style="font-size:0.65rem; padding:1px 6px; color:' + (isAct ? 'var(--accent-gold)' : 'var(--text-muted)') + ';">' + escapeHtml(dispId) + '</span>';
+          pillsHtml += '</button>';
+        }
+        pillsHtml += '<button type="button" class="event-pill-btn" style="border-style:dashed; color:var(--accent-neon);" onclick="openEventModal()">';
+        pillsHtml += '<i class="fa-solid fa-plus"></i> Event Baru</button>';
+        pillsContainer.innerHTML = pillsHtml;
+      }
+
+      if (copySelect) {
+        var copyHtml = '<option value="">-- Pilih Event Sumber --</option>';
+        for (var c = 0; c < events.length; c++) {
+          if (events[c].eventId !== APP_STATE.activeEventId) {
+            copyHtml += '<option value="' + escapeHtml(events[c].eventId) + '">' + escapeHtml(events[c].eventName) + ' (' + escapeHtml(getEventDisplayId(events[c])) + ')</option>';
+          }
+        }
+        copySelect.innerHTML = copyHtml;
+      }
+
+      if (summaryGrid) {
+        var fCfg = (APP_STATE.config && APP_STATE.config.frameConfig) || {};
+        var lim = (APP_STATE.config && APP_STATE.config.uploadLimits) || {};
+        var photoCats = getNormalizedPhotoCategories();
+        var voteCats = getNormalizedVoteCategories();
+
+        var frameLabel = getFrameStyleReadableLabel(fCfg.style);
+        var textModeLabel = fCfg.textMode === 'none' ? 'Polos Tanpa Teks' : (fCfg.textMode === 'custom' ? 'Teks Kustom' : 'Harmoni Otomatis');
+        var maxU = parseInt(lim.maxLiveUsers, 10) || 0;
+        var maxP = parseInt(lim.maxUploadsPerUser, 10) || 0;
+        var quotaLabel = (maxU === 0 ? 'User: Unl' : ('Max ' + maxU + ' User')) + ' • ' + (maxP === 0 ? 'Foto: Unl' : (maxP + ' Foto/HP'));
+
+        var cardsHtml = '';
+        cardsHtml += '<div class="event-scope-card" onclick="switchAdminSubTab(\'config\', document.getElementById(\'adminTabBtn-config\'))" title="Klik untuk mengatur Bingkai Foto event ini">';
+        cardsHtml += '<div class="event-scope-card-icon"><i class="fa-solid fa-crop-simple"></i></div>';
+        cardsHtml += '<div style="min-width:0;"><div style="font-size:0.68rem; color:var(--text-muted);">Desain Bingkai Event Ini</div>';
+        cardsHtml += '<div style="font-size:0.78rem; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(frameLabel) + '</div>';
+        cardsHtml += '<div style="font-size:0.66rem; color:var(--accent-gold);">Mode: ' + escapeHtml(textModeLabel) + '</div></div></div>';
+
+        cardsHtml += '<div class="event-scope-card" onclick="switchAdminSubTab(\'driveEvents\', document.getElementById(\'adminTabBtn-driveEvents\'))" title="Klik untuk mengatur Kategori Momen Foto event ini">';
+        cardsHtml += '<div class="event-scope-card-icon" style="color:var(--accent-gold); background:rgba(245,197,66,0.12);"><i class="fa-solid fa-tags"></i></div>';
+        cardsHtml += '<div style="min-width:0;"><div style="font-size:0.68rem; color:var(--text-muted);">Kategori Momen Foto</div>';
+        cardsHtml += '<div style="font-size:0.78rem; font-weight:700; color:#fff;">' + photoCats.length + ' Kategori Aktif</div>';
+        cardsHtml += '<div style="font-size:0.66rem; color:var(--accent-neon); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(photoCats.map(function(x){return x.name;}).join(', ')) + '</div></div></div>';
+
+        cardsHtml += '<div class="event-scope-card" onclick="switchAdminSubTab(\'quotaDevices\', document.getElementById(\'adminTabBtn-quotaDevices\'))" title="Klik untuk mengatur Kuota & Device event ini">';
+        cardsHtml += '<div class="event-scope-card-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>';
+        cardsHtml += '<div style="min-width:0;"><div style="font-size:0.68rem; color:var(--text-muted);">Kuota & Limitasi Event</div>';
+        cardsHtml += '<div style="font-size:0.78rem; font-weight:700; color:#fff;">' + escapeHtml(quotaLabel) + '</div>';
+        cardsHtml += '<div style="font-size:0.66rem; color:var(--accent-gold);">Klik untuk kelola device</div></div></div>';
+
+        cardsHtml += '<div class="event-scope-card" onclick="switchAdminSubTab(\'driveEvents\', document.getElementById(\'adminTabBtn-driveEvents\'))" title="Klik untuk mengatur Kategori Voting event ini">';
+        cardsHtml += '<div class="event-scope-card-icon" style="color:var(--accent-gold); background:rgba(245,197,66,0.12);"><i class="fa-solid fa-trophy"></i></div>';
+        cardsHtml += '<div style="min-width:0;"><div style="font-size:0.68rem; color:var(--text-muted);">Kategori Voting & Juara</div>';
+        cardsHtml += '<div style="font-size:0.78rem; font-weight:700; color:#fff;">' + voteCats.length + ' Nominasi Voting</div>';
+        cardsHtml += '<div style="font-size:0.66rem; color:var(--accent-neon); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(voteCats.map(function(x){return x.name;}).join(', ')) + '</div></div></div>';
+
+        summaryGrid.innerHTML = cardsHtml;
+      }
+    }
+
+    function copyEventSettingsFromOtherEvent() {
+      var copySelect = document.getElementById('adminCopyFromEventSelect');
+      var sourceEvId = copySelect ? copySelect.value : '';
+      if (!sourceEvId) {
+        showToast('Pilih Event Sumber yang ingin disalin pengaturannya terlebih dahulu.', true);
+        return;
+      }
+      if (!APP_STATE.eventSettingsMap || !APP_STATE.eventSettingsMap[sourceEvId]) {
+        loadActiveEventScopedSettings(sourceEvId);
+        loadActiveEventScopedSettings(APP_STATE.activeEventId);
+      }
+      var sourceSettings = (APP_STATE.eventSettingsMap && APP_STATE.eventSettingsMap[sourceEvId]) || getDefaultEventScopedSettings(sourceEvId);
+      var targetEvId = APP_STATE.activeEventId;
+
+      var cloned = JSON.parse(JSON.stringify(sourceSettings));
+      cloned._updatedAt = Date.now();
+      if (cloned.frameConfig) cloned.frameConfig._updatedAt = Date.now();
+      if (cloned.uploadLimits) cloned.uploadLimits._updatedAt = Date.now();
+      // Reset log & kuota device agar khusus untuk event target
+      cloned.deviceQuotaMap = {};
+      cloned.deviceLogs = [];
+
+      var sourcePng = localStorage.getItem('SATUALBUM_CUSTOM_FRAME_PNG_' + sourceEvId);
+      if (sourcePng) {
+        try {
+          localStorage.setItem('SATUALBUM_CUSTOM_FRAME_PNG_' + targetEvId, sourcePng);
+        } catch (e) {}
+      }
+
+      APP_STATE.eventSettingsMap[targetEvId] = cloned;
+      try {
+        localStorage.setItem('SATUALBUM_EVENT_SCOPED_' + targetEvId, JSON.stringify(cloned));
+      } catch (e) {}
+
+      loadActiveEventScopedSettings(targetEvId);
+      populateUploadLimitsFormAdmin();
+      populateFrameConfigFormAdmin();
+      renderPhotoMomentCategoriesUI();
+      renderVoteCategoryPills();
+      renderCustomVoteCategoriesAdmin();
+      renderAdminDeviceManagementAndLogs();
+      renderAdminEventScopeSummary();
+      syncConfigToBackend('Pengaturan Bingkai, Kuota & Kategori berhasil disalin ke event ini!');
+    }
+
+    function saveCurrentEventAllSettingsManual() {
+      // Ambil nilai terbaru dari form Bingkai & Kuota yang sedang tampil
+      if (document.getElementById('adminFrameStyleSelect')) {
+        APP_STATE.config.frameConfig = getCurrentAdminFrameConfigFromInputs();
+      }
+      saveExtendedConfigCache(true);
+      renderAdminEventScopeSummary();
+      var ev = getActiveEventObject();
+      syncConfigToBackend('Seluruh konfigurasi spesifik untuk event "' + (ev ? ev.eventName : APP_STATE.activeEventId) + '" berhasil disimpan & disinkronkan!');
+    }
+
+    function onEventDropdownChange(selectEl) {
+      var newId = selectEl.value;
+      setActiveEventByAdmin(newId);
+    }
+
+    function setActiveEventByAdmin(eventId) {
+      if (!eventId) return;
+      // Simpan state event sebelumnya tanpa menimpa timestamp jika belum diubah
+      saveActiveEventScopedSettings(false);
+
+      APP_STATE.activeEventId = eventId;
+      localStorage.setItem('SATUALBUM_LOCKED_EVENT_ID', eventId);
+
+      // Muat konfigurasi spesifik untuk event yang baru dipilih (Bingkai, Kuota, Device, Kategori Momen & Voting)
+      loadActiveEventScopedSettings(eventId);
+      saveExtendedConfigCache(false);
+
+      var selects = document.querySelectorAll('.event-selector-dropdown');
+      for (var i = 0; i < selects.length; i++) selects[i].value = eventId;
+
+      updateActiveEventHeroBanner();
+      populateUploadLimitsFormAdmin();
+      populateFrameConfigFormAdmin();
+      renderPhotoMomentCategoriesUI();
+      renderVoteCategoryPills();
+      renderCustomVoteCategoriesAdmin();
+      renderAdminDeviceManagementAndLogs();
+      renderAdminEventScopeSummary();
+      updateAutoRenamePreview();
+      renderAdminEventsTable();
+      reloadGalleryFeed(true);
+      reloadGuestbookFeed(true);
+
+      var evObj = getActiveEventObject();
+      showToast('Mengonfigurasi Event: ' + (evObj ? evObj.eventName : eventId));
+    }
       for (var j = 0; j < selects.length; j++) {
         selects[j].innerHTML = html;
         selects[j].value = APP_STATE.activeEventId;
@@ -3689,18 +4041,22 @@
       if (editIdx >= 0 && editIdx < cats.length) {
         cats[editIdx] = { name: nameVal, icon: iconVal };
         APP_STATE.config.photoCategories = cats;
+        saveActiveEventScopedSettings(true);
         cancelEditPhotoMomentCategory();
         renderPhotoMomentCategoriesUI();
+        renderAdminEventScopeSummary();
         updateAutoRenamePreview();
-        syncConfigToBackend('Kategori momen foto berhasil diperbarui!');
+        syncConfigToBackend('Kategori momen foto untuk event ini berhasil diperbarui!');
       } else {
         cats.push({ name: nameVal, icon: iconVal });
         APP_STATE.config.photoCategories = cats;
+        saveActiveEventScopedSettings(true);
         if (iconInp) iconInp.value = '';
         if (nameInp) nameInp.value = '';
         renderPhotoMomentCategoriesUI();
+        renderAdminEventScopeSummary();
         updateAutoRenamePreview();
-        syncConfigToBackend('Kategori momen foto "' + nameVal + '" berhasil ditambahkan!');
+        syncConfigToBackend('Kategori momen foto "' + nameVal + '" berhasil ditambahkan ke event ini!');
       }
     }
 
@@ -3745,10 +4101,28 @@
       }
       var removed = cats.splice(idx, 1);
       APP_STATE.config.photoCategories = cats;
+      saveActiveEventScopedSettings(true);
       cancelEditPhotoMomentCategory();
       renderPhotoMomentCategoriesUI();
+      renderAdminEventScopeSummary();
       updateAutoRenamePreview();
-      syncConfigToBackend('Kategori momen foto "' + (removed[0] ? removed[0].name : '') + '" dihapus.');
+      syncConfigToBackend('Kategori momen foto "' + (removed[0] ? removed[0].name : '') + '" dihapus dari event ini.');
+    }
+
+    function resetPhotoMomentCategoriesToDefault() {
+      APP_STATE.config.photoCategories = [
+        { name: 'Selfie Tamu', icon: '🤳' },
+        { name: 'Momen Pengantin', icon: '💍' },
+        { name: 'Best Grup', icon: '👯' },
+        { name: 'Candid Acara', icon: '📸' },
+        { name: 'Keluarga & VIP', icon: '👨‍👩‍👧‍👦' }
+      ];
+      saveActiveEventScopedSettings(true);
+      cancelEditPhotoMomentCategory();
+      renderPhotoMomentCategoriesUI();
+      renderAdminEventScopeSummary();
+      updateAutoRenamePreview();
+      syncConfigToBackend('Kategori momen foto event ini dikembalikan ke pengaturan default.');
     }
 
     function resetPhotoMomentCategoriesToDefault() {
@@ -5619,12 +5993,29 @@
         desc: descVal || ('Pilih foto terbaik untuk kategori ' + nameVal)
       });
       APP_STATE.config.voteCategories = cats;
+      saveActiveEventScopedSettings(true);
       if (nameInput) nameInput.value = '';
       if (descInput) descInput.value = '';
 
       renderCustomVoteCategoriesAdmin();
       renderVoteCategoryPills();
-      syncConfigToBackend('Kategori voting baru ditambahkan & disinkronkan!');
+      renderAdminEventScopeSummary();
+      syncConfigToBackend('Kategori voting baru ditambahkan pada event ini & disinkronkan!');
+    }
+
+    function removeVoteCategory(idx) {
+      var cats = getNormalizedVoteCategories();
+      if (cats.length <= 1) {
+        showToast('Minimal harus ada 1 kategori voting aktif.', true);
+        return;
+      }
+      cats.splice(idx, 1);
+      APP_STATE.config.voteCategories = cats;
+      saveActiveEventScopedSettings(true);
+      renderCustomVoteCategoriesAdmin();
+      renderVoteCategoryPills();
+      renderAdminEventScopeSummary();
+      syncConfigToBackend('Kategori voting event ini diperbarui!');
     }
 
     function removeVoteCategory(idx) {
@@ -5666,8 +6057,9 @@
     }
 
     function syncConfigToBackend(successToastMsg, onCompleteCallback) {
-      saveActiveEventScopedSettings();
-      saveExtendedConfigCache();
+      saveActiveEventScopedSettings(true);
+      saveExtendedConfigCache(true);
+      renderAdminEventScopeSummary();
 
       // Pastikan customOverlayUrl yang dikirim ke Google Sheets tidak melebihi batas 50.000 karakter per sel
       var safeFrameConfig = JSON.parse(JSON.stringify(APP_STATE.config.frameConfig || {}));
@@ -6027,12 +6419,13 @@
         _updatedAt: Date.now()
       };
       localStorage.setItem('SATUALBUM_IDLE_TIMEOUT_MIN', String(idleMinutesVal));
-      saveExtendedConfigCache();
+      saveExtendedConfigCache(true);
       refreshAdminActivityTimestamp();
       populateUploadLimitsFormAdmin();
       applyRoleBasedAdminView();
       updateHeroCounters();
-      syncConfigToBackend('Limitasi Kuota (Max User: ' + (maxLiveUsersVal === 0 ? 'Unlimited' : maxLiveUsersVal) + ', Max Upload/Device: ' + (maxUploadsVal === 0 ? 'Unlimited' : maxUploadsVal) + ') berhasil disimpan!');
+      renderAdminEventScopeSummary();
+      syncConfigToBackend('Limitasi Kuota Event (Max User: ' + (maxLiveUsersVal === 0 ? 'Unlimited' : maxLiveUsersVal) + ', Max Upload/Device: ' + (maxUploadsVal === 0 ? 'Unlimited' : maxUploadsVal) + ') berhasil disimpan!');
     }
 
     // STUDIO BINGKAI FOTO (MODE HARMONI OTOMATIS, KUSTOMISASI EKSKLUSIF, DAN KANVAS MURNI TANPA TEKS)
@@ -6716,8 +7109,8 @@
     function saveFrameConfigForm() {
       var newFrameCfg = getCurrentAdminFrameConfigFromInputs();
       APP_STATE.config.frameConfig = newFrameCfg;
-      saveActiveEventScopedSettings();
-      saveExtendedConfigCache();
+      saveActiveEventScopedSettings(true);
+      saveExtendedConfigCache(true);
 
       var highResLocal = localStorage.getItem('SATUALBUM_CUSTOM_FRAME_PNG_' + APP_STATE.activeEventId);
       var imgSourceToLoad = (newFrameCfg.customOverlayUrl && newFrameCfg.customOverlayUrl.indexOf('http') === 0)
@@ -6726,16 +7119,18 @@
 
       loadCustomFrameOverlayImage(imgSourceToLoad);
       renderAdminFrameLivePreview();
+      renderAdminEventScopeSummary();
       var ev = getActiveEventObject();
       syncConfigToBackend('Desain Bingkai FHD khusus event "' + (ev ? ev.eventName : APP_STATE.activeEventId) + '" berhasil disimpan!');
     }
 
     function saveGlobalDriveConfigForm() {
-      var val = document.getElementById('adminGlobalDriveUrl').value.trim();
+      var gEl = document.getElementById('adminGlobalDriveUrl');
+      var val = gEl ? gEl.value.trim() : '';
       APP_STATE.config.globalDriveFolderUrl = val;
       APP_STATE.config.globalDriveFolderId = extractDriveFolderIdClient(val);
       updateActiveEventHeroBanner();
-      syncConfigToBackend('Link Google Drive Global berhasil disimpan & disinkronkan!');
+      syncConfigToBackend('Link Google Drive berhasil disimpan & disinkronkan!');
     }
 
     function saveGeneralConfigForm() {
@@ -6755,25 +7150,6 @@
       APP_STATE.config.customFooter = document.getElementById('adminCustomFooter').value.trim();
       applyBrandingToDom();
       syncConfigToBackend('Nama Aplikasi & Logo Branding WO berhasil diterapkan ke Header & Login Admin!');
-    }
-
-    function saveGlobalDriveConfigForm() {
-      var val = document.getElementById('adminGlobalDriveUrl').value.trim();
-      APP_STATE.config.globalDriveFolderUrl = val;
-      APP_STATE.config.globalDriveFolderId = extractDriveFolderIdClient(val);
-      updateActiveEventHeroBanner();
-      syncConfigToBackend('Link Google Drive Global berhasil disimpan & disinkronkan!');
-    }
-
-    function saveGeneralConfigForm() {
-      APP_STATE.config.appName = document.getElementById('adminAppName').value.trim() || 'SatuAlbum';
-      APP_STATE.config.appTagline = document.getElementById('adminAppTagline').value.trim();
-      APP_STATE.config.woName = document.getElementById('adminWoName').value.trim() || 'Runway Wedding & Event Organizer';
-      APP_STATE.config.woLogoUrl = document.getElementById('adminWoLogoUrl').value.trim();
-      APP_STATE.config.woContact = document.getElementById('adminWoContact').value.trim();
-      APP_STATE.config.customFooter = document.getElementById('adminCustomFooter').value.trim();
-      applyBrandingToDom();
-      syncConfigToBackend('Nama Aplikasi & Branding WO berhasil disinkronkan ke server!');
     }
 
     function saveRemoteEndpointEndpoint() {
