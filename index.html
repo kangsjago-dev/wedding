@@ -535,12 +535,18 @@
       }
       .form-group { margin-bottom: 10px; }
       .form-input { padding: 8px 11px; font-size: 0.82rem; }
-      .photo-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+      .photo-grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 10px; }
       .judge-awards-grid { grid-template-columns: 1fr; gap: 10px; }
-      .judge-award-card { padding: 10px; gap: 12px; }
-      .judge-award-thumb { width: 68px; height: 68px; }
-      .hero-btn-group { width: 100%; }
-      .hero-btn-group .btn { flex: 1; justify-content: center; }
+      .judge-award-card { padding: 10px; gap: 10px; }
+      .judge-award-thumb { width: 62px; height: 62px; }
+      .hero-btn-group { width: 100%; display: flex; flex-direction: column; }
+      .hero-btn-group .btn { width: 100%; justify-content: center; }
+      .event-scope-header { flex-direction: column; align-items: stretch; }
+      .event-scope-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
+      .bottom-nav { width: calc(100% - 12px); padding: 5px 6px; gap: 4px; bottom: 8px; }
+      .bottom-nav-btn { min-width: 58px; padding: 5px 4px; font-size: 0.6rem; }
+      .bottom-nav-btn .nav-icon-wrap { width: 28px; height: 24px; margin-bottom: 2px; }
+      .bottom-nav-btn i { font-size: 0.9rem; }
     }
   </style>
 </head>
@@ -2010,7 +2016,7 @@
     function getDefaultEventScopedSettings(eventId) {
       var isSecondMock = (eventId === 'EVT-0002');
       return {
-        _updatedAt: 0,
+        _updatedAt: Date.now(),
         frameConfig: {
           style: isSecondMock ? 'rustic_botanical' : 'royal_wedding_floral',
           textMode: 'default',
@@ -2021,13 +2027,13 @@
           customGreetingText: 'Terima Kasih Atas Kehadiran & Doa Restu Anda',
           customFooterText: 'Runway Wedding Organizer',
           customOverlayUrl: '',
-          _updatedAt: 0
+          _updatedAt: Date.now()
         },
         uploadLimits: {
           maxLiveUsers: 0,
           maxUploadsPerUser: 10,
           idleTimeoutMinutes: 60,
-          _updatedAt: 0
+          _updatedAt: Date.now()
         },
         photoCategories: [
           { name: 'Selfie Tamu', icon: '🤳' },
@@ -2050,7 +2056,11 @@
     function saveActiveEventScopedSettings(markModified) {
       var evId = APP_STATE.activeEventId || 'EVT-0001';
       if (!APP_STATE.eventSettingsMap) APP_STATE.eventSettingsMap = {};
-      var cur = APP_STATE.eventSettingsMap[evId] || getDefaultEventScopedSettings(evId);
+      
+      var cur = APP_STATE.eventSettingsMap[evId];
+      if (!cur) {
+        cur = getDefaultEventScopedSettings(evId);
+      }
       var nowTs = Date.now();
 
       var fCfgCopy = JSON.parse(JSON.stringify((APP_STATE.config && APP_STATE.config.frameConfig) || cur.frameConfig));
@@ -2064,8 +2074,6 @@
       if (markModified) {
         cur._updatedAt = nowTs;
         fCfgCopy._updatedAt = nowTs;
-      } else if (!cur._updatedAt) {
-        cur._updatedAt = fCfgCopy._updatedAt || 1;
       }
 
       cur.frameConfig = fCfgCopy;
@@ -2080,21 +2088,18 @@
       try {
         localStorage.setItem('SATUALBUM_EVENT_SCOPED_' + evId, JSON.stringify(cur));
       } catch (ignoreStorageErr) {}
+      saveExtendedConfigCache(false);
     }
 
     function loadActiveEventScopedSettings(eventId) {
       var evId = eventId || APP_STATE.activeEventId || 'EVT-0001';
       if (!APP_STATE.eventSettingsMap) APP_STATE.eventSettingsMap = {};
 
-      // Cek penyimpanan lokal spesifik per-event agar konfigurasi tidak pernah hilang
       try {
         var rawLocalScoped = localStorage.getItem('SATUALBUM_EVENT_SCOPED_' + evId);
         if (rawLocalScoped) {
           var parsedLocalScoped = JSON.parse(rawLocalScoped);
-          var existingInMem = APP_STATE.eventSettingsMap[evId];
-          if (!existingInMem || ((parsedLocalScoped._updatedAt || 0) >= (existingInMem._updatedAt || 0))) {
-            APP_STATE.eventSettingsMap[evId] = parsedLocalScoped;
-          }
+          APP_STATE.eventSettingsMap[evId] = parsedLocalScoped;
         }
       } catch (e) {}
 
@@ -3446,15 +3451,14 @@
 
     function setActiveEventByAdmin(eventId) {
       if (!eventId) return;
-      // Simpan state event sebelumnya tanpa menimpa timestamp jika belum diubah
+      // Simpan state event sebelumnya secara utuh
       saveActiveEventScopedSettings(false);
 
       APP_STATE.activeEventId = eventId;
       localStorage.setItem('SATUALBUM_LOCKED_EVENT_ID', eventId);
 
-      // Muat konfigurasi spesifik untuk event yang baru dipilih (Bingkai, Kuota, Device, Kategori Momen & Voting)
+      // Muat konfigurasi spesifik untuk event yang baru dipilih
       loadActiveEventScopedSettings(eventId);
-      saveExtendedConfigCache(false);
 
       var selects = document.querySelectorAll('.event-selector-dropdown');
       for (var i = 0; i < selects.length; i++) selects[i].value = eventId;
@@ -3473,7 +3477,7 @@
       reloadGuestbookFeed(true);
 
       var evObj = getActiveEventObject();
-      showToast('Mengonfigurasi Event: ' + (evObj ? evObj.eventName : eventId));
+      showToast('Berpindah ke Event: ' + (evObj ? evObj.eventName : eventId));
     }
 
     function getActiveEventObject() {
