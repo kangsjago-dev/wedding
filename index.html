@@ -551,9 +551,6 @@
             <div id="cameraPreviewContainer" style="position:absolute; inset:0; background:#000; display:none; z-index:20;">
               <img id="cameraPreviewImg" style="width:100%; height:100%; object-fit:contain; background:#05080f;" />
               <div id="cameraPreviewSizeBadge" style="position:absolute; bottom:10px; right:10px; background:rgba(11,15,25,0.88); color:var(--accent-gold); border:1px solid rgba(245,197,66,0.45); padding:3px 9px; border-radius:6px; font-size:0.68rem; font-weight:700;">FHD 1920×1080</div>
-              <button type="button" class="btn btn-danger btn-sm" style="position:absolute; top:8px; right:8px; background:rgba(11,15,25,0.88);" onclick="retakeCameraPhoto()">
-                <i class="fa-solid fa-rotate-left"></i> Foto Ulang
-              </button>
             </div>
 
             <div class="camera-watermark-tag" id="cameraWatermarkLabel">SatuAlbum • Frame FHD 1920×1080</div>
@@ -568,16 +565,16 @@
             <button type="button" class="filter-chip" onclick="setCameraFilter('Soft', 'brightness(1.08) contrast(0.95) saturate(0.92)', this)">🌸 Soft</button>
           </div>
 
-          <!-- Tombol Aksi Kamera & Galeri HP -->
-          <div style="display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap;">
+          <!-- Tombol Aksi Kamera (Shutter & Foto Ulang Mudah Dijangkau, Tanpa Tombol Pilih Galeri Ganda) -->
+          <div style="display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap; min-height:58px;">
             <button type="button" id="btnStartCam" class="btn btn-neon btn-sm" onclick="startCameraStream()">
               <i class="fa-solid fa-power-off"></i> Nyalakan Kamera
             </button>
-            <button type="button" id="btnSnapCam" class="btn btn-neon" style="display:none; width:56px; height:56px; border-radius:50%; padding:0; box-shadow:0 0 0 4px rgba(0,255,170,0.25);" onclick="triggerCapturePhoto()" title="Jepret Foto FHD 1920x1080">
-              <i class="fa-solid fa-camera" style="font-size:1.4rem;"></i>
+            <button type="button" id="btnSnapCam" class="btn btn-neon" style="display:none; width:60px; height:60px; border-radius:50%; padding:0; box-shadow:0 0 0 5px rgba(0,255,170,0.25);" onclick="triggerCapturePhoto()" title="Jepret Foto FHD 1920x1080">
+              <i class="fa-solid fa-camera" style="font-size:1.45rem;"></i>
             </button>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="triggerOpenGalleryFilePicker()">
-              <i class="fa-solid fa-image" style="color:var(--accent-neon);"></i> Pilih Galeri HP
+            <button type="button" id="btnRetakeCamBar" class="btn btn-danger" style="display:none; width:100%; max-width:280px; padding:11px 18px; font-weight:700; box-shadow:0 6px 18px rgba(255,82,82,0.25);" onclick="retakeCameraPhoto()">
+              <i class="fa-solid fa-rotate-left"></i> Foto Ulang / Ambil Gambar Baru
             </button>
             <input type="file" id="hiddenGalleryFileInput" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*" style="display:none;" onchange="handleGalleryFileInput(this)">
           </div>
@@ -625,9 +622,14 @@
             </div>
 
             <div style="display:flex; flex-direction:column; gap:8px;">
-              <button type="submit" id="btnSubmitPhotoUpload" class="btn btn-neon" style="width:100%; padding:11px;">
-                <i class="fa-solid fa-bolt"></i> Simpan ke HP & Kirim ke Galeri (Instan)
-              </button>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button type="button" id="btnRetakeInForm" class="btn btn-danger" style="display:none; flex:1; min-width:130px; padding:11px;" onclick="retakeCameraPhoto()">
+                  <i class="fa-solid fa-camera-rotate"></i> Foto Ulang
+                </button>
+                <button type="submit" id="btnSubmitPhotoUpload" class="btn btn-neon" style="flex:2; min-width:180px; padding:11px;">
+                  <i class="fa-solid fa-bolt"></i> Simpan ke HP & Kirim ke Galeri (Instan)
+                </button>
+              </div>
               <button type="button" class="btn btn-secondary btn-sm" style="width:100%;" onclick="triggerOpenGalleryFilePicker()">
                 <i class="fa-solid fa-folder-open" style="color:var(--accent-gold);"></i> Ambil Foto dari Galeri HP untuk Diupload
               </button>
@@ -700,15 +702,15 @@
         <div id="deviceVoteStatusBanner" style="background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:12px; padding:10px 14px; margin-bottom:14px; font-size:0.76rem;">
         </div>
 
-        <!-- Sub-View B: Hasil Perolehan Suara & Leaderboard Pemenang (Tampil Langsung) -->
-        <div id="voteSectionLeaderboard" class="vote-subview" style="display:block; margin-bottom:22px;">
+        <!-- Sub-View B: Hasil Perolehan Suara & Leaderboard Pemenang -->
+        <div id="voteSectionLeaderboard" class="vote-subview" style="margin-bottom:22px;">
           <div id="leaderboardContainer" style="display:flex; flex-direction:column; gap:16px;"></div>
         </div>
 
         <!-- Sub-View A: Daftar Foto untuk Di-Vote -->
-        <div id="voteSectionGallery" class="vote-subview" style="display:block;">
-          <div style="font-weight:800; font-size:0.98rem; color:var(--accent-neon); margin-bottom:6px;">
-            <i class="fa-solid fa-images"></i> Daftar Nominasi Foto (Klik Vote pada Foto Pilihan Anda)
+        <div id="voteSectionGallery" class="vote-subview">
+          <div style="font-weight:700; font-size:0.92rem; color:var(--accent-neon); margin-bottom:6px;">
+            <i class="fa-solid fa-images"></i> Daftar Nominasi Foto (Klik Vote untuk Memilih Kategori)
           </div>
           <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">
             Filter tampilan berdasarkan kategori hasil voting atau klik tombol <strong>"Pilih Kategori & Vote"</strong> pada foto pilihan Anda:
@@ -775,7 +777,7 @@
     </div>
 
     <!-- =================================================================== -->
-    <!-- VIEW 5: PANEL ADMIN (DESAIN LOGIN BARU & FULL SYNC)                 -->
+    <!-- VIEW 5: PANEL ADMIN (DESAIN LOGIN BARU & PENGELOMPOKAN MENU RAPI)   -->
     <!-- =================================================================== -->
     <div id="viewPanel-admin" class="view-panel">
       <!-- Form Login Admin -->
@@ -791,24 +793,24 @@
 
         <form onsubmit="event.preventDefault(); handleAdminLoginSubmit();" style="display:flex; flex-direction:column; gap:14px;">
           <div>
-            <label class="form-label" style="color:#cbd5e1;">username</label>
+            <label class="form-label" style="color:#cbd5e1;">Username</label>
             <div class="input-icon-wrap">
               <i class="fa-solid fa-user-tie input-prefix-icon"></i>
-              <input type="text" id="adminLoginUsername" class="form-input" placeholder="Masukkan username" autocomplete="username" />
+              <input type="text" id="adminLoginUsername" class="form-input" placeholder="Masukkan Username" autocomplete="username" />
             </div>
           </div>
           <div>
-            <label class="form-label" style="color:#cbd5e1;">password</label>
+            <label class="form-label" style="color:#cbd5e1;">Password</label>
             <div class="input-icon-wrap">
               <i class="fa-solid fa-key input-prefix-icon"></i>
-              <input type="password" id="adminLoginPin" class="form-input" style="padding-right:40px;" placeholder="Masukkan password" required autocomplete="current-password" />
+              <input type="password" id="adminLoginPin" class="form-input" style="padding-right:40px;" placeholder="Masukkan Password" required autocomplete="current-password" />
               <button type="button" class="pin-toggle-btn" onclick="toggleAdminPinVisibility()" title="Tampilkan / Sembunyikan Password">
                 <i id="adminPinEyeIcon" class="fa-regular fa-eye"></i>
               </button>
             </div>
           </div>
           <button type="submit" class="btn btn-neon" style="width:100%; padding:12px; margin-top:6px; font-size:0.9rem;">
-            <i class="fa-solid fa-shield-halved"></i> login
+            <i class="fa-solid fa-shield-halved"></i> Login
           </button>
         </form>
 
@@ -820,7 +822,7 @@
 
       <!-- Kontainer Dashboard Setelah Login -->
       <div id="adminLoggedInContainer" style="display:none;">
-        <!-- Bar Navigasi Sub-Menu Admin -->
+        <!-- Bar Navigasi Sub-Menu Admin (Dikelompokkan Sesuai Fungsi Kebutuhan Admin) -->
         <div class="glass-card" style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
           <div>
             <div style="font-size:0.72rem; color:var(--text-muted);" id="adminIdleStatusLabel">Login Aktif (Idle Timeout: 60 Menit):</div>
@@ -828,16 +830,19 @@
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button type="button" id="adminTabBtn-driveEvents" class="btn btn-secondary btn-sm admin-tab-btn active" onclick="switchAdminSubTab('driveEvents', this)">
-              <i class="fa-solid fa-calendar-check"></i> 1. Event, Kuota & Voting
+              <i class="fa-solid fa-calendar-check"></i> 1. Event & Drive Acara
+            </button>
+            <button type="button" id="adminTabBtn-quotaDevices" class="btn btn-secondary btn-sm admin-tab-btn" onclick="switchAdminSubTab('quotaDevices', this)">
+              <i class="fa-solid fa-mobile-screen-button"></i> 2. Kuota & Device
             </button>
             <button type="button" id="adminTabBtn-config" class="btn btn-secondary btn-sm admin-tab-btn" onclick="switchAdminSubTab('config', this)">
-              <i class="fa-solid fa-frame"></i> 2. App, Logo & Custom Bingkai
-            </button>
-            <button type="button" id="adminTabBtn-users" class="btn btn-secondary btn-sm admin-tab-btn" onclick="switchAdminSubTab('users', this)">
-              <i class="fa-solid fa-users-gear"></i> 3. User & Level
+              <i class="fa-solid fa-crop-simple"></i> 3. Bingkai & Branding
             </button>
             <button type="button" id="adminTabBtn-mod" class="btn btn-secondary btn-sm admin-tab-btn" onclick="switchAdminSubTab('mod', this)">
-              <i class="fa-solid fa-list-check"></i> 4. Moderasi & Sinkronisasi
+              <i class="fa-solid fa-list-check"></i> 4. Moderasi & Galeri
+            </button>
+            <button type="button" id="adminTabBtn-users" class="btn btn-secondary btn-sm admin-tab-btn" onclick="switchAdminSubTab('users', this)">
+              <i class="fa-solid fa-users-gear"></i> 5. User & Database
             </button>
             <button type="button" class="btn btn-danger btn-sm" onclick="adminLogout()">
               <i class="fa-solid fa-power-off"></i> Keluar
@@ -845,25 +850,97 @@
           </div>
         </div>
 
-        <!-- SUB-PANEL 1: MULTI-EVENT, TARGET GOOGLE DRIVE, LIMITASI KUOTA & KATEGORI VOTING -->
+        <!-- =============================================================== -->
+        <!-- KELOMPOK 1: MANAJEMEN EVENT, GOOGLE DRIVE PER-EVENT & KATEGORI  -->
+        <!-- =============================================================== -->
         <div id="adminSub-driveEvents" class="admin-panel-box">
-          <!-- Card A: Target Link Google Drive Global -->
-          <div class="glass-card" style="margin-bottom:16px;">
-            <div style="font-weight:700; color:var(--accent-neon); font-size:1rem; margin-bottom:6px;">
-              <i class="fa-brands fa-google-drive"></i> Target / Link Google Drive Utama (Global Default)
-            </div>
-            <p style="font-size:0.76rem; color:var(--text-muted); margin-bottom:12px;">
-              Folder utama penyimpanan foto acara. Jika saat membuat Event baru kolom Link Drive dikosongkan, sistem akan otomatis membuatkan folder baru di dalam Drive Global ini.
-            </p>
-            <form onsubmit="event.preventDefault(); saveGlobalDriveConfigForm();" style="display:flex; gap:10px; flex-wrap:wrap;">
-              <input type="text" id="adminGlobalDriveUrl" class="form-input" style="flex:1; min-width:240px;" placeholder="Paste link folder Google Drive utama di sini..." />
-              <button type="submit" class="btn btn-neon btn-sm">
-                <i class="fa-solid fa-floppy-disk"></i> Simpan Drive Global
+          <!-- Card 1A: Daftar Multi-Event & Drive Per-Event -->
+          <div class="glass-card" style="margin-bottom:16px; border-color:rgba(0,255,170,0.38);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+              <div>
+                <div style="font-weight:800; color:var(--accent-neon); font-size:1.02rem;">
+                  <i class="fa-solid fa-calendar-check"></i> Daftar Event & Target Google Drive Per-Event (Master & Subfolder)
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">
+                  Setiap event memiliki Master Google Drive & Subfolder tersendiri. Klik <strong>"Buat Event Baru"</strong> untuk mengatur Drive & Subfolder otomatis sesuai Nama Pengantin & Tanggal.
+                </div>
+              </div>
+              <button type="button" class="btn btn-neon btn-sm" onclick="openEventModal()">
+                <i class="fa-solid fa-plus"></i> Buat Event Baru
               </button>
-            </form>
+            </div>
+            <div class="table-responsive">
+              <table class="zett-table">
+                <thead>
+                  <tr>
+                    <th>ID Event</th>
+                    <th>Nama Acara / Pengantin</th>
+                    <th>Tanggal</th>
+                    <th>Akses Google Drive Event</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="adminEventsTableBody"></tbody>
+              </table>
+            </div>
           </div>
 
-          <!-- Card B: Limitasi User Live Photo, Limitasi Upload per User & Waktu Idle Admin -->
+          <!-- Card 1B: Pengaturan Kategori Momen Foto (Custom, Tambah, Edit & Hapus) -->
+          <div class="glass-card" style="margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
+              <div style="font-weight:700; color:var(--accent-neon); font-size:1rem;">
+                <i class="fa-solid fa-tags"></i> Pengaturan Kategori Momen Foto (Custom, Tambah, Edit & Hapus)
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="resetPhotoMomentCategoriesToDefault()">
+                <i class="fa-solid fa-rotate-left" style="color:var(--accent-gold);"></i> Reset Default
+              </button>
+            </div>
+            <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:12px;">
+              Kelola pilihan <strong>Kategori Momen Foto</strong> yang tampil pada formulir unggah kamera live serta tombol filter pada Galeri Foto.
+            </p>
+            <div class="admin-form-grid" style="margin-bottom:12px;">
+              <input type="text" id="newPhotoCatIconInput" class="form-input" placeholder="Ikon / Emoji (Contoh: 📸 atau 🤳)" maxlength="8" />
+              <div style="display:flex; gap:8px;">
+                <input type="text" id="newPhotoCatNameInput" class="form-input" placeholder="Nama Kategori Momen (Contoh: Selfie Tamu)" style="flex:1;" />
+                <button type="button" id="btnSavePhotoMomentCat" class="btn btn-neon btn-sm" onclick="addOrUpdatePhotoMomentCategory()">
+                  <i class="fa-solid fa-plus"></i> Tambah
+                </button>
+                <button type="button" id="btnCancelEditPhotoMomentCat" class="btn btn-secondary btn-sm" style="display:none;" onclick="cancelEditPhotoMomentCategory()">
+                  Batal
+                </button>
+              </div>
+            </div>
+            <input type="hidden" id="editPhotoCatIndexInput" value="-1" />
+            <div id="customPhotoCategoriesList" style="display:flex; flex-direction:column; gap:8px;"></div>
+          </div>
+
+          <!-- Card 1C: Pengaturan Kategori Voting & Keterangan -->
+          <div class="glass-card">
+            <div style="font-weight:700; color:var(--accent-gold); font-size:1rem; margin-bottom:6px;">
+              <i class="fa-solid fa-trophy"></i> Pengaturan Kategori Voting & Keterangan Pilihan
+            </div>
+            <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:12px;">
+              Tentukan kategori voting beserta keterangannya yang akan muncul saat pengunjung menekan tombol <strong>Vote Foto</strong>.
+            </p>
+            <div class="admin-form-grid" style="margin-bottom:12px;">
+              <input type="text" id="newVoteCatNameInput" class="form-input" placeholder="Nama Kategori (Contoh: Terheboh 🔥)" />
+              <div style="display:flex; gap:8px;">
+                <input type="text" id="newVoteCatDescInput" class="form-input" placeholder="Keterangan singkat kategori..." style="flex:1;" />
+                <button type="button" class="btn btn-neon btn-sm" onclick="addNewVoteCategory()">
+                  <i class="fa-solid fa-plus"></i> Tambah
+                </button>
+              </div>
+            </div>
+            <div id="customVoteCategoriesList" style="display:flex; flex-direction:column; gap:8px;"></div>
+          </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- KELOMPOK 2: KUOTA UPLOAD, LIMITASI USER & MANAJEMEN DEVICE      -->
+        <!-- =============================================================== -->
+        <div id="adminSub-quotaDevices" class="admin-panel-box" style="display:none;">
+          <!-- Card 2A: Limitasi User Live Photo, Limitasi Upload per User & Waktu Idle Admin -->
           <div class="glass-card" style="margin-bottom:16px; border-color:rgba(245,197,66,0.35);">
             <div style="font-weight:700; color:var(--accent-gold); font-size:1rem; margin-bottom:6px;">
               <i class="fa-solid fa-sliders"></i> Pengaturan Limitasi User Live Photo, Kuota Upload & Waktu Idle Login
@@ -928,8 +1005,8 @@
             </form>
           </div>
 
-          <!-- Card B2: Manajemen Device (Reset Kuota, Tambah Kuota Foto) & Log Aktivitas Device -->
-          <div class="glass-card" style="margin-bottom:16px; border-color:rgba(0,255,170,0.35);">
+          <!-- Card 2B: Manajemen Device (Reset Kuota, Tambah Kuota Foto) & Log Aktivitas Device -->
+          <div class="glass-card" style="border-color:rgba(0,255,170,0.35);">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
               <div>
                 <div style="font-weight:700; color:var(--accent-neon); font-size:1rem;">
@@ -1002,140 +1079,16 @@
               </table>
             </div>
           </div>
-
-          <!-- Card C: Daftar Multi-Event -->
-          <div class="glass-card" style="margin-bottom:16px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-              <div>
-                <div style="font-weight:700; color:var(--accent-neon); font-size:1rem;">
-                  <i class="fa-solid fa-calendar-check"></i> Daftar Event & Folder Penyimpanan Spesifik
-                </div>
-                <div style="font-size:0.75rem; color:var(--text-muted);">
-                  Klik "Pilih Aktif" untuk mengganti event yang dilihat publik, atau klik "Edit" untuk menyesuaikan acara.
-                </div>
-              </div>
-              <button type="button" class="btn btn-neon btn-sm" onclick="openEventModal()">
-                <i class="fa-solid fa-plus"></i> Buat Event Baru
-              </button>
-            </div>
-            <div class="table-responsive">
-              <table class="zett-table">
-                <thead>
-                  <tr>
-                    <th>ID Event</th>
-                    <th>Nama Acara</th>
-                    <th>Tanggal</th>
-                    <th>Folder Penyimpanan</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody id="adminEventsTableBody"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Card D: Pengaturan Kategori Voting & Keterangan -->
-          <div class="glass-card" style="margin-bottom:16px;">
-            <div style="font-weight:700; color:var(--accent-gold); font-size:1rem; margin-bottom:6px;">
-              <i class="fa-solid fa-trophy"></i> Pengaturan Kategori Voting & Keterangan Pilihan
-            </div>
-            <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:12px;">
-              Tentukan kategori voting beserta keterangannya yang akan muncul saat pengunjung menekan tombol <strong>Vote Foto</strong>.
-            </p>
-            <div class="admin-form-grid" style="margin-bottom:12px;">
-              <input type="text" id="newVoteCatNameInput" class="form-input" placeholder="Nama Kategori (Contoh: Terheboh 🔥)" />
-              <div style="display:flex; gap:8px;">
-                <input type="text" id="newVoteCatDescInput" class="form-input" placeholder="Keterangan singkat kategori..." style="flex:1;" />
-                <button type="button" class="btn btn-neon btn-sm" onclick="addNewVoteCategory()">
-                  <i class="fa-solid fa-plus"></i> Tambah
-                </button>
-              </div>
-            </div>
-            <div id="customVoteCategoriesList" style="display:flex; flex-direction:column; gap:8px;"></div>
-          </div>
-
-          <!-- Card E: Pengaturan Kategori Momen Foto (Custom, Tambah, Edit & Hapus) -->
-          <div class="glass-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
-              <div style="font-weight:700; color:var(--accent-neon); font-size:1rem;">
-                <i class="fa-solid fa-tags"></i> Pengaturan Kategori Momen Foto (Custom, Tambah, Edit & Hapus)
-              </div>
-              <button type="button" class="btn btn-secondary btn-sm" onclick="resetPhotoMomentCategoriesToDefault()">
-                <i class="fa-solid fa-rotate-left" style="color:var(--accent-gold);"></i> Reset Default
-              </button>
-            </div>
-            <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:12px;">
-              Kelola pilihan <strong>Kategori Momen Foto</strong> yang tampil pada formulir unggah kamera live serta tombol filter pada Galeri Foto.
-            </p>
-            <div class="admin-form-grid" style="margin-bottom:12px;">
-              <input type="text" id="newPhotoCatIconInput" class="form-input" placeholder="Ikon / Emoji (Contoh: 📸 atau 🤳)" maxlength="8" />
-              <div style="display:flex; gap:8px;">
-                <input type="text" id="newPhotoCatNameInput" class="form-input" placeholder="Nama Kategori Momen (Contoh: Selfie Tamu)" style="flex:1;" />
-                <button type="button" id="btnSavePhotoMomentCat" class="btn btn-neon btn-sm" onclick="addOrUpdatePhotoMomentCategory()">
-                  <i class="fa-solid fa-plus"></i> Tambah
-                </button>
-                <button type="button" id="btnCancelEditPhotoMomentCat" class="btn btn-secondary btn-sm" style="display:none;" onclick="cancelEditPhotoMomentCategory()">
-                  Batal
-                </button>
-              </div>
-            </div>
-            <input type="hidden" id="editPhotoCatIndexInput" value="-1" />
-            <div id="customPhotoCategoriesList" style="display:flex; flex-direction:column; gap:8px;"></div>
-          </div>
         </div>
 
-        <!-- SUB-PANEL 2: NAMA APLIKASI, BRANDING LOGO & STUDIO CUSTOM BINGKAI FOTO -->
+        <!-- =============================================================== -->
+        <!-- KELOMPOK 3: STUDIO CUSTOM BINGKAI FOTO & BRANDING APLIKASI WO   -->
+        <!-- =============================================================== -->
         <div id="adminSub-config" class="admin-panel-box" style="display:none;">
-          <div class="glass-card" style="margin-bottom:16px;">
-            <div style="font-weight:700; color:var(--accent-neon); font-size:1rem; margin-bottom:14px;">
-              <i class="fa-solid fa-palette"></i> Ganti Nama Aplikasi & Kustomisasi Branding WO
-            </div>
-            <form onsubmit="event.preventDefault(); saveGeneralConfigForm();" class="admin-form-grid">
-              <div class="form-group">
-                <label class="form-label">Nama Aplikasi (Header & Watermark)</label>
-                <input type="text" id="adminAppName" class="form-input" required />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Nama Wedding Organizer (WO)</label>
-                <input type="text" id="adminWoName" class="form-input" required />
-              </div>
-              <div class="form-group" style="grid-column:1/-1;">
-                <label class="form-label">Tagline / Slogan Aplikasi</label>
-                <input type="text" id="adminAppTagline" class="form-input" />
-              </div>
-              <div class="form-group" style="grid-column:1/-1;">
-                <label class="form-label">URL Logo WO (Kosongkan untuk memakai Logo Resmi Runway Wedding Organizer)</label>
-                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                  <input type="text" id="adminWoLogoUrl" class="form-input" style="flex:1; min-width:220px;" placeholder="Kosongkan untuk Logo Runway WO bawaan, atau paste link gambar..." />
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="resetToRunwayLogo()">
-                    <i class="fa-solid fa-rotate-left"></i> Gunakan Logo Runway WO
-                  </button>
-                </div>
-                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px;">
-                  Spesifikasi Logo Header: Rasio lebar/persegi (ideal <strong>320 x 220 px</strong> atau <strong>256 x 256 px</strong>, format PNG/SVG/JPG).
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Kontak WO / Instagram</label>
-                <input type="text" id="adminWoContact" class="form-input" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Teks Footer Aplikasi</label>
-                <input type="text" id="adminCustomFooter" class="form-input" />
-              </div>
-              <div style="grid-column:1/-1; display:flex; justify-content:flex-end;">
-                <button type="submit" class="btn btn-neon">
-                  <i class="fa-solid fa-floppy-disk"></i> Simpan & Terapkan Branding
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <!-- STUDIO KUSTOMISASI BINGKAI FOTO (CUSTOM PHOTO FRAME) & SPESIFIKASI -->
-          <div class="glass-card" style="border-color:rgba(245,197,66,0.4);">
+          <!-- STUDIO KUSTOMISASI BINGKAI FOTO DILETAKKAN PALING ATAS AGAR MUDAH DIGUNAKAN -->
+          <div class="glass-card" style="border-color:rgba(245,197,66,0.4); margin-bottom:16px;">
             <div style="font-weight:800; color:var(--accent-gold); font-size:1.05rem; margin-bottom:6px;">
-              <i class="fa-solid fa-crop-simple"></i> Studio Kustomisasi Bingkai Foto (FHD 1920×1080) & Spesifikasi Teknis
+              <i class="fa-solid fa-crop-simple"></i> Studio Kustomisasi Bingkai Foto (FHD 1920×1080) & Pengaturan Teks
             </div>
             <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px;">
               Setiap foto yang diambil atau diunggah oleh tamu akan otomatis dibungkus dengan bingkai di bawah ini dalam resolusi <strong>FHD 1920 × 1080 px</strong>.
@@ -1152,8 +1105,8 @@
                 <div><strong>PNG Transparan (.png)</strong> tengah kosong</div>
               </div>
               <div class="spec-item">
-                <div style="color:var(--accent-neon); font-weight:700;">📏 Area Aman (Safe Zone)</div>
-                <div>Tepi keliling <strong>36px</strong> & Banner bawah <strong>140px</strong></div>
+                <div style="color:var(--accent-neon); font-weight:700;">🖋️ Mode Teks Fleksibel</div>
+                <div><strong>Default, Custom Manual, atau Polos Tanpa Teks</strong></div>
               </div>
               <div class="spec-item">
                 <div style="color:var(--accent-gold); font-weight:700;">✨ Kustomisasi Warna</div>
@@ -1176,46 +1129,49 @@
                 </select>
               </div>
 
-              <!-- Menu Pilihan Default / Custom untuk Tulisan pada Bingkai -->
+              <!-- Menu Pilihan Default / Custom / Kosong Polos Tanpa Teks -->
               <div class="form-group" style="grid-column:1/-1;">
-                <label class="form-label">Pengaturan Tulisan pada Bingkai (Judul, Ucapan & Watermark)</label>
+                <label class="form-label">Mode Tampilan Teks & Untaian Kata pada Bingkai Foto</label>
                 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                  <select id="adminFrameTextModeSelect" class="form-input" style="flex:1; min-width:220px;" onchange="onFrameTextModeChange()">
-                    <option value="default">🔄 Default Bawaan (Otomatis Sesuai Nama Acara & WO — Tidak Diubah)</option>
-                    <option value="custom">✏️ Custom Tulisan Manual (Ubah Judul, Ucapan & Sub-Label Sendiri)</option>
+                  <select id="adminFrameTextModeSelect" class="form-input" style="flex:1; min-width:240px;" onchange="onFrameTextModeChange()">
+                    <option value="default">✨ Harmoni Otomatis Acara (Tampilkan Nama Pengantin, Tanggal & Branding WO Bawaan)</option>
+                    <option value="custom">🖋️ Kustomisasi Eksklusif (Rangkai Sendiri Nama Pasangan, Untaian Doa & Watermark)</option>
+                    <option value="none">🖼️ Kanvas Murni Tanpa Teks (Tampilan Polos Elegan — Bebas Tulisan Sama Sekali)</option>
                   </select>
                   <button type="button" class="btn btn-secondary btn-sm" onclick="resetFrameTextsToDefault()" title="Kembalikan seluruh tulisan bingkai ke pengaturan bawaan">
-                    <i class="fa-solid fa-rotate-left" style="color:var(--accent-gold);"></i> Reset ke Default
+                    <i class="fa-solid fa-rotate-left" style="color:var(--accent-gold);"></i> Reset Default
                   </button>
                 </div>
-                <div style="font-size:0.71rem; color:var(--text-muted); margin-top:4px;">
-                  Pilih <strong>Default Bawaan</strong> apabila tidak ingin mengubah tulisan (otomatis mengikuti Nama Acara, Tanggal & Nama WO).
+                <div id="adminFrameTextModeHelperNote" style="font-size:0.72rem; color:var(--accent-neon); margin-top:5px;">
+                  ✨ Mode Harmoni Otomatis: Teks mengikuti Nama Acara & WO secara otomatis. Ketik langsung pada kolom di bawah atau pilih "Kustomisasi Eksklusif" untuk mengubah tulisan.
                 </div>
               </div>
 
-              <!-- Custom Tulisan Judul / Nama Pasangan di Bingkai + Pilihan Warna -->
-              <div class="form-group">
-                <label class="form-label">Custom Tulisan Judul / Nama Pasangan di Bingkai & Warna</label>
-                <div style="display:flex; gap:8px; align-items:center;">
-                  <input type="text" id="adminFrameHeaderTitle" class="form-input" style="flex:1;" placeholder="Default otomatis mengikuti Nama Acara..." oninput="renderAdminFrameLivePreview()" />
-                  <input type="color" id="adminFrameTitleColor" class="form-input" style="width:50px; height:42px; padding:3px; flex-shrink:0; cursor:pointer;" value="#f5c542" onchange="renderAdminFrameLivePreview()" title="Warna Tulisan Judul / Nama Pasangan" />
+              <!-- Kontainer Input Teks Kustom Bingkai -->
+              <div id="adminFrameCustomTextInputsWrap" style="grid-column:1/-1; display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label class="form-label">Custom Tulisan Judul / Nama Pasangan di Bingkai & Warna</label>
+                  <div style="display:flex; gap:8px; align-items:center;">
+                    <input type="text" id="adminFrameHeaderTitle" class="form-input" style="flex:1;" placeholder="Ketik Judul / Nama Pasangan (Contoh: Romeo & Juliet)..." onfocus="autoSwitchToCustomTextMode()" oninput="autoSwitchToCustomTextMode(); renderAdminFrameLivePreview()" />
+                    <input type="color" id="adminFrameTitleColor" class="form-input" style="width:50px; height:42px; padding:3px; flex-shrink:0; cursor:pointer;" value="#f5c542" onchange="renderAdminFrameLivePreview()" title="Warna Tulisan Judul / Nama Pasangan" />
+                  </div>
                 </div>
-              </div>
 
-              <div class="form-group">
-                <label class="form-label">Custom Ucapan / Quotes / Doa pada Bingkai Foto</label>
-                <input type="text" id="adminFrameGreetingText" class="form-input" placeholder="Default: Terima Kasih Atas Kehadiran & Doa Restu Anda" oninput="renderAdminFrameLivePreview()" />
-              </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label class="form-label">Custom Ucapan / Quotes / Doa pada Bingkai Foto</label>
+                  <input type="text" id="adminFrameGreetingText" class="form-input" placeholder="Ketik ucapan doa / quotes pernikahan..." onfocus="autoSwitchToCustomTextMode()" oninput="autoSwitchToCustomTextMode(); renderAdminFrameLivePreview()" />
+                </div>
 
-              <div class="form-group">
-                <label class="form-label">Teks Sub-Label / Watermark Bawah Bingkai</label>
-                <input type="text" id="adminFrameFooterText" class="form-input" placeholder="Default: Runway Wedding Organizer" oninput="renderAdminFrameLivePreview()" />
+                <div class="form-group" style="grid-column:1/-1; margin-bottom:0;">
+                  <label class="form-label">Teks Sub-Label / Watermark Bawah Bingkai</label>
+                  <input type="text" id="adminFrameFooterText" class="form-input" placeholder="Ketik sub-label bawah (Contoh: Runway Wedding Organizer)..." onfocus="autoSwitchToCustomTextMode()" oninput="autoSwitchToCustomTextMode(); renderAdminFrameLivePreview()" />
+                </div>
               </div>
 
               <!-- Warna Utama & Warna Aksen Bingkai dengan Menu None (Tidak Ada Warna) -->
-              <div class="form-group">
+              <div class="form-group" style="grid-column:1/-1;">
                 <label class="form-label">Warna Utama & Warna Aksen Bingkai (Pilih Warna / None)</label>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                   <div style="display:flex; gap:6px; align-items:center;">
                     <select id="adminFramePrimaryColorMode" class="form-input" style="padding:8px; font-size:0.76rem; flex:1;" onchange="onFrameColorModeChange('primary')">
                       <option value="color">🎨 Warna Utama</option>
@@ -1262,63 +1218,58 @@
               </div>
             </form>
           </div>
-        </div>
 
-        <!-- SUB-PANEL 3: MANAJEMEN USER & LEVEL USER (TERSINKRONISASI PENUH) -->
-        <div id="adminSub-users" class="admin-panel-box" style="display:none;">
+          <!-- IDENTITAS APLIKASI & BRANDING WO -->
           <div class="glass-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
-              <div>
-                <div style="font-weight:700; color:var(--accent-neon); font-size:1rem;">
-                  <i class="fa-solid fa-users-gear"></i> Manajemen User & Level Akses (Role)
+            <div style="font-weight:700; color:var(--accent-neon); font-size:1rem; margin-bottom:14px;">
+              <i class="fa-solid fa-palette"></i> Identitas Nama Aplikasi & Kustomisasi Branding WO
+            </div>
+            <form onsubmit="event.preventDefault(); saveGeneralConfigForm();" class="admin-form-grid">
+              <div class="form-group">
+                <label class="form-label">Nama Aplikasi (Header & Watermark)</label>
+                <input type="text" id="adminAppName" class="form-input" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nama Wedding Organizer (WO)</label>
+                <input type="text" id="adminWoName" class="form-input" required />
+              </div>
+              <div class="form-group" style="grid-column:1/-1;">
+                <label class="form-label">Tagline / Slogan Aplikasi</label>
+                <input type="text" id="adminAppTagline" class="form-input" />
+              </div>
+              <div class="form-group" style="grid-column:1/-1;">
+                <label class="form-label">URL Logo WO (Kosongkan untuk memakai Logo Resmi Runway Wedding Organizer)</label>
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                  <input type="text" id="adminWoLogoUrl" class="form-input" style="flex:1; min-width:220px;" placeholder="Kosongkan untuk Logo Runway WO bawaan, atau paste link gambar..." />
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="resetToRunwayLogo()">
+                    <i class="fa-solid fa-rotate-left"></i> Gunakan Logo Runway WO
+                  </button>
                 </div>
-                <div style="font-size:0.75rem; color:var(--text-muted);">
-                  Kelola akun Super Admin, Admin Event, dan Operator lapangan yang tersinkronisasi dengan Sheet USERS.
+                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px;">
+                  Spesifikasi Logo Header: Rasio lebar/persegi (ideal <strong>320 x 220 px</strong> atau <strong>256 x 256 px</strong>, format PNG/SVG/JPG).
                 </div>
               </div>
-              <button type="button" class="btn btn-neon btn-sm" onclick="openUserModal()">
-                <i class="fa-solid fa-user-plus"></i> Tambah User Baru
-              </button>
-            </div>
-            <div class="table-responsive">
-              <table class="zett-table">
-                <thead>
-                  <tr>
-                    <th>ID User</th>
-                    <th>Username</th>
-                    <th>Nama Lengkap</th>
-                    <th>PIN</th>
-                    <th>Level Role</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody id="adminUsersTableBody"></tbody>
-              </table>
-            </div>
+              <div class="form-group">
+                <label class="form-label">Kontak WO / Instagram</label>
+                <input type="text" id="adminWoContact" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Teks Footer Aplikasi</label>
+                <input type="text" id="adminCustomFooter" class="form-input" />
+              </div>
+              <div style="grid-column:1/-1; display:flex; justify-content:flex-end;">
+                <button type="submit" class="btn btn-neon">
+                  <i class="fa-solid fa-floppy-disk"></i> Simpan & Terapkan Branding
+                </button>
+              </div>
+            </form>
           </div>
         </div>
 
-        <!-- SUB-PANEL 4: MODERASI GALERI, BUKU TAMU & ENDPOINT GITHUB -->
+        <!-- =============================================================== -->
+        <!-- KELOMPOK 4: MODERASI FOTO GALERI, GELAR JURI & BUKU TAMU        -->
+        <!-- =============================================================== -->
         <div id="adminSub-mod" class="admin-panel-box" style="display:none;">
-          <div class="glass-card" style="margin-bottom:16px;">
-            <div style="font-weight:700; color:var(--accent-neon); font-size:0.95rem; margin-bottom:6px;">
-              <i class="fa-solid fa-plug-circle-check"></i> Endpoint Koneksi Database Google Apps Script
-            </div>
-            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">
-              URL Web App Google Apps Script untuk sinkronisasi penuh ketika file <code>index.html</code> di-host di GitHub Pages:
-            </p>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <input type="text" id="adminRemoteEndpointUrl" class="form-input" style="flex:1; min-width:230px;" placeholder="https://script.google.com/macros/s/.../exec" />
-              <button type="button" class="btn btn-neon btn-sm" onclick="saveRemoteEndpointEndpoint()">
-                <i class="fa-solid fa-arrows-rotate"></i> Simpan & Sync Ulang
-              </button>
-              <button type="button" class="btn btn-gold btn-sm" onclick="syncVotesWithDatabase(true)">
-                <i class="fa-solid fa-database"></i> Sync Database Voting
-              </button>
-            </div>
-          </div>
-
           <div class="glass-card" style="margin-bottom:16px;">
             <div style="font-weight:700; color:var(--accent-neon); font-size:0.95rem; margin-bottom:10px;">
               <i class="fa-solid fa-images"></i> Moderasi Foto, Suara Masuk & Gelar Juri
@@ -1356,6 +1307,61 @@
                 </thead>
                 <tbody id="adminGuestbookTableBody"></tbody>
               </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- KELOMPOK 5: MANAJEMEN USER & KONEKSI DATABASE                   -->
+        <!-- =============================================================== -->
+        <div id="adminSub-users" class="admin-panel-box" style="display:none;">
+          <div class="glass-card" style="margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+              <div>
+                <div style="font-weight:700; color:var(--accent-neon); font-size:1rem;">
+                  <i class="fa-solid fa-users-gear"></i> Manajemen User & Level Akses (Role)
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">
+                  Kelola akun Super Admin, Admin Event, dan Operator lapangan yang tersinkronisasi dengan Sheet USERS.
+                </div>
+              </div>
+              <button type="button" class="btn btn-neon btn-sm" onclick="openUserModal()">
+                <i class="fa-solid fa-user-plus"></i> Tambah User Baru
+              </button>
+            </div>
+            <div class="table-responsive">
+              <table class="zett-table">
+                <thead>
+                  <tr>
+                    <th>ID User</th>
+                    <th>Username</th>
+                    <th>Nama Lengkap</th>
+                    <th>PIN / Password</th>
+                    <th>Level Role</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="adminUsersTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div style="font-weight:700; color:var(--accent-neon); font-size:0.95rem; margin-bottom:6px;">
+              <i class="fa-solid fa-plug-circle-check"></i> Endpoint Koneksi Database Google Apps Script
+            </div>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">
+              URL Web App Google Apps Script untuk sinkronisasi penuh ketika file <code>index.html</code> di-host di GitHub Pages:
+            </p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <input type="text" id="adminRemoteEndpointUrl" class="form-input" style="flex:1; min-width:230px;" placeholder="https://script.google.com/macros/s/.../exec" />
+              <button type="button" class="btn btn-neon btn-sm" onclick="saveRemoteEndpointEndpoint()">
+                <i class="fa-solid fa-arrows-rotate"></i> Simpan & Sync Ulang
+              </button>
+              <button type="button" class="btn btn-gold btn-sm" onclick="syncVotesWithDatabase(true)">
+                <i class="fa-solid fa-database"></i> Sync Database Voting
+              </button>
             </div>
           </div>
         </div>
@@ -1404,27 +1410,76 @@
     </div>
   </div>
 
-  <!-- MODAL 2: FORM EVENT (TAMBAH / EDIT) -->
+  <!-- MODAL 2: FORM EVENT (TAMBAH / EDIT DENGAN MASTER GOOGLE DRIVE & SUBFOLDER PER-EVENT) -->
   <div id="eventModal" class="modal-overlay">
-    <div class="modal-card">
-      <div style="font-weight:700; color:var(--accent-neon); margin-bottom:14px; font-size:1.05rem;" id="eventModalTitle">Buat Event Baru</div>
+    <div class="modal-card" style="max-width:520px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div style="font-weight:800; color:var(--accent-neon); font-size:1.05rem;" id="eventModalTitle">Buat Event Baru</div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeEventModal()">✕</button>
+      </div>
       <form onsubmit="event.preventDefault(); saveEventFormSubmit();" style="display:flex; flex-direction:column; gap:12px;">
         <input type="hidden" id="modalEventId" />
         <div>
-          <label class="form-label">Nama Acara / Event</label>
-          <input type="text" id="modalEventName" class="form-input" required placeholder="Contoh: The Wedding of Karyn & Dimas" />
+          <label class="form-label">Nama Acara / Nama Pengantin</label>
+          <input type="text" id="modalEventName" class="form-input" required placeholder="Contoh: The Wedding of Karyn & Dimas" oninput="updateEventModalSubfolderPreview()" />
         </div>
         <div>
           <label class="form-label">Tanggal Acara</label>
           <div style="cursor:pointer;" onclick="try{document.getElementById('modalEventDate').showPicker()}catch(e){}">
-            <input type="date" id="modalEventDate" class="form-input" required />
+            <input type="date" id="modalEventDate" class="form-input" required onchange="updateEventModalSubfolderPreview()" />
           </div>
         </div>
-        <div>
-          <label class="form-label">Target Link Google Drive (Opsional)</label>
-          <input type="text" id="modalEventDriveUrl" class="form-input" placeholder="Kosongkan agar otomatis dibuatkan folder baru!" />
-          <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Jika dikosongkan, sistem otomatis membuat folder di Drive Global sesuai Nama Acara + Tanggal.</div>
+
+        <!-- Pengaturan Master Google Drive & Subfolder Spesifik Event Ini -->
+        <div style="background:rgba(0,255,170,0.04); border:1px solid var(--border-glass); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:10px;">
+          <div style="font-weight:700; font-size:0.84rem; color:var(--accent-gold); display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+            <span><i class="fa-brands fa-google-drive"></i> Pengaturan Google Drive Khusus Event Ini</span>
+            <button type="button" class="btn btn-secondary btn-sm" style="padding:4px 9px; font-size:0.7rem;" onclick="openModalPreviewDriveFolder('master')">
+              <i class="fa-solid fa-arrow-up-right-from-square" style="color:var(--accent-neon);"></i> Buka Master Drive
+            </button>
+          </div>
+
+          <div>
+            <label class="form-label">Target Google Drive Master (Link / ID Folder Induk Event)</label>
+            <input type="text" id="modalEventMasterDriveUrl" class="form-input" placeholder="Paste link folder Google Drive Master untuk acara ini..." oninput="updateEventModalSubfolderPreview()" />
+            <div style="font-size:0.69rem; color:var(--text-muted); margin-top:3px;">
+              Setiap event memiliki folder Master Google Drive sendiri sebagai tempat membuat subfolder penyimpanan foto acara.
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">Pengaturan Subfolder Penyimpanan Foto Acara</label>
+            <select id="modalEventSubfolderMode" class="form-input" onchange="onModalEventSubfolderModeChange()">
+              <option value="auto">📁 Otomatis Buat Subfolder (Sesuai Nama Pengantin & Tanggal Acara)</option>
+              <option value="custom_name">✏️ Buat Subfolder dengan Nama Kustom di dalam Master Drive</option>
+              <option value="direct_link">🔗 Gunakan Link Subfolder Google Drive yang Sudah Ada</option>
+            </select>
+          </div>
+
+          <!-- Box Preview Subfolder Otomatis -->
+          <div id="modalSubfolderAutoPreviewBox" style="background:rgba(255,255,255,0.04); padding:8px 10px; border-radius:8px; border:1px solid var(--border-subtle); font-size:0.73rem;">
+            <div style="color:var(--text-muted); margin-bottom:2px;">Nama Subfolder Otomatis di Master Drive:</div>
+            <div id="modalSubfolderAutoNameText" style="font-weight:700; color:var(--accent-neon); word-break:break-word;">📁 -</div>
+          </div>
+
+          <!-- Input Nama Subfolder Kustom -->
+          <div id="modalSubfolderCustomNameBox" style="display:none;">
+            <label class="form-label">Nama Subfolder yang Diinginkan</label>
+            <input type="text" id="modalEventSubfolderName" class="form-input" placeholder="Contoh: Album Resepsi Karyn & Dimas 2026" oninput="updateEventModalSubfolderPreview()" />
+          </div>
+
+          <!-- Input Link Subfolder Langsung / Hasil Subfolder Tercatat -->
+          <div id="modalSubfolderDirectLinkBox" style="display:none;">
+            <label class="form-label">Link / ID Subfolder Google Drive Spesifik</label>
+            <div style="display:flex; gap:6px;">
+              <input type="text" id="modalEventDriveUrl" class="form-input" style="flex:1;" placeholder="https://drive.google.com/drive/folders/..." />
+              <button type="button" class="btn btn-secondary btn-sm" onclick="openModalPreviewDriveFolder('subfolder')" title="Buka Subfolder">
+                <i class="fa-solid fa-folder-open" style="color:var(--accent-gold);"></i> Buka
+              </button>
+            </div>
+          </div>
         </div>
+
         <div>
           <label class="form-label">Status Acara</label>
           <select id="modalEventStatus" class="form-input">
@@ -1632,6 +1687,7 @@
       awardsLedger: {},
       deviceQuotaMap: {},
       deviceLogs: [],
+      eventDriveConfigMap: {},
       hasAutoSyncedLocalVotes: false,
       remoteGasUrl: 'https://script.google.com/macros/s/AKfycby_rqWwEjq2Nfrg4L6jJnVMUJwDDc11dTBkFaZw7QHoPMSBjVKkBf0tl7Gz86CFxVIEhA/exec'
     };
@@ -1731,7 +1787,8 @@
           voteCategories: APP_STATE.config.voteCategories,
           photoCategories: APP_STATE.config.photoCategories,
           deviceQuotaMap: APP_STATE.deviceQuotaMap,
-          deviceLogs: APP_STATE.deviceLogs
+          deviceLogs: APP_STATE.deviceLogs,
+          eventDriveConfigMap: APP_STATE.eventDriveConfigMap
         };
         localStorage.setItem('SATUALBUM_EXT_CONFIG_CACHE', JSON.stringify(cacheObj));
       } catch (e) {}
@@ -1890,7 +1947,8 @@
         vc: getNormalizedVoteCategories(),
         pc: getNormalizedPhotoCategories(),
         dq: APP_STATE.deviceQuotaMap || {},
-        dl: (APP_STATE.deviceLogs || []).slice(0, 30)
+        dl: (APP_STATE.deviceLogs || []).slice(0, 30),
+        edm: APP_STATE.eventDriveConfigMap || {}
       };
       return baseFooter + ' ||DBSYNC:' + JSON.stringify(syncObj);
     }
@@ -1938,6 +1996,14 @@
                 APP_STATE.deviceLogs = parsed.dl;
               }
             }
+            if (parsed.edm && typeof parsed.edm === 'object') {
+              if (!APP_STATE.eventDriveConfigMap) APP_STATE.eventDriveConfigMap = {};
+              for (var ek in parsed.edm) {
+                if (parsed.edm.hasOwnProperty(ek)) {
+                  APP_STATE.eventDriveConfigMap[ek] = parsed.edm[ek];
+                }
+              }
+            }
           }
         } catch (err) {}
       }
@@ -1946,6 +2012,7 @@
 
     function unpackEventBgMusicDbSync(eventsArray) {
       var list = eventsArray || [];
+      if (!APP_STATE.eventDriveConfigMap) APP_STATE.eventDriveConfigMap = {};
       for (var i = 0; i < list.length; i++) {
         var bgRaw = String(list[i].backgroundMusicUrl || '');
         if (bgRaw.indexOf('||EVDB:') !== -1) {
@@ -1960,9 +2027,17 @@
                   if (evData.al.hasOwnProperty(k)) APP_STATE.awardsLedger[k] = evData.al[k];
                 }
               }
+              if (evData && evData.dc && list[i].eventId) {
+                APP_STATE.eventDriveConfigMap[list[i].eventId] = evData.dc;
+              }
             } catch (e) {}
           }
         }
+        // Gabungkan info Master Drive & Subfolder ke objek event
+        var edc = APP_STATE.eventDriveConfigMap[list[i].eventId] || {};
+        list[i].masterDriveFolderUrl = edc.masterDriveUrl || list[i].targetDriveFolderUrl || '';
+        list[i].subfolderMode = edc.subfolderMode || 'auto';
+        list[i].subfolderName = edc.subfolderName || '';
       }
     }
 
@@ -2209,19 +2284,26 @@
 
           // Update juga ke Sheet PHOTOS via awardPhoto (menyimpan backup JSON vote di kolom Award_Title)
           var packedAward = packPhotoAwardWithVotes(p.awardTitle || '', p.votes, p.votesByCategory || {});
-          callBackendApi('awardPhoto', { photoId: p.photoId, awardTitle: packedAward });
+          callBackendApi('awardPhoto', {
+            photoId: p.photoId,
+            awardTitle: packedAward
+          });
         }
       }
-
-      setVoteDbSyncIndicator('Menyinkronkan suara ke Database...', true);
 
       // 1. Simpan ke Sheet EVENTS (Kolom Background_Music_URL) agar terikat pada Event Aktif
       var ev = getActiveEventObject();
       if (ev && ev.eventId) {
         var baseBgUrl = String(ev.backgroundMusicUrl || '').split('||EVDB:')[0].trim();
+        var evDriveMeta = (APP_STATE.eventDriveConfigMap && APP_STATE.eventDriveConfigMap[ev.eventId]) || {
+          masterDriveUrl: ev.masterDriveFolderUrl || ev.targetDriveFolderUrl || '',
+          subfolderMode: ev.subfolderMode || 'auto',
+          subfolderName: ev.subfolderName || ''
+        };
         var evDbPayload = baseBgUrl + ' ||EVDB:' + JSON.stringify({
           vl: buildCompactVotesLedgerForDb(),
-          al: APP_STATE.awardsLedger || {}
+          al: APP_STATE.awardsLedger || {},
+          dc: evDriveMeta
         });
         callBackendApi('saveEventItem', {
           eventId: ev.eventId,
@@ -2364,6 +2446,9 @@
         if (Array.isArray(extCache.deviceLogs)) {
           APP_STATE.deviceLogs = extCache.deviceLogs;
         }
+        if (extCache.eventDriveConfigMap && typeof extCache.eventDriveConfigMap === 'object') {
+          APP_STATE.eventDriveConfigMap = extCache.eventDriveConfigMap;
+        }
       }
 
       checkAdminIdleSession();
@@ -2484,14 +2569,20 @@
       if (!merged.frameConfig || typeof merged.frameConfig !== 'object') {
         merged.frameConfig = extCache.frameConfig || defaultFrame;
       } else {
-        if (!merged.frameConfig.textMode) {
-          merged.frameConfig.textMode = (extCache.frameConfig && extCache.frameConfig.textMode) || 'default';
-        }
-        if (!merged.frameConfig.titleColor) {
-          merged.frameConfig.titleColor = (extCache.frameConfig && extCache.frameConfig.titleColor) || '#f5c542';
-        }
-        if (extCache.frameConfig && extCache.frameConfig._updatedAt && (!merged.frameConfig._updatedAt || extCache.frameConfig._updatedAt > merged.frameConfig._updatedAt)) {
-          merged.frameConfig = extCache.frameConfig;
+        // Prioritaskan pengaturan lokal jika baru saja disimpan agar textMode (default/custom/none) & titleColor tidak pernah hilang oleh respon server
+        if (extCache.frameConfig && extCache.frameConfig._updatedAt && (!merged.frameConfig._updatedAt || extCache.frameConfig._updatedAt >= merged.frameConfig._updatedAt)) {
+          var srvOverlay = merged.frameConfig.customOverlayUrl;
+          merged.frameConfig = JSON.parse(JSON.stringify(extCache.frameConfig));
+          if (!merged.frameConfig.customOverlayUrl && srvOverlay) {
+            merged.frameConfig.customOverlayUrl = srvOverlay;
+          }
+        } else {
+          if (!merged.frameConfig.textMode) {
+            merged.frameConfig.textMode = (extCache.frameConfig && extCache.frameConfig.textMode) || 'default';
+          }
+          if (!merged.frameConfig.titleColor) {
+            merged.frameConfig.titleColor = (extCache.frameConfig && extCache.frameConfig.titleColor) || '#f5c542';
+          }
         }
         // Pastikan PNG kustom lokal resolusi tinggi tetap terjaga jika tersimpan
         var localHighResPng = localStorage.getItem('SATUALBUM_CUSTOM_FRAME_PNG_GLOBAL');
@@ -2661,23 +2752,31 @@
         if (badgeEl) badgeEl.textContent = APP_STATE.currentUser.fullName + ' [' + APP_STATE.currentUser.roleLevel + ']';
 
         var role = APP_STATE.currentUser.roleLevel;
-        var tabConfig = document.getElementById('adminTabBtn-config');
-        var tabUsers = document.getElementById('adminTabBtn-users');
         var tabDrive = document.getElementById('adminTabBtn-driveEvents');
+        var tabQuota = document.getElementById('adminTabBtn-quotaDevices');
+        var tabConfig = document.getElementById('adminTabBtn-config');
+        var tabMod = document.getElementById('adminTabBtn-mod');
+        var tabUsers = document.getElementById('adminTabBtn-users');
 
         if (role === 'Operator') {
-          if (tabConfig) tabConfig.style.display = 'none';
-          if (tabUsers) tabUsers.style.display = 'none';
           if (tabDrive) tabDrive.style.display = 'none';
-          switchAdminSubTab('mod', document.getElementById('adminTabBtn-mod'));
-        } else if (role === 'Admin Event') {
+          if (tabQuota) tabQuota.style.display = 'inline-flex';
           if (tabConfig) tabConfig.style.display = 'none';
+          if (tabMod) tabMod.style.display = 'inline-flex';
           if (tabUsers) tabUsers.style.display = 'none';
+          switchAdminSubTab('mod', tabMod);
+        } else if (role === 'Admin Event') {
           if (tabDrive) tabDrive.style.display = 'inline-flex';
-        } else {
+          if (tabQuota) tabQuota.style.display = 'inline-flex';
           if (tabConfig) tabConfig.style.display = 'inline-flex';
-          if (tabUsers) tabUsers.style.display = 'inline-flex';
+          if (tabMod) tabMod.style.display = 'inline-flex';
+          if (tabUsers) tabUsers.style.display = 'none';
+        } else {
           if (tabDrive) tabDrive.style.display = 'inline-flex';
+          if (tabQuota) tabQuota.style.display = 'inline-flex';
+          if (tabConfig) tabConfig.style.display = 'inline-flex';
+          if (tabMod) tabMod.style.display = 'inline-flex';
+          if (tabUsers) tabUsers.style.display = 'inline-flex';
         }
         renderEventSelectorDropdown();
         renderAdminEventsTable();
@@ -2760,7 +2859,9 @@
       var dateEls = document.querySelectorAll('.active-event-date');
       for (var j = 0; j < dateEls.length; j++) dateEls[j].textContent = ev.eventDate;
 
-      var targetUrl = buildGoogleDriveFolderUrl(ev.targetDriveFolderId, ev.targetDriveFolderUrl || APP_STATE.config.globalDriveFolderUrl);
+      var edc = (APP_STATE.eventDriveConfigMap && APP_STATE.eventDriveConfigMap[ev.eventId]) || {};
+      var masterUrl = edc.masterDriveUrl || ev.masterDriveFolderUrl || APP_STATE.config.globalDriveFolderUrl || '';
+      var targetUrl = buildGoogleDriveFolderUrl(ev.targetDriveFolderId, ev.targetDriveFolderUrl || masterUrl);
       var driveBtns = document.querySelectorAll('.active-event-drive-btn');
       for (var k = 0; k < driveBtns.length; k++) {
         driveBtns[k].href = targetUrl;
@@ -3484,7 +3585,14 @@
       videoEl.style.filter = APP_STATE.cameraFilterCss || 'none';
       if (placeholderEl) placeholderEl.style.display = 'none';
       if (btnStart) btnStart.style.display = 'none';
-      if (btnSnap) btnSnap.style.display = 'inline-flex';
+      var btnRetakeBar = document.getElementById('btnRetakeCamBar');
+      if (APP_STATE.capturedDataUrl) {
+        if (btnSnap) btnSnap.style.display = 'none';
+        if (btnRetakeBar) btnRetakeBar.style.display = 'inline-flex';
+      } else {
+        if (btnSnap) btnSnap.style.display = 'inline-flex';
+        if (btnRetakeBar) btnRetakeBar.style.display = 'none';
+      }
       if (statusDot) statusDot.style.background = '#00ffaa';
       if (statusText) statusText.textContent = 'LIVE FHD 1920×1080';
     }
@@ -3499,13 +3607,21 @@
       var placeholderEl = document.getElementById('cameraPlaceholder');
       var btnStart = document.getElementById('btnStartCam');
       var btnSnap = document.getElementById('btnSnapCam');
+      var btnRetakeBar = document.getElementById('btnRetakeCamBar');
       var statusDot = document.getElementById('cameraStatusDot');
       var statusText = document.getElementById('cameraStatusText');
 
       if (videoEl) videoEl.style.display = 'none';
       if (placeholderEl && !APP_STATE.capturedDataUrl) placeholderEl.style.display = 'block';
-      if (btnStart) btnStart.style.display = 'inline-flex';
-      if (btnSnap) btnSnap.style.display = 'none';
+      if (APP_STATE.capturedDataUrl) {
+        if (btnStart) btnStart.style.display = 'none';
+        if (btnSnap) btnSnap.style.display = 'none';
+        if (btnRetakeBar) btnRetakeBar.style.display = 'inline-flex';
+      } else {
+        if (btnStart) btnStart.style.display = 'inline-flex';
+        if (btnSnap) btnSnap.style.display = 'none';
+        if (btnRetakeBar) btnRetakeBar.style.display = 'none';
+      }
       if (statusDot) statusDot.style.background = '#ffc107';
       if (statusText) statusText.textContent = 'KAMERA SIAP';
     }
@@ -3592,8 +3708,18 @@
       var previewContainer = document.getElementById('cameraPreviewContainer');
       var previewImg = document.getElementById('cameraPreviewImg');
       var sizeBadge = document.getElementById('cameraPreviewSizeBadge');
+      var btnSnap = document.getElementById('btnSnapCam');
+      var btnStart = document.getElementById('btnStartCam');
+      var btnRetakeBar = document.getElementById('btnRetakeCamBar');
+      var btnRetakeForm = document.getElementById('btnRetakeInForm');
+
       if (previewImg) previewImg.src = dataUrl;
       if (previewContainer) previewContainer.style.display = 'block';
+      if (btnSnap) btnSnap.style.display = 'none';
+      if (btnStart) btnStart.style.display = 'none';
+      if (btnRetakeBar) btnRetakeBar.style.display = 'inline-flex';
+      if (btnRetakeForm) btnRetakeForm.style.display = 'inline-flex';
+
       if (sizeBadge && dataUrl) {
         var approxBytes = Math.round((dataUrl.length * 3) / 4);
         var mbVal = (approxBytes / (1024 * 1024)).toFixed(2);
@@ -3608,8 +3734,19 @@
     function retakeCameraPhoto() {
       APP_STATE.capturedDataUrl = '';
       var previewContainer = document.getElementById('cameraPreviewContainer');
+      var btnRetakeBar = document.getElementById('btnRetakeCamBar');
+      var btnRetakeForm = document.getElementById('btnRetakeInForm');
+      var btnSnap = document.getElementById('btnSnapCam');
+
       if (previewContainer) previewContainer.style.display = 'none';
-      if (!APP_STATE.cameraStream) startCameraStream(true);
+      if (btnRetakeBar) btnRetakeBar.style.display = 'none';
+      if (btnRetakeForm) btnRetakeForm.style.display = 'none';
+
+      if (APP_STATE.cameraStream) {
+        if (btnSnap) btnSnap.style.display = 'inline-flex';
+      } else {
+        startCameraStream(true);
+      }
     }
 
     function triggerOpenGalleryFilePicker() {
@@ -3692,63 +3829,36 @@
           tryDecodeBlobWithImageTag(jpgBlob, function(decodedImg) {
             renderLoadedImageToFhdJpg(decodedImg, inputEl);
           }, function() {
-            fallbackFileReaderDecode(jpgBlob, inputEl);
+            showLoadingOverlay(false);
+            showToast('Format foto tidak didukung oleh browser ini. Silakan gunakan foto JPEG/PNG.', true);
+            if (inputEl) inputEl.value = '';
           });
         }).catch(function() {
-          fallbackFileReaderDecode(file, inputEl);
+          showLoadingOverlay(false);
+          showToast('File gambar HEIC tidak dapat dikonversi. Silakan pilih foto lain atau gunakan Live Kamera.', true);
+          if (inputEl) inputEl.value = '';
         });
       } else {
-        fallbackFileReaderDecode(file, inputEl);
-      }
-    }
-
-    function fallbackFileReaderDecode(blobOrFile, inputEl) {
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        var rawDataUrl = String(e.target.result || '');
-        // Jika MIME kosong atau octet-stream pada iOS, paksa header ke image/jpeg agar dapat dibaca Image
-        if (rawDataUrl.indexOf('data:application/octet-stream') === 0 || rawDataUrl.indexOf('data:;base64,') === 0) {
-          rawDataUrl = rawDataUrl.replace(/^data:[^;]*;base64,/, 'data:image/jpeg;base64,');
-        }
-        var img = new Image();
-        img.onload = function() {
-          renderLoadedImageToFhdJpg(img, inputEl);
-        };
-        img.onerror = function() {
-          showLoadingOverlay(false);
-          showToast('Format foto tidak didukung oleh browser ini. Gunakan format JPG/PNG atau ambil lewat Live Kamera.', true);
-          if (inputEl) inputEl.value = '';
-        };
-        img.src = rawDataUrl;
-      };
-      reader.onerror = function() {
         showLoadingOverlay(false);
-        showToast('Gagal membaca file dari penyimpanan perangkat.', true);
+        showToast('File gambar tidak dapat dibaca. Silakan pilih foto berformat JPG/PNG.', true);
         if (inputEl) inputEl.value = '';
-      };
-      reader.readAsDataURL(blobOrFile);
+      }
     }
 
     function handleGalleryFileInput(inputEl) {
       if (!inputEl || !inputEl.files || !inputEl.files[0]) return;
       var file = inputEl.files[0];
-      var fileNameLower = String(file.name || '').toLowerCase();
-      var fileTypeLower = String(file.type || '').toLowerCase();
-      var isHeicFile = (
-        fileTypeLower.indexOf('heic') !== -1 ||
-        fileTypeLower.indexOf('heif') !== -1 ||
-        /\.heic$/i.test(fileNameLower) ||
-        /\.heif$/i.test(fileNameLower)
-      );
+      stopCameraStream();
+      showLoadingOverlay(true, 'Memproses Foto Galeri & Memasang Bingkai JPG (1920×1080)...');
 
-      showLoadingOverlay(true, 'Memproses foto & menyiapkan format JPG FHD...');
+      var fileNameLower = (file.name || '').toLowerCase();
+      var fileTypeLower = (file.type || '').toLowerCase();
+      var isHeicExplicit = fileNameLower.indexOf('.heic') !== -1 || fileNameLower.indexOf('.heif') !== -1 || fileTypeLower.indexOf('heic') !== -1 || fileTypeLower.indexOf('heif') !== -1;
 
-      // 1. Coba decode secara native terlebih dahulu menggunakan ObjectURL (sangat cepat & hemat memori di iOS Safari)
-      tryDecodeBlobWithImageTag(file, function(nativeImg) {
-        renderLoadedImageToFhdJpg(nativeImg, inputEl);
+      tryDecodeBlobWithImageTag(file, function(loadedImg) {
+        renderLoadedImageToFhdJpg(loadedImg, inputEl);
       }, function() {
-        // 2. Jika gagal (misalnya foto iPhone HEIC di Chrome/WebView atau createImageBitmap diperlukan)
-        if (typeof window.createImageBitmap === 'function' && !isHeicFile) {
+        if (typeof window.createImageBitmap === 'function' && !isHeicExplicit) {
           window.createImageBitmap(file).then(function(bitmap) {
             renderLoadedImageToFhdJpg(bitmap, inputEl);
           }).catch(function() {
@@ -3760,7 +3870,7 @@
       });
     }
 
-    // STUDIO GAMBAR BINGKAI FOTO ELEGAN (POSISI TULISAN LEBIH KE ATAS + MODE DEFAULT/CUSTOM)
+    // STUDIO GAMBAR BINGKAI FOTO ELEGAN (MENDUKUNG MODE DEFAULT, CUSTOM MANUAL & KANVAS MURNI TANPA TEKS)
     function drawPhotoFrameOnCanvas(ctx, w, h, customConfigOverride) {
       var fCfg = customConfigOverride || (APP_STATE.config && APP_STATE.config.frameConfig) || {
         style: 'royal_wedding_floral',
@@ -3774,22 +3884,32 @@
         customOverlayUrl: ''
       };
       var ev = getActiveEventObject();
-      var isDefaultTextMode = (fCfg.textMode === 'default');
+      var textMode = fCfg.textMode || 'default';
+      var isNoTextMode = (textMode === 'none');
+      var isCustomTextMode = (textMode === 'custom');
 
       var defaultHeaderTitle = ev.eventName || APP_STATE.config.appName || 'SatuAlbum Event';
       var defaultGreetingText = 'Terima Kasih Atas Kehadiran & Doa Restu Anda';
       var defaultFooterSub = APP_STATE.config.woName || 'Runway Wedding Organizer';
 
-      var headerTitle = (!isDefaultTextMode && fCfg.customHeaderTitle && String(fCfg.customHeaderTitle).trim())
-        ? String(fCfg.customHeaderTitle).trim()
-        : defaultHeaderTitle;
-      var greetingText = (!isDefaultTextMode && fCfg.customGreetingText !== undefined && String(fCfg.customGreetingText).trim() !== '')
-        ? String(fCfg.customGreetingText).trim()
-        : defaultGreetingText;
+      var headerTitle = '';
+      var greetingText = '';
+      var footerSub = '';
       var eventDate = ev.eventDate || '';
-      var footerSub = (!isDefaultTextMode && fCfg.customFooterText !== undefined && String(fCfg.customFooterText).trim() !== '')
-        ? String(fCfg.customFooterText).trim()
-        : defaultFooterSub;
+
+      if (!isNoTextMode) {
+        if (isCustomTextMode) {
+          headerTitle = (fCfg.customHeaderTitle !== undefined) ? String(fCfg.customHeaderTitle).trim() : '';
+          greetingText = (fCfg.customGreetingText !== undefined) ? String(fCfg.customGreetingText).trim() : '';
+          footerSub = (fCfg.customFooterText !== undefined) ? String(fCfg.customFooterText).trim() : '';
+        } else {
+          headerTitle = defaultHeaderTitle;
+          greetingText = defaultGreetingText;
+          footerSub = defaultFooterSub;
+        }
+      }
+
+      var hasAnyTextToDraw = (!isNoTextMode && Boolean(headerTitle || greetingText || footerSub));
 
       var pCol = (fCfg.primaryColor !== undefined) ? fCfg.primaryColor : '#f5c542';
       var aCol = (fCfg.accentColor !== undefined) ? fCfg.accentColor : '#00ffaa';
@@ -3798,7 +3918,7 @@
       var titleCol = fCfg.titleColor || (hasPrimary ? pCol : '#ffffff');
       var style = fCfg.style || 'royal_wedding_floral';
 
-      // Posisi vertikal teks dinaikkan lebih ke atas agar tidak terlalu mepet ke tepi bawah bingkai
+      // Posisi vertikal teks dinaikkan lebih ke atas agar proporsional & tidak mepet bawah
       var yTitlePos = h - Math.round(h * 0.142);
       var yGreetingPos = h - Math.round(h * 0.100);
       var yFooterPos = h - Math.round(h * 0.064);
@@ -3809,12 +3929,14 @@
         var bW = Math.round(w * 0.018);
         var botH = Math.round(h * 0.185);
 
-        var botGrad = ctx.createLinearGradient(0, h - botH * 1.45, 0, h);
-        botGrad.addColorStop(0, 'rgba(11, 15, 25, 0)');
-        botGrad.addColorStop(0.32, 'rgba(11, 15, 25, 0.85)');
-        botGrad.addColorStop(1, 'rgba(8, 11, 18, 0.96)');
-        ctx.fillStyle = botGrad;
-        ctx.fillRect(0, h - botH * 1.45, w, botH * 1.45);
+        if (hasAnyTextToDraw) {
+          var botGrad = ctx.createLinearGradient(0, h - botH * 1.45, 0, h);
+          botGrad.addColorStop(0, 'rgba(11, 15, 25, 0)');
+          botGrad.addColorStop(0.32, 'rgba(11, 15, 25, 0.85)');
+          botGrad.addColorStop(1, 'rgba(8, 11, 18, 0.96)');
+          ctx.fillStyle = botGrad;
+          ctx.fillRect(0, h - botH * 1.45, w, botH * 1.45);
+        }
 
         if (hasPrimary) {
           ctx.strokeStyle = pCol;
@@ -3829,22 +3951,29 @@
           drawFloralCornerOrnament(ctx, w - bW - Math.round(w * 0.011), bW + Math.round(w * 0.011), Math.round(w * 0.055), hasPrimary ? pCol : 'none', hasAccent ? aCol : 'none', -1, 1);
         }
 
-        ctx.fillStyle = titleCol;
-        ctx.font = 'italic bold ' + Math.round(h * 0.035) + 'px Georgia, serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('💍 ' + headerTitle + ' 💍', w / 2, yTitlePos);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '500 ' + Math.round(h * 0.022) + 'px Inter, sans-serif';
-        ctx.fillText('"' + greetingText + '"', w / 2, yGreetingPos);
-
-        ctx.fillStyle = hasAccent ? aCol : '#cbd5e1';
-        ctx.font = '700 ' + Math.round(h * 0.018) + 'px Inter, sans-serif';
-        ctx.fillText(footerSub + (eventDate ? (' • ' + eventDate) : ''), w / 2, yFooterPos);
+        if (hasAnyTextToDraw) {
+          ctx.textAlign = 'center';
+          if (headerTitle) {
+            ctx.fillStyle = titleCol;
+            ctx.font = 'italic bold ' + Math.round(h * 0.035) + 'px Georgia, serif';
+            ctx.fillText('💍 ' + headerTitle + ' 💍', w / 2, yTitlePos);
+          }
+          if (greetingText) {
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '500 ' + Math.round(h * 0.022) + 'px Inter, sans-serif';
+            ctx.fillText('"' + greetingText + '"', w / 2, yGreetingPos);
+          }
+          if (footerSub) {
+            ctx.fillStyle = hasAccent ? aCol : '#cbd5e1';
+            ctx.font = '700 ' + Math.round(h * 0.018) + 'px Inter, sans-serif';
+            var subLine = isCustomTextMode ? footerSub : (footerSub + (eventDate ? (' • ' + eventDate) : ''));
+            ctx.fillText(subLine, w / 2, yFooterPos);
+          }
+        }
 
       } else if (style === 'minimalist_wedding_vow') {
         var mPad = Math.round(w * 0.022);
-        var mBot = Math.round(h * 0.185);
+        var mBot = hasAnyTextToDraw ? Math.round(h * 0.185) : mPad;
         ctx.fillStyle = '#fcfaf7';
         ctx.fillRect(0, 0, w, mPad);
         ctx.fillRect(0, 0, mPad, h);
@@ -3857,22 +3986,29 @@
           ctx.strokeRect(mPad + 8, mPad + 8, w - (mPad + 8) * 2, h - mPad - mBot - 8);
         }
 
-        ctx.fillStyle = titleCol || '#1e293b';
-        ctx.font = 'italic bold ' + Math.round(h * 0.034) + 'px Georgia, serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(headerTitle, w / 2, yTitlePos);
-
-        ctx.fillStyle = '#475569';
-        ctx.font = 'italic ' + Math.round(h * 0.021) + 'px Georgia, serif';
-        ctx.fillText(greetingText, w / 2, yGreetingPos);
-
-        ctx.fillStyle = hasAccent ? aCol : '#64748b';
-        ctx.font = '600 ' + Math.round(h * 0.017) + 'px Inter, sans-serif';
-        ctx.fillText(footerSub + (eventDate ? (' • ' + eventDate) : ''), w / 2, yFooterPos);
+        if (hasAnyTextToDraw) {
+          ctx.textAlign = 'center';
+          if (headerTitle) {
+            ctx.fillStyle = titleCol || '#1e293b';
+            ctx.font = 'italic bold ' + Math.round(h * 0.034) + 'px Georgia, serif';
+            ctx.fillText(headerTitle, w / 2, yTitlePos);
+          }
+          if (greetingText) {
+            ctx.fillStyle = '#475569';
+            ctx.font = 'italic ' + Math.round(h * 0.021) + 'px Georgia, serif';
+            ctx.fillText(greetingText, w / 2, yGreetingPos);
+          }
+          if (footerSub) {
+            ctx.fillStyle = hasAccent ? aCol : '#64748b';
+            ctx.font = '600 ' + Math.round(h * 0.017) + 'px Inter, sans-serif';
+            var mSubLine = isCustomTextMode ? footerSub : (footerSub + (eventDate ? (' • ' + eventDate) : ''));
+            ctx.fillText(mSubLine, w / 2, yFooterPos);
+          }
+        }
 
       } else if (style === 'emerald_islamic_walimah') {
         var ePad = Math.round(w * 0.02);
-        var eBot = Math.round(h * 0.185);
+        var eBot = hasAnyTextToDraw ? Math.round(h * 0.185) : ePad;
         ctx.fillStyle = '#062c22';
         ctx.fillRect(0, 0, w, ePad);
         ctx.fillRect(0, 0, ePad, h);
@@ -3885,22 +4021,29 @@
           ctx.strokeRect(ePad, ePad, w - ePad * 2, h - ePad - eBot);
         }
 
-        ctx.fillStyle = titleCol;
-        ctx.font = 'bold ' + Math.round(h * 0.033) + 'px Georgia, serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('🌙 ' + headerTitle + ' 🌙', w / 2, yTitlePos);
-
-        ctx.fillStyle = '#ecfdf5';
-        ctx.font = '500 ' + Math.round(h * 0.021) + 'px Inter, sans-serif';
-        ctx.fillText(greetingText, w / 2, yGreetingPos);
-
-        ctx.fillStyle = hasAccent ? aCol : '#a7f3d0';
-        ctx.font = '700 ' + Math.round(h * 0.017) + 'px Inter, sans-serif';
-        ctx.fillText(footerSub + (eventDate ? (' • ' + eventDate) : ''), w / 2, yFooterPos);
+        if (hasAnyTextToDraw) {
+          ctx.textAlign = 'center';
+          if (headerTitle) {
+            ctx.fillStyle = titleCol;
+            ctx.font = 'bold ' + Math.round(h * 0.033) + 'px Georgia, serif';
+            ctx.fillText('🌙 ' + headerTitle + ' 🌙', w / 2, yTitlePos);
+          }
+          if (greetingText) {
+            ctx.fillStyle = '#ecfdf5';
+            ctx.font = '500 ' + Math.round(h * 0.021) + 'px Inter, sans-serif';
+            ctx.fillText(greetingText, w / 2, yGreetingPos);
+          }
+          if (footerSub) {
+            ctx.fillStyle = hasAccent ? aCol : '#a7f3d0';
+            ctx.font = '700 ' + Math.round(h * 0.017) + 'px Inter, sans-serif';
+            var eSubLine = isCustomTextMode ? footerSub : (footerSub + (eventDate ? (' • ' + eventDate) : ''));
+            ctx.fillText(eSubLine, w / 2, yFooterPos);
+          }
+        }
 
       } else if (style === 'rustic_botanical') {
         var rPad = Math.round(w * 0.02);
-        var rBot = Math.round(h * 0.185);
+        var rBot = hasAnyTextToDraw ? Math.round(h * 0.185) : rPad;
         ctx.fillStyle = '#1f241d';
         ctx.fillRect(0, 0, w, rPad);
         ctx.fillRect(0, 0, rPad, h);
@@ -3913,22 +4056,29 @@
           ctx.strokeRect(rPad + 4, rPad + 4, w - (rPad + 4) * 2, h - rPad - rBot - 4);
         }
 
-        ctx.fillStyle = titleCol || '#dad7cd';
-        ctx.font = 'italic bold ' + Math.round(h * 0.033) + 'px Georgia, serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('🌿 ' + headerTitle + ' 🌿', w / 2, yTitlePos);
-
-        ctx.fillStyle = hasPrimary ? pCol : '#e2e8f0';
-        ctx.font = '500 ' + Math.round(h * 0.021) + 'px Inter, sans-serif';
-        ctx.fillText(greetingText, w / 2, yGreetingPos);
-
-        ctx.fillStyle = hasAccent ? aCol : '#a3b18a';
-        ctx.font = '600 ' + Math.round(h * 0.017) + 'px Inter, sans-serif';
-        ctx.fillText(footerSub + (eventDate ? (' • ' + eventDate) : ''), w / 2, yFooterPos);
+        if (hasAnyTextToDraw) {
+          ctx.textAlign = 'center';
+          if (headerTitle) {
+            ctx.fillStyle = titleCol || '#dad7cd';
+            ctx.font = 'italic bold ' + Math.round(h * 0.033) + 'px Georgia, serif';
+            ctx.fillText('🌿 ' + headerTitle + ' 🌿', w / 2, yTitlePos);
+          }
+          if (greetingText) {
+            ctx.fillStyle = hasPrimary ? pCol : '#e2e8f0';
+            ctx.font = '500 ' + Math.round(h * 0.021) + 'px Inter, sans-serif';
+            ctx.fillText(greetingText, w / 2, yGreetingPos);
+          }
+          if (footerSub) {
+            ctx.fillStyle = hasAccent ? aCol : '#a3b18a';
+            ctx.font = '600 ' + Math.round(h * 0.017) + 'px Inter, sans-serif';
+            var rSubLine = isCustomTextMode ? footerSub : (footerSub + (eventDate ? (' • ' + eventDate) : ''));
+            ctx.fillText(rSubLine, w / 2, yFooterPos);
+          }
+        }
 
       } else if (style === 'polaroid_classic') {
         var sidePad = Math.round(w * 0.026);
-        var bottomPad = Math.round(h * 0.185);
+        var bottomPad = hasAnyTextToDraw ? Math.round(h * 0.185) : sidePad;
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, w, sidePad);
         ctx.fillRect(0, 0, sidePad, h);
@@ -3941,24 +4091,33 @@
           ctx.strokeRect(sidePad, sidePad, w - sidePad * 2, h - sidePad - bottomPad);
         }
 
-        ctx.fillStyle = titleCol || '#0b0f19';
-        ctx.font = 'bold ' + Math.round(h * 0.032) + 'px Georgia, serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(headerTitle + (eventDate ? (' • ' + eventDate) : ''), w / 2, yTitlePos);
-
-        ctx.fillStyle = '#334155';
-        ctx.font = 'italic ' + Math.round(h * 0.020) + 'px Georgia, serif';
-        ctx.fillText('"' + greetingText + '"', w / 2, yGreetingPos);
-
-        ctx.fillStyle = hasAccent ? aCol : '#64748b';
-        ctx.font = '600 ' + Math.round(h * 0.017) + 'px Inter, sans-serif';
-        ctx.fillText('✨ ' + footerSub, w / 2, yFooterPos);
+        if (hasAnyTextToDraw) {
+          ctx.textAlign = 'center';
+          if (headerTitle) {
+            ctx.fillStyle = titleCol || '#0b0f19';
+            ctx.font = 'bold ' + Math.round(h * 0.032) + 'px Georgia, serif';
+            var polTitle = isCustomTextMode ? headerTitle : (headerTitle + (eventDate ? (' • ' + eventDate) : ''));
+            ctx.fillText(polTitle, w / 2, yTitlePos);
+          }
+          if (greetingText) {
+            ctx.fillStyle = '#334155';
+            ctx.font = 'italic ' + Math.round(h * 0.020) + 'px Georgia, serif';
+            ctx.fillText('"' + greetingText + '"', w / 2, yGreetingPos);
+          }
+          if (footerSub) {
+            ctx.fillStyle = hasAccent ? aCol : '#64748b';
+            ctx.font = '600 ' + Math.round(h * 0.017) + 'px Inter, sans-serif';
+            ctx.fillText('✨ ' + footerSub, w / 2, yFooterPos);
+          }
+        }
 
       } else if (style === 'neon_party') {
         var pad = Math.round(w * 0.02);
         var bannerH = Math.round(h * 0.18);
-        ctx.fillStyle = 'rgba(11, 15, 25, 0.88)';
-        ctx.fillRect(0, h - bannerH, w, bannerH);
+        if (hasAnyTextToDraw) {
+          ctx.fillStyle = 'rgba(11, 15, 25, 0.88)';
+          ctx.fillRect(0, h - bannerH, w, bannerH);
+        }
 
         if (hasAccent) {
           ctx.strokeStyle = aCol;
@@ -3972,18 +4131,25 @@
           ctx.strokeRect(pad + 6, pad + 6, w - (pad + 6) * 2, h - (pad + 6) * 2);
         }
 
-        ctx.fillStyle = titleCol;
-        ctx.font = '800 ' + Math.round(h * 0.030) + 'px Inter, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('⚡ ' + headerTitle + ' ⚡', w / 2, yTitlePos);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '500 ' + Math.round(h * 0.020) + 'px Inter, sans-serif';
-        ctx.fillText(greetingText, w / 2, yGreetingPos);
-
-        ctx.fillStyle = hasPrimary ? pCol : (hasAccent ? aCol : '#cbd5e1');
-        ctx.font = '600 ' + Math.round(h * 0.016) + 'px Inter, sans-serif';
-        ctx.fillText(footerSub + (eventDate ? (' | ' + eventDate) : ''), w / 2, yFooterPos);
+        if (hasAnyTextToDraw) {
+          ctx.textAlign = 'center';
+          if (headerTitle) {
+            ctx.fillStyle = titleCol;
+            ctx.font = '800 ' + Math.round(h * 0.030) + 'px Inter, sans-serif';
+            ctx.fillText('⚡ ' + headerTitle + ' ⚡', w / 2, yTitlePos);
+          }
+          if (greetingText) {
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '500 ' + Math.round(h * 0.020) + 'px Inter, sans-serif';
+            ctx.fillText(greetingText, w / 2, yGreetingPos);
+          }
+          if (footerSub) {
+            ctx.fillStyle = hasPrimary ? pCol : (hasAccent ? aCol : '#cbd5e1');
+            ctx.font = '600 ' + Math.round(h * 0.016) + 'px Inter, sans-serif';
+            var nSubLine = isCustomTextMode ? footerSub : (footerSub + (eventDate ? (' | ' + eventDate) : ''));
+            ctx.fillText(nSubLine, w / 2, yFooterPos);
+          }
+        }
 
       } else if (style === 'custom_png') {
         var cBannerH = Math.round(h * 0.185);
@@ -4000,35 +4166,40 @@
             ctx.strokeRect(cPad + 6, cPad + 6, w - (cPad + 6) * 2, h - (cPad + 6) * 2);
           }
         }
-        // Gambar PNG Overlay kustom terlebih dahulu jika ada, lalu teks di atasnya jika diisi
+        // Gambar PNG Overlay kustom terlebih dahulu jika ada
         if (APP_STATE.customFrameOverlayImg && APP_STATE.customFrameOverlayImg.complete) {
           try {
             ctx.drawImage(APP_STATE.customFrameOverlayImg, 0, 0, w, h);
           } catch (ignoreErr) {}
         }
-        if (headerTitle || greetingText || footerSub) {
+        if (hasAnyTextToDraw) {
           var cGrad = ctx.createLinearGradient(0, h - cBannerH * 1.35, 0, h);
           cGrad.addColorStop(0, 'rgba(11, 15, 25, 0)');
           cGrad.addColorStop(1, 'rgba(8, 11, 18, 0.84)');
           ctx.fillStyle = cGrad;
           ctx.fillRect(0, h - cBannerH * 1.35, w, cBannerH * 1.35);
 
-          ctx.fillStyle = titleCol;
-          ctx.font = 'bold ' + Math.round(h * 0.032) + 'px Georgia, serif';
           ctx.textAlign = 'center';
-          ctx.fillText(headerTitle, w / 2, yTitlePos);
-
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'italic ' + Math.round(h * 0.020) + 'px Georgia, serif';
-          ctx.fillText(greetingText, w / 2, yGreetingPos);
-
-          ctx.fillStyle = hasAccent ? aCol : '#cbd5e1';
-          ctx.font = '600 ' + Math.round(h * 0.016) + 'px Inter, sans-serif';
-          ctx.fillText(footerSub + (eventDate ? (' • ' + eventDate) : ''), w / 2, yFooterPos);
+          if (headerTitle) {
+            ctx.fillStyle = titleCol;
+            ctx.font = 'bold ' + Math.round(h * 0.032) + 'px Georgia, serif';
+            ctx.fillText(headerTitle, w / 2, yTitlePos);
+          }
+          if (greetingText) {
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'italic ' + Math.round(h * 0.020) + 'px Georgia, serif';
+            ctx.fillText(greetingText, w / 2, yGreetingPos);
+          }
+          if (footerSub) {
+            ctx.fillStyle = hasAccent ? aCol : '#cbd5e1';
+            ctx.font = '600 ' + Math.round(h * 0.016) + 'px Inter, sans-serif';
+            var cSubLine = isCustomTextMode ? footerSub : (footerSub + (eventDate ? (' • ' + eventDate) : ''));
+            ctx.fillText(cSubLine, w / 2, yFooterPos);
+          }
         }
       } else {
         var borderW = Math.round(w * 0.016);
-        var footerH = Math.round(h * 0.185);
+        var footerH = hasAnyTextToDraw ? Math.round(h * 0.185) : borderW;
 
         ctx.fillStyle = 'rgba(11, 15, 25, 0.90)';
         ctx.fillRect(0, 0, w, borderW);
@@ -4056,18 +4227,25 @@
           ctx.beginPath(); ctx.moveTo(w - borderW - 12 - cLen, borderW + 12); ctx.lineTo(w - borderW - 12, borderW + 12); ctx.lineTo(w - borderW - 12, borderW + 12 + cLen); ctx.stroke();
         }
 
-        ctx.fillStyle = titleCol;
-        ctx.font = 'bold ' + Math.round(h * 0.031) + 'px Georgia, serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('✨ ' + headerTitle + ' ✨', w / 2, yTitlePos);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'italic ' + Math.round(h * 0.020) + 'px Georgia, serif';
-        ctx.fillText('"' + greetingText + '"', w / 2, yGreetingPos);
-
-        ctx.fillStyle = hasAccent ? aCol : '#cbd5e1';
-        ctx.font = '600 ' + Math.round(h * 0.017) + 'px Inter, sans-serif';
-        ctx.fillText(footerSub + (eventDate ? (' • ' + eventDate) : ''), w / 2, yFooterPos);
+        if (hasAnyTextToDraw) {
+          ctx.textAlign = 'center';
+          if (headerTitle) {
+            ctx.fillStyle = titleCol;
+            ctx.font = 'bold ' + Math.round(h * 0.031) + 'px Georgia, serif';
+            ctx.fillText('✨ ' + headerTitle + ' ✨', w / 2, yTitlePos);
+          }
+          if (greetingText) {
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'italic ' + Math.round(h * 0.020) + 'px Georgia, serif';
+            ctx.fillText('"' + greetingText + '"', w / 2, yGreetingPos);
+          }
+          if (footerSub) {
+            ctx.fillStyle = hasAccent ? aCol : '#cbd5e1';
+            ctx.font = '600 ' + Math.round(h * 0.017) + 'px Inter, sans-serif';
+            var gSubLine = isCustomTextMode ? footerSub : (footerSub + (eventDate ? (' • ' + eventDate) : ''));
+            ctx.fillText(gSubLine, w / 2, yFooterPos);
+          }
+        }
       }
 
       // Jika bukan style custom_png tetapi admin tetap menyertakan gambar PNG overlay, tetap gambar di atasnya
@@ -5422,10 +5600,11 @@
       var idleMinutesVal = 60;
       if (iCustom && iCustom.value !== '') {
         idleMinutesVal = Math.max(0, parseInt(iCustom.value, 10));
+        if (isNaN(idleMinutesVal)) idleMinutesVal = 60;
       } else if (iPreset && iPreset.value !== 'custom') {
         idleMinutesVal = Math.max(0, parseInt(iPreset.value, 10));
+        if (isNaN(idleMinutesVal)) idleMinutesVal = 60;
       }
-      if (isNaN(idleMinutesVal)) idleMinutesVal = 60;
 
       APP_STATE.config.uploadLimits = {
         maxLiveUsers: maxLiveUsersVal,
@@ -5439,31 +5618,51 @@
       populateUploadLimitsFormAdmin();
       applyRoleBasedAdminView();
       updateHeroCounters();
-      syncConfigToBackend(
-        'Kuota tersimpan! Maks User: ' + (maxLiveUsersVal === 0 ? 'Unlimited' : maxLiveUsersVal) +
-        ' • Maks Upload/Device: ' + (maxUploadsVal === 0 ? 'Unlimited' : maxUploadsVal + 'x')
-      );
+      syncConfigToBackend('Limitasi Kuota (Max User: ' + (maxLiveUsersVal === 0 ? 'Unlimited' : maxLiveUsersVal) + ', Max Upload/Device: ' + (maxUploadsVal === 0 ? 'Unlimited' : maxUploadsVal) + ') berhasil disimpan!');
     }
 
-    // STUDIO BINGKAI FOTO (CUSTOM FRAME, WARNA JUDUL, WARNA NONE & UPLOAD PNG)
+    // STUDIO BINGKAI FOTO (MODE HARMONI OTOMATIS, KUSTOMISASI EKSKLUSIF, DAN KANVAS MURNI TANPA TEKS)
+    function autoSwitchToCustomTextMode() {
+      var modeEl = document.getElementById('adminFrameTextModeSelect');
+      if (modeEl && modeEl.value === 'default') {
+        modeEl.value = 'custom';
+        onFrameTextModeChange();
+      }
+    }
+
     function onFrameTextModeChange() {
       var modeEl = document.getElementById('adminFrameTextModeSelect');
+      var wrapEl = document.getElementById('adminFrameCustomTextInputsWrap');
+      var helperEl = document.getElementById('adminFrameTextModeHelperNote');
       var headerTitleEl = document.getElementById('adminFrameHeaderTitle');
       var greetingEl = document.getElementById('adminFrameGreetingText');
       var footerEl = document.getElementById('adminFrameFooterText');
-      var isDefault = (!modeEl || modeEl.value === 'default');
+      var modeVal = modeEl ? modeEl.value : 'default';
 
-      if (headerTitleEl) {
-        headerTitleEl.disabled = isDefault;
-        headerTitleEl.style.opacity = isDefault ? '0.55' : '1';
-      }
-      if (greetingEl) {
-        greetingEl.disabled = isDefault;
-        greetingEl.style.opacity = isDefault ? '0.55' : '1';
-      }
-      if (footerEl) {
-        footerEl.disabled = isDefault;
-        footerEl.style.opacity = isDefault ? '0.55' : '1';
+      if (modeVal === 'none') {
+        if (wrapEl) wrapEl.style.display = 'none';
+        if (helperEl) {
+          helperEl.style.color = 'var(--accent-gold)';
+          helperEl.innerHTML = '🖼️ <strong>Kanvas Murni Tanpa Teks Aktif:</strong> Foto tampil polos elegan hanya dengan dekorasi bingkai tanpa tambahan teks apa pun.';
+        }
+      } else if (modeVal === 'custom') {
+        if (wrapEl) wrapEl.style.display = 'grid';
+        if (headerTitleEl) { headerTitleEl.disabled = false; headerTitleEl.style.opacity = '1'; }
+        if (greetingEl) { greetingEl.disabled = false; greetingEl.style.opacity = '1'; }
+        if (footerEl) { footerEl.disabled = false; footerEl.style.opacity = '1'; }
+        if (helperEl) {
+          helperEl.style.color = 'var(--accent-neon)';
+          helperEl.innerHTML = '🖋️ <strong>Kustomisasi Eksklusif Aktif:</strong> Silakan ketik Judul/Nama Pasangan, Ucapan Doa, dan Sub-Label sesuai keinginan Anda (kosongkan baris yang tidak ingin ditampilkan).';
+        }
+      } else {
+        if (wrapEl) wrapEl.style.display = 'grid';
+        if (headerTitleEl) { headerTitleEl.disabled = false; headerTitleEl.style.opacity = '0.78'; }
+        if (greetingEl) { greetingEl.disabled = false; greetingEl.style.opacity = '0.78'; }
+        if (footerEl) { footerEl.disabled = false; footerEl.style.opacity = '0.78'; }
+        if (helperEl) {
+          helperEl.style.color = 'var(--text-muted)';
+          helperEl.innerHTML = '✨ <strong>Harmoni Otomatis Acara:</strong> Tulisan otomatis mengikuti Nama Acara, Tanggal & Nama WO. Ketik pada kolom di bawah untuk beralih ke Kustomisasi Eksklusif.';
+        }
       }
       renderAdminFrameLivePreview();
     }
@@ -5473,14 +5672,15 @@
       var headerTitleEl = document.getElementById('adminFrameHeaderTitle');
       var greetingEl = document.getElementById('adminFrameGreetingText');
       var footerEl = document.getElementById('adminFrameFooterText');
+      var ev = getActiveEventObject();
 
       if (modeEl) modeEl.value = 'default';
-      if (headerTitleEl) headerTitleEl.value = '';
+      if (headerTitleEl) headerTitleEl.value = ev.eventName || '';
       if (greetingEl) greetingEl.value = 'Terima Kasih Atas Kehadiran & Doa Restu Anda';
       if (footerEl) footerEl.value = APP_STATE.config.woName || 'Runway Wedding Organizer';
 
       onFrameTextModeChange();
-      showToast('Tulisan bingkai dikembalikan ke mode Default Bawaan.');
+      showToast('Tulisan bingkai dikembalikan ke mode Harmoni Otomatis Acara.');
     }
 
     function onFrameColorModeChange(which) {
@@ -5528,65 +5728,365 @@
       if (textModeEl) {
         textModeEl.value = fCfg.textMode || (fCfg.customHeaderTitle ? 'custom' : 'default');
       }
-      if (headerTitleEl) headerTitleEl.value = fCfg.customHeaderTitle || '';
+      if (headerTitleEl) headerTitleEl.value = (fCfg.customHeaderTitle !== undefined) ? fCfg.customHeaderTitle : '';
       if (titleColorEl) titleColorEl.value = fCfg.titleColor || (fCfg.primaryColor && fCfg.primaryColor !== 'none' ? fCfg.primaryColor : '#f5c542');
       if (greetingEl) greetingEl.value = (fCfg.customGreetingText !== undefined) ? fCfg.customGreetingText : 'Terima Kasih Atas Kehadiran & Doa Restu Anda';
       if (footerEl) footerEl.value = (fCfg.customFooterText !== undefined) ? fCfg.customFooterText : 'Runway Wedding Organizer';
 
       onFrameTextModeChange();
 
-      if (pModeEl && pColEl) {
-        if (fCfg.primaryColor === 'none') {
-          pModeEl.value = 'none';
-          pColEl.style.display = 'none';
-        } else {
-          pModeEl.value = 'color';
+      if (fCfg.primaryColor === 'none') {
+        if (pModeEl) pModeEl.value = 'none';
+        if (pColEl) pColEl.style.display = 'none';
+      } else {
+        if (pModeEl) pModeEl.value = 'color';
+        if (pColEl) {
           pColEl.style.display = 'block';
           pColEl.value = fCfg.primaryColor || '#f5c542';
         }
       }
 
-      if (aModeEl && aColEl) {
-        if (fCfg.accentColor === 'none') {
-          aModeEl.value = 'none';
-          aColEl.style.display = 'none';
-        } else {
-          aModeEl.value = 'color';
+      if (fCfg.accentColor === 'none') {
+        if (aModeEl) aModeEl.value = 'none';
+        if (aColEl) aColEl.style.display = 'none';
+      } else {
+        if (aModeEl) aModeEl.value = 'color';
+        if (aColEl) {
           aColEl.style.display = 'block';
           aColEl.value = fCfg.accentColor || '#00ffaa';
         }
       }
 
-      var effectiveOverlay = fCfg.customOverlayUrl || localStorage.getItem('SATUALBUM_CUSTOM_FRAME_PNG_GLOBAL') || '';
-      APP_STATE.uploadedFrameOverlayDataUrl = effectiveOverlay;
+      var savedLocalPng = localStorage.getItem('SATUALBUM_CUSTOM_FRAME_PNG_GLOBAL');
+      var activeOverlaySource = fCfg.customOverlayUrl || savedLocalPng || '';
+      APP_STATE.uploadedFrameOverlayDataUrl = activeOverlaySource;
+
       if (urlEl) {
-        if (effectiveOverlay.indexOf('data:image') === 0) {
+        if (activeOverlaySource.indexOf('data:image') === 0) {
           urlEl.value = '[File PNG Transparan Kustom Aktif]';
         } else {
-          urlEl.value = effectiveOverlay;
+          urlEl.value = activeOverlaySource;
         }
       }
-      updateCustomFramePngStatusUi(effectiveOverlay);
-      loadCustomFrameOverlayImage(effectiveOverlay);
+
+      updateCustomFramePngStatusUi(activeOverlaySource);
+      loadCustomFrameOverlayImage(activeOverlaySource);
       renderAdminFrameLivePreview();
     }
 
     function updateCustomFramePngStatusUi(overlaySource) {
       var statusEl = document.getElementById('customFramePngStatusText');
-      var clearBtn = document.getElementById('btnClearCustomFramePng');
-      if (!statusEl || !clearBtn) return;
+      var btnClear = document.getElementById('btnClearCustomFramePng');
+      if (!statusEl) return;
 
-      if (overlaySource && String(overlaySource).trim()) {
+      if (overlaySource && String(overlaySource).trim() !== '') {
         statusEl.style.display = 'block';
-        clearBtn.style.display = 'inline-flex';
+        if (btnClear) btnClear.style.display = 'inline-flex';
         if (String(overlaySource).indexOf('data:image') === 0) {
-          statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> File PNG Bingkai Transparan siap digunakan & tersimpan.';
+          var kb = Math.round((overlaySource.length * 3) / 4 / 1024);
+          statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> File PNG Transparan Kustom tersimpan & siap digunakan (' + kb + ' KB).';
         } else {
-          statusEl.innerHTML = '<i class="fa-solid fa-link"></i> URL Gambar PNG Bingkai aktif.';
+          statusEl.innerHTML = '<i class="fa-solid fa-link"></i> Menggunakan URL PNG Eksternal.';
         }
       } else {
         statusEl.style.display = 'none';
-        clearBtn.style.display = 'none';
+        if (btnClear) btnClear.style.display = 'none';
+      }
+    }
+
+    // TABEL MULTI-EVENT & MODAL CRUD EVENT (DENGAN MASTER GOOGLE DRIVE & SUBFOLDER PER-EVENT)
+    function renderAdminEventsTable() {
+      var tbody = document.getElementById('adminEventsTableBody');
+      if (!tbody) return;
+      var events = APP_STATE.events || [], html = '';
+      if (events.length === 0) {
+        html = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Belum ada event.</td></tr>';
+      } else {
+        for (var i = 0; i < events.length; i++) {
+          var ev = events[i];
+          var isAct = (ev.eventId === APP_STATE.activeEventId);
+          var edc = (APP_STATE.eventDriveConfigMap && APP_STATE.eventDriveConfigMap[ev.eventId]) || {};
+          var masterUrlRaw = edc.masterDriveUrl || ev.masterDriveFolderUrl || APP_STATE.config.globalDriveFolderUrl || '';
+          var masterLink = buildGoogleDriveFolderUrl(extractDriveFolderIdClient(masterUrlRaw), masterUrlRaw);
+          var subfolderLink = buildGoogleDriveFolderUrl(ev.targetDriveFolderId, ev.targetDriveFolderUrl || masterUrlRaw);
+          var subLabel = edc.subfolderName || (ev.eventName + ' ' + String(ev.eventDate || '').replace(/\//g, '-'));
+
+          html += '<tr style="' + (isAct ? 'background:rgba(0,255,170,0.06);' : '') + '">';
+          html += '<td><span class="mono-badge">' + escapeHtml(ev.eventId) + '</span></td>';
+          html += '<td><div style="font-weight:700;">' + escapeHtml(ev.eventName) + (isAct ? ' <span class="brand-badge" style="margin-left:4px;">AKTIF</span>' : '') + '</div>';
+          html += '<div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;"><i class="fa-solid fa-folder-tree" style="color:var(--accent-gold);"></i> Subfolder: ' + escapeHtml(subLabel) + '</div></td>';
+          html += '<td>' + escapeHtml(ev.eventDate) + '</td>';
+          html += '<td><div style="display:flex; gap:6px; flex-wrap:wrap;">';
+          html += '<a href="' + escapeHtml(subfolderLink) + '" target="_blank" class="btn btn-secondary btn-sm" style="color:var(--accent-neon); border-color:rgba(0,255,170,0.35); text-decoration:none;" title="Buka Subfolder Penyimpanan Foto Event Ini"><i class="fa-brands fa-google-drive"></i> Buka Folder Event</a>';
+          if (masterUrlRaw && masterLink !== subfolderLink) {
+            html += '<a href="' + escapeHtml(masterLink) + '" target="_blank" class="btn btn-secondary btn-sm" style="color:var(--accent-gold); border-color:rgba(245,197,66,0.35); text-decoration:none;" title="Buka Folder Master Google Drive Event Ini"><i class="fa-solid fa-folder-open"></i> Master Drive</a>';
+          }
+          html += '</div></td>';
+          html += '<td>' + escapeHtml(ev.eventStatus || 'Active') + '</td>';
+          html += '<td style="display:flex; gap:6px; flex-wrap:wrap;">';
+          if (!isAct) {
+            html += '<button type="button" class="btn btn-neon btn-sm" onclick="setActiveEventByAdmin(\'' + escapeHtml(ev.eventId) + '\')">Pilih Aktif</button>';
+          }
+          html += '<button type="button" class="btn btn-secondary btn-sm" onclick="openEventModal(\'' + escapeHtml(ev.eventId) + '\')"><i class="fa-solid fa-pen"></i> Edit</button>';
+          html += '<button type="button" class="btn btn-danger btn-sm" onclick="deleteEventItem(\'' + escapeHtml(ev.eventId) + '\')"><i class="fa-solid fa-trash"></i></button>';
+          html += '</td></tr>';
+        }
+      }
+      tbody.innerHTML = html;
+    }
+
+    function convertDateToInputFormat(ddmmyyyy) {
+      if (!ddmmyyyy) return '';
+      var str = String(ddmmyyyy).trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+      var parts = str.split('/');
+      if (parts.length === 3) {
+        return parts[2] + '-' + ('0' + parts[1]).slice(-2) + '-' + ('0' + parts[0]).slice(-2);
+      }
+      return '';
+    }
+
+    function convertInputDateToDisplay(yyyymmdd) {
+      if (!yyyymmdd) return '';
+      var parts = String(yyyymmdd).split('-');
+      if (parts.length === 3) {
+        return parts[2] + '/' + parts[1] + '/' + parts[0];
+      }
+      return yyyymmdd;
+    }
+
+    function onModalEventSubfolderModeChange() {
+      var modeEl = document.getElementById('modalEventSubfolderMode');
+      var autoBox = document.getElementById('modalSubfolderAutoPreviewBox');
+      var customBox = document.getElementById('modalSubfolderCustomNameBox');
+      var directBox = document.getElementById('modalSubfolderDirectLinkBox');
+      var mode = modeEl ? modeEl.value : 'auto';
+
+      if (mode === 'auto') {
+        if (autoBox) autoBox.style.display = 'block';
+        if (customBox) customBox.style.display = 'none';
+        if (directBox) directBox.style.display = 'none';
+      } else if (mode === 'custom_name') {
+        if (autoBox) autoBox.style.display = 'block';
+        if (customBox) customBox.style.display = 'block';
+        if (directBox) directBox.style.display = 'none';
+      } else {
+        if (autoBox) autoBox.style.display = 'none';
+        if (customBox) customBox.style.display = 'none';
+        if (directBox) directBox.style.display = 'block';
+      }
+      updateEventModalSubfolderPreview();
+    }
+
+    function updateEventModalSubfolderPreview() {
+      var nameVal = document.getElementById('modalEventName') ? document.getElementById('modalEventName').value.trim() : '';
+      var dateRaw = document.getElementById('modalEventDate') ? document.getElementById('modalEventDate').value : '';
+      var dateDisp = convertInputDateToDisplay(dateRaw) || 'DD/MM/YYYY';
+      var modeEl = document.getElementById('modalEventSubfolderMode');
+      var customSubInput = document.getElementById('modalEventSubfolderName');
+      var previewTextEl = document.getElementById('modalSubfolderAutoNameText');
+      if (!previewTextEl) return;
+
+      var mode = modeEl ? modeEl.value : 'auto';
+      var safeEvName = (nameVal || 'Nama Pengantin').replace(/[^a-zA-Z0-9 &_-]/g, '');
+      var safeDate = dateDisp.replace(/\//g, '-');
+
+      if (mode === 'custom_name' && customSubInput && customSubInput.value.trim()) {
+        previewTextEl.textContent = '📁 ' + customSubInput.value.trim();
+      } else {
+        previewTextEl.textContent = '📁 ' + safeEvName + ' ' + safeDate;
+      }
+    }
+
+    function openModalPreviewDriveFolder(whichType) {
+      var masterInput = document.getElementById('modalEventMasterDriveUrl');
+      var subInput = document.getElementById('modalEventDriveUrl');
+      var rawUrl = (whichType === 'subfolder' && subInput && subInput.value.trim())
+        ? subInput.value.trim()
+        : (masterInput ? masterInput.value.trim() : '');
+      if (!rawUrl) {
+        showToast('Masukkan link atau ID folder Google Drive terlebih dahulu.', true);
+        return;
+      }
+      var finalUrl = buildGoogleDriveFolderUrl(extractDriveFolderIdClient(rawUrl), rawUrl);
+      window.open(finalUrl, '_blank');
+    }
+
+    function openEventModal(eventId) {
+      var modal = document.getElementById('eventModal');
+      var masterInput = document.getElementById('modalEventMasterDriveUrl');
+      var subModeSelect = document.getElementById('modalEventSubfolderMode');
+      var subNameInput = document.getElementById('modalEventSubfolderName');
+
+      if (eventId) {
+        var found = null;
+        for (var i = 0; i < APP_STATE.events.length; i++) {
+          if (APP_STATE.events[i].eventId === eventId) { found = APP_STATE.events[i]; break; }
+        }
+        if (found) {
+          var edc = (APP_STATE.eventDriveConfigMap && APP_STATE.eventDriveConfigMap[found.eventId]) || {};
+          document.getElementById('eventModalTitle').textContent = 'Edit Event: ' + found.eventName;
+          document.getElementById('modalEventId').value = found.eventId;
+          document.getElementById('modalEventName').value = found.eventName;
+          document.getElementById('modalEventDate').value = convertDateToInputFormat(found.eventDate);
+          if (masterInput) masterInput.value = edc.masterDriveUrl || found.masterDriveFolderUrl || APP_STATE.config.globalDriveFolderUrl || '';
+          if (subModeSelect) subModeSelect.value = edc.subfolderMode || (found.targetDriveFolderUrl ? 'direct_link' : 'auto');
+          if (subNameInput) subNameInput.value = edc.subfolderName || '';
+          document.getElementById('modalEventDriveUrl').value = found.targetDriveFolderUrl || '';
+          document.getElementById('modalEventStatus').value = found.eventStatus || 'Active';
+        }
+      } else {
+        document.getElementById('eventModalTitle').textContent = 'Buat Event Baru';
+        document.getElementById('modalEventId').value = '';
+        document.getElementById('modalEventName').value = '';
+        document.getElementById('modalEventDate').value = new Date().toISOString().split('T')[0];
+        if (masterInput) masterInput.value = APP_STATE.config.globalDriveFolderUrl || '';
+        if (subModeSelect) subModeSelect.value = 'auto';
+        if (subNameInput) subNameInput.value = '';
+        document.getElementById('modalEventDriveUrl').value = '';
+        document.getElementById('modalEventStatus').value = 'Active';
+      }
+      onModalEventSubfolderModeChange();
+      modal.style.display = 'flex';
+    }
+
+    function closeEventModal() {
+      document.getElementById('eventModal').style.display = 'none';
+    }
+
+    function saveEventFormSubmit() {
+      var idVal = document.getElementById('modalEventId').value.trim();
+      var nameVal = document.getElementById('modalEventName').value.trim();
+      var dateRaw = document.getElementById('modalEventDate').value;
+      var dateFormatted = convertInputDateToDisplay(dateRaw);
+      var masterDriveUrlVal = document.getElementById('modalEventMasterDriveUrl') ? document.getElementById('modalEventMasterDriveUrl').value.trim() : '';
+      var subfolderModeVal = document.getElementById('modalEventSubfolderMode') ? document.getElementById('modalEventSubfolderMode').value : 'auto';
+      var customSubfolderNameVal = document.getElementById('modalEventSubfolderName') ? document.getElementById('modalEventSubfolderName').value.trim() : '';
+      var directSubfolderUrlVal = document.getElementById('modalEventDriveUrl').value.trim();
+      var statusVal = document.getElementById('modalEventStatus').value;
+
+      if (!nameVal) { showToast('Nama acara / pengantin wajib diisi.', true); return; }
+
+      var computedSubfolderName = (subfolderModeVal === 'custom_name' && customSubfolderNameVal)
+        ? customSubfolderNameVal
+        : (nameVal + ' ' + dateFormatted.replace(/\//g, '-'));
+
+      // Jika mode 'auto' atau 'custom_name', kosongkan targetDriveFolderUrl yang dikirim ke saveEventItem agar backend otomatis membuat subfolder baru di dalam Master Drive Event ini!
+      var targetDriveUrlForBackend = (subfolderModeVal === 'direct_link') ? directSubfolderUrlVal : '';
+
+      // Set Master Google Drive Event ini sebagai referensi pembuatan subfolder otomatis di backend
+      if (masterDriveUrlVal) {
+        APP_STATE.config.globalDriveFolderUrl = masterDriveUrlVal;
+        APP_STATE.config.globalDriveFolderId = extractDriveFolderIdClient(masterDriveUrlVal);
+      }
+
+      closeEventModal();
+      showLoadingOverlay(true, 'Menyimpan Event & Menyiapkan Subfolder Google Drive...');
+
+      var evDriveMeta = {
+        masterDriveUrl: masterDriveUrlVal,
+        subfolderMode: subfolderModeVal,
+        subfolderName: computedSubfolderName
+      };
+
+      var evDbPayload = ' ||EVDB:' + JSON.stringify({
+        vl: buildCompactVotesLedgerForDb(),
+        al: APP_STATE.awardsLedger || {},
+        dc: evDriveMeta
+      });
+
+      var proceedSaveEvent = function() {
+        var payload = {
+          eventId: idVal,
+          eventName: nameVal,
+          eventDate: dateFormatted,
+          targetDriveFolderUrl: targetDriveUrlForBackend,
+          targetDriveFolderId: extractDriveFolderIdClient(targetDriveUrlForBackend),
+          backgroundMusicUrl: evDbPayload,
+          eventStatus: statusVal,
+          createdBy: APP_STATE.currentUser ? APP_STATE.currentUser.username : 'superadmin'
+        };
+
+        callBackendApi('saveEventItem', payload, function(res) {
+          showLoadingOverlay(false);
+          if (res && res.status === 'success' && res.event) {
+            if (!APP_STATE.eventDriveConfigMap) APP_STATE.eventDriveConfigMap = {};
+            APP_STATE.eventDriveConfigMap[res.event.eventId] = evDriveMeta;
+            res.event.masterDriveFolderUrl = masterDriveUrlVal;
+            res.event.subfolderMode = subfolderModeVal;
+            res.event.subfolderName = computedSubfolderName;
+            if (!res.event.targetDriveFolderUrl && masterDriveUrlVal) {
+              res.event.targetDriveFolderUrl = masterDriveUrlVal;
+              res.event.targetDriveFolderId = extractDriveFolderIdClient(masterDriveUrlVal);
+            }
+
+            var updated = false;
+            for (var i = 0; i < APP_STATE.events.length; i++) {
+              if (APP_STATE.events[i].eventId === res.event.eventId) {
+                APP_STATE.events[i] = res.event;
+                updated = true; break;
+              }
+            }
+            if (!updated) {
+              APP_STATE.events.push(res.event);
+              APP_STATE.activeEventId = res.event.eventId;
+            }
+            saveExtendedConfigCache();
+            syncConfigToBackend('');
+            renderEventSelectorDropdown();
+            renderAdminEventsTable();
+            updateActiveEventHeroBanner();
+            showToast('Event "' + nameVal + '" & Folder Google Drive berhasil disiapkan!');
+          } else {
+            showToast((res && res.message) || 'Gagal menyimpan event.', true);
+          }
+        }, function() {
+          showLoadingOverlay(false);
+          var newId = idVal || ('EVT-000' + (APP_STATE.events.length + 1));
+          if (!APP_STATE.eventDriveConfigMap) APP_STATE.eventDriveConfigMap = {};
+          APP_STATE.eventDriveConfigMap[newId] = evDriveMeta;
+          var finalUrl = directSubfolderUrlVal || masterDriveUrlVal || APP_STATE.config.globalDriveFolderUrl;
+          var localEv = {
+            eventId: newId,
+            eventName: nameVal,
+            eventDate: dateFormatted,
+            targetDriveFolderUrl: finalUrl,
+            targetDriveFolderId: extractDriveFolderIdClient(finalUrl),
+            masterDriveFolderUrl: masterDriveUrlVal,
+            subfolderMode: subfolderModeVal,
+            subfolderName: computedSubfolderName,
+            eventStatus: statusVal
+          };
+          if (idVal) {
+            for (var j = 0; j < APP_STATE.events.length; j++) {
+              if (APP_STATE.events[j].eventId === idVal) APP_STATE.events[j] = localEv;
+            }
+          } else {
+            APP_STATE.events.push(localEv);
+            APP_STATE.activeEventId = localEv.eventId;
+          }
+          saveExtendedConfigCache();
+          renderEventSelectorDropdown();
+          renderAdminEventsTable();
+          updateActiveEventHeroBanner();
+          showToast('Event & Pengaturan Drive Per-Event berhasil disimpan!');
+        });
+      };
+
+      // Sinkronkan Master Drive ke ADMIN_CONFIG terlebih dahulu apabila menggunakan mode buat subfolder otomatis di dalam Master Drive
+      if (masterDriveUrlVal && subfolderModeVal !== 'direct_link') {
+        callBackendApi('saveAppConfig', {
+          appName: APP_STATE.config.appName,
+          woName: APP_STATE.config.woName,
+          globalDriveFolderUrl: masterDriveUrlVal,
+          globalDriveFolderId: extractDriveFolderIdClient(masterDriveUrlVal)
+        }, function() {
+          proceedSaveEvent();
+        }, function() {
+          proceedSaveEvent();
+        });
+      } else {
+        proceedSaveEvent();
       }
     }
 
@@ -5801,165 +6301,6 @@
       localStorage.setItem('SATUALBUM_REMOTE_GAS_URL', val);
       showToast('Endpoint API disimpan! Memuat ulang data dari server...');
       loadInitialApplicationData();
-    }
-
-    // TABEL MULTI-EVENT & MODAL CRUD EVENT
-    function renderAdminEventsTable() {
-      var tbody = document.getElementById('adminEventsTableBody');
-      if (!tbody) return;
-      var events = APP_STATE.events || [], html = '';
-      if (events.length === 0) {
-        html = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Belum ada event.</td></tr>';
-      } else {
-        for (var i = 0; i < events.length; i++) {
-          var ev = events[i];
-          var isAct = (ev.eventId === APP_STATE.activeEventId);
-          var folderLink = buildGoogleDriveFolderUrl(ev.targetDriveFolderId, ev.targetDriveFolderUrl || APP_STATE.config.globalDriveFolderUrl);
-          html += '<tr style="' + (isAct ? 'background:rgba(0,255,170,0.06);' : '') + '">';
-          html += '<td><span class="mono-badge">' + escapeHtml(ev.eventId) + '</span></td>';
-          html += '<td style="font-weight:700;">' + escapeHtml(ev.eventName) + (isAct ? ' <span class="brand-badge" style="margin-left:4px;">AKTIF</span>' : '') + '</td>';
-          html += '<td>' + escapeHtml(ev.eventDate) + '</td>';
-          html += '<td><a href="' + escapeHtml(folderLink) + '" target="_blank" style="color:var(--accent-neon); font-weight:600; text-decoration:none;"><i class="fa-brands fa-google-drive"></i> Buka Folder</a></td>';
-          html += '<td>' + escapeHtml(ev.eventStatus || 'Active') + '</td>';
-          html += '<td style="display:flex; gap:6px; flex-wrap:wrap;">';
-          if (!isAct) {
-            html += '<button type="button" class="btn btn-neon btn-sm" onclick="setActiveEventByAdmin(\'' + escapeHtml(ev.eventId) + '\')">Pilih Aktif</button>';
-          }
-          html += '<button type="button" class="btn btn-secondary btn-sm" onclick="openEventModal(\'' + escapeHtml(ev.eventId) + '\')"><i class="fa-solid fa-pen"></i> Edit</button>';
-          html += '<button type="button" class="btn btn-danger btn-sm" onclick="deleteEventItem(\'' + escapeHtml(ev.eventId) + '\')"><i class="fa-solid fa-trash"></i></button>';
-          html += '</td></tr>';
-        }
-      }
-      tbody.innerHTML = html;
-    }
-
-    function convertDateToInputFormat(ddmmyyyy) {
-      if (!ddmmyyyy) return '';
-      var str = String(ddmmyyyy).trim();
-      if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
-      var parts = str.split('/');
-      if (parts.length === 3) {
-        return parts[2] + '-' + ('0' + parts[1]).slice(-2) + '-' + ('0' + parts[0]).slice(-2);
-      }
-      return '';
-    }
-
-    function convertInputDateToDisplay(yyyymmdd) {
-      if (!yyyymmdd) return '';
-      var parts = String(yyyymmdd).split('-');
-      if (parts.length === 3) {
-        return parts[2] + '/' + parts[1] + '/' + parts[0];
-      }
-      return yyyymmdd;
-    }
-
-    function openEventModal(eventId) {
-      var modal = document.getElementById('eventModal');
-      if (eventId) {
-        var found = null;
-        for (var i = 0; i < APP_STATE.events.length; i++) {
-          if (APP_STATE.events[i].eventId === eventId) { found = APP_STATE.events[i]; break; }
-        }
-        if (found) {
-          document.getElementById('eventModalTitle').textContent = 'Edit Event: ' + found.eventName;
-          document.getElementById('modalEventId').value = found.eventId;
-          document.getElementById('modalEventName').value = found.eventName;
-          document.getElementById('modalEventDate').value = convertDateToInputFormat(found.eventDate);
-          document.getElementById('modalEventDriveUrl').value = found.targetDriveFolderUrl || '';
-          document.getElementById('modalEventStatus').value = found.eventStatus || 'Active';
-        }
-      } else {
-        document.getElementById('eventModalTitle').textContent = 'Buat Event Baru';
-        document.getElementById('modalEventId').value = '';
-        document.getElementById('modalEventName').value = '';
-        document.getElementById('modalEventDate').value = new Date().toISOString().split('T')[0];
-        document.getElementById('modalEventDriveUrl').value = '';
-        document.getElementById('modalEventStatus').value = 'Active';
-      }
-      modal.style.display = 'flex';
-    }
-
-    function closeEventModal() {
-      document.getElementById('eventModal').style.display = 'none';
-    }
-
-    function saveEventFormSubmit() {
-      var idVal = document.getElementById('modalEventId').value.trim();
-      var nameVal = document.getElementById('modalEventName').value.trim();
-      var dateRaw = document.getElementById('modalEventDate').value;
-      var dateFormatted = convertInputDateToDisplay(dateRaw);
-      var driveUrlVal = document.getElementById('modalEventDriveUrl').value.trim();
-      var statusVal = document.getElementById('modalEventStatus').value;
-
-      if (!nameVal) { showToast('Nama acara wajib diisi.', true); return; }
-
-      closeEventModal();
-      showLoadingOverlay(true, 'Menyimpan Event & Menyiapkan Folder Google Drive...');
-
-      var existingBgDb = '';
-      if (idVal) {
-        var evDbPayload = ' ||EVDB:' + JSON.stringify({
-          vl: buildCompactVotesLedgerForDb(),
-          al: APP_STATE.awardsLedger || {}
-        });
-        existingBgDb = evDbPayload;
-      }
-
-      var payload = {
-        eventId: idVal,
-        eventName: nameVal,
-        eventDate: dateFormatted,
-        targetDriveFolderUrl: driveUrlVal,
-        targetDriveFolderId: extractDriveFolderIdClient(driveUrlVal),
-        backgroundMusicUrl: existingBgDb,
-        eventStatus: statusVal,
-        createdBy: APP_STATE.currentUser ? APP_STATE.currentUser.username : 'superadmin'
-      };
-
-      callBackendApi('saveEventItem', payload, function(res) {
-        showLoadingOverlay(false);
-        if (res && res.status === 'success' && res.event) {
-          var updated = false;
-          for (var i = 0; i < APP_STATE.events.length; i++) {
-            if (APP_STATE.events[i].eventId === res.event.eventId) {
-              APP_STATE.events[i] = res.event;
-              updated = true; break;
-            }
-          }
-          if (!updated) {
-            APP_STATE.events.push(res.event);
-            APP_STATE.activeEventId = res.event.eventId;
-          }
-          renderEventSelectorDropdown();
-          renderAdminEventsTable();
-          updateActiveEventHeroBanner();
-          showToast(res.message || 'Event berhasil disimpan!');
-        } else {
-          showToast((res && res.message) || 'Gagal menyimpan event.', true);
-        }
-      }, function() {
-        showLoadingOverlay(false);
-        var localEv = {
-          eventId: idVal || ('EVT-000' + (APP_STATE.events.length + 1)),
-          eventName: nameVal,
-          eventDate: dateFormatted,
-          targetDriveFolderUrl: driveUrlVal || APP_STATE.config.globalDriveFolderUrl,
-          targetDriveFolderId: extractDriveFolderIdClient(driveUrlVal) || APP_STATE.config.globalDriveFolderId,
-          eventStatus: statusVal
-        };
-        if (idVal) {
-          for (var j = 0; j < APP_STATE.events.length; j++) {
-            if (APP_STATE.events[j].eventId === idVal) APP_STATE.events[j] = localEv;
-          }
-        } else {
-          APP_STATE.events.push(localEv);
-          APP_STATE.activeEventId = localEv.eventId;
-        }
-        renderEventSelectorDropdown();
-        renderAdminEventsTable();
-        updateActiveEventHeroBanner();
-        showToast('Event disimpan!');
-      });
     }
 
     function deleteEventItem(eventId) {
