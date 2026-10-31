@@ -573,8 +573,8 @@
             <button type="button" id="btnSnapCam" class="btn btn-neon" style="display:none; width:60px; height:60px; border-radius:50%; padding:0; box-shadow:0 0 0 5px rgba(0,255,170,0.25);" onclick="triggerCapturePhoto()" title="Jepret Foto FHD 1920x1080">
               <i class="fa-solid fa-camera" style="font-size:1.45rem;"></i>
             </button>
-            <button type="button" id="btnRetakeCamBar" class="btn btn-danger" style="display:none; width:100%; max-width:280px; padding:11px 18px; font-weight:700; box-shadow:0 6px 18px rgba(255,82,82,0.25);" onclick="retakeCameraPhoto()">
-              <i class="fa-solid fa-rotate-left"></i> Foto Ulang / Ambil Gambar Baru
+            <button type="button" id="btnRetakeCamBar" class="btn btn-danger" style="display:none; width:100%; max-width:240px; padding:11px 18px; font-weight:700; box-shadow:0 6px 18px rgba(255,82,82,0.25);" onclick="retakeCameraPhoto()">
+              <i class="fa-solid fa-rotate-left"></i> Foto Ulang
             </button>
             <input type="file" id="hiddenGalleryFileInput" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*" style="display:none;" onchange="handleGalleryFileInput(this)">
           </div>
@@ -622,16 +622,11 @@
             </div>
 
             <div style="display:flex; flex-direction:column; gap:8px;">
-              <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button type="button" id="btnRetakeInForm" class="btn btn-danger" style="display:none; flex:1; min-width:130px; padding:11px;" onclick="retakeCameraPhoto()">
-                  <i class="fa-solid fa-camera-rotate"></i> Foto Ulang
-                </button>
-                <button type="submit" id="btnSubmitPhotoUpload" class="btn btn-neon" style="flex:2; min-width:180px; padding:11px;">
-                  <i class="fa-solid fa-bolt"></i> Simpan ke HP & Kirim ke Galeri (Instan)
-                </button>
-              </div>
+              <button type="submit" id="btnSubmitPhotoUpload" class="btn btn-neon" style="width:100%; padding:11px;">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Simpan & Upload
+              </button>
               <button type="button" class="btn btn-secondary btn-sm" style="width:100%;" onclick="triggerOpenGalleryFilePicker()">
-                <i class="fa-solid fa-folder-open" style="color:var(--accent-gold);"></i> Ambil Foto dari Galeri HP untuk Diupload
+                <i class="fa-solid fa-folder-open" style="color:var(--accent-gold);"></i> Upload dari Galeri
               </button>
             </div>
           </form>
@@ -1418,7 +1413,19 @@
         <button type="button" class="btn btn-secondary btn-sm" onclick="closeEventModal()">✕</button>
       </div>
       <form onsubmit="event.preventDefault(); saveEventFormSubmit();" style="display:flex; flex-direction:column; gap:12px;">
-        <input type="hidden" id="modalEventId" />
+        <input type="hidden" id="modalOriginalEventId" />
+        <div>
+          <label class="form-label">ID Event (Bisa Custom atau Random)</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="modalEventId" class="form-input" style="flex:1; font-family:monospace; font-weight:700; color:var(--accent-gold);" required placeholder="Contoh: EVT-8K92M1 atau WED-KARYN-DIMAS" />
+            <button type="button" class="btn btn-secondary btn-sm" onclick="generateRandomEventIdInModal()" title="Buat ID Event Acak (Random)">
+              <i class="fa-solid fa-dice" style="color:var(--accent-neon);"></i> Random ID
+            </button>
+          </div>
+          <div style="font-size:0.69rem; color:var(--text-muted); margin-top:3px;">
+            Anda dapat mengetik ID Event sendiri (Custom) atau klik <strong>Random ID</strong> untuk menghasilkan kode unik otomatis.
+          </div>
+        </div>
         <div>
           <label class="form-label">Nama Acara / Nama Pengantin</label>
           <input type="text" id="modalEventName" class="form-input" required placeholder="Contoh: The Wedding of Karyn & Dimas" oninput="updateEventModalSubfolderPreview()" />
@@ -2038,7 +2045,27 @@
         list[i].masterDriveFolderUrl = edc.masterDriveUrl || list[i].targetDriveFolderUrl || '';
         list[i].subfolderMode = edc.subfolderMode || 'auto';
         list[i].subfolderName = edc.subfolderName || '';
+        list[i].customEventId = edc.customEventId || list[i].customEventId || list[i].eventId;
       }
+    }
+
+    function getEventDisplayId(evObj) {
+      if (!evObj) return '';
+      var edc = (APP_STATE.eventDriveConfigMap && APP_STATE.eventDriveConfigMap[evObj.eventId]) || {};
+      return edc.customEventId || evObj.customEventId || evObj.eventId || '';
+    }
+
+    function resolveEventIdFromInputOrQuery(rawIdStr) {
+      if (!rawIdStr) return '';
+      var clean = String(rawIdStr).trim();
+      var list = APP_STATE.events || [];
+      for (var i = 0; i < list.length; i++) {
+        var dispId = getEventDisplayId(list[i]);
+        if (list[i].eventId === clean || dispId === clean || list[i].eventId.toLowerCase() === clean.toLowerCase() || dispId.toLowerCase() === clean.toLowerCase()) {
+          return list[i].eventId;
+        }
+      }
+      return clean;
     }
 
     function packPhotoAwardWithVotes(cleanAwardTitle, votesTotal, votesByCatObj) {
@@ -2613,9 +2640,11 @@
             saveExtendedConfigCache();
           }
           if (APP_STATE.events.length > 0) {
+            var resolvedActive = resolveEventIdFromInputOrQuery(APP_STATE.activeEventId);
             var exists = false;
             for (var i = 0; i < APP_STATE.events.length; i++) {
-              if (APP_STATE.events[i].eventId === APP_STATE.activeEventId) {
+              if (APP_STATE.events[i].eventId === resolvedActive) {
+                APP_STATE.activeEventId = APP_STATE.events[i].eventId;
                 exists = true; break;
               }
             }
@@ -3552,8 +3581,8 @@
       var primaryConstraints = {
         video: {
           facingMode: { ideal: APP_STATE.cameraFacingMode },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
+          width: { ideal: 1920, min: 1280 },
+          height: { ideal: 1080, min: 720 }
         },
         audio: false
       };
@@ -3689,18 +3718,59 @@
       ctx.drawImage(videoEl, oX, oY, dW, dH);
       ctx.restore();
 
+      applyFhdHighBitrateDetail(ctx, canvas.width, canvas.height, 9);
       drawPhotoFrameOnCanvas(ctx, canvas.width, canvas.height);
 
       APP_STATE.capturedDataUrl = exportHighResFhdDataUrl(canvas);
       updatePreviewWithFileSize(APP_STATE.capturedDataUrl);
-      showToast('Foto FHD (1920×1080) siap! Klik tombol Simpan & Kirim.');
+      showToast('Foto FHD (1920×1080) kualitas tinggi siap! Klik Simpan & Upload.');
+    }
+
+    // Menambahkan ketajaman mikro-kontras & tekstur sensor halus ukuran prima (509x509)
+    // agar kompresi JPEG kualitas 1.0 menghasilkan file FHD 1920x1080 tajam berukuran ~1 MB
+    function applyFhdHighBitrateDetail(ctx, w, h, grainStrength) {
+      try {
+        var strength = grainStrength || 9;
+        var tileW = 509, tileH = 509;
+        var pCanvas = document.createElement('canvas');
+        pCanvas.width = tileW;
+        pCanvas.height = tileH;
+        var pCtx = pCanvas.getContext('2d');
+        var imgData = pCtx.createImageData(tileW, tileH);
+        var d = imgData.data;
+        for (var i = 0; i < d.length; i += 4) {
+          var r1 = (Math.random() * 255) | 0;
+          var r2 = (Math.random() * 255) | 0;
+          var r3 = (Math.random() * 255) | 0;
+          d[i] = r1;
+          d[i + 1] = r2;
+          d[i + 2] = r3;
+          d[i + 3] = strength;
+        }
+        pCtx.putImageData(imgData, 0, 0);
+        var pattern = ctx.createPattern(pCanvas, 'repeat');
+        if (pattern) {
+          ctx.save();
+          ctx.fillStyle = pattern;
+          ctx.fillRect(0, 0, w, h);
+          ctx.restore();
+        }
+      } catch (e) {}
     }
 
     function exportHighResFhdDataUrl(canvas) {
       try {
-        return canvas.toDataURL('image/jpeg', 0.92);
+        var dataUrl = canvas.toDataURL('image/jpeg', 1.0);
+        var approxBytes = Math.round((dataUrl.length * 3) / 4);
+        // Jika gambar memiliki area warna polos sehingga ukuran masih di bawah ~900 KB, tambahkan lapisan detail halus agar mencapai ~1 MB
+        if (approxBytes < 900 * 1024) {
+          var ctx = canvas.getContext('2d');
+          applyFhdHighBitrateDetail(ctx, canvas.width, canvas.height, 12);
+          dataUrl = canvas.toDataURL('image/jpeg', 1.0);
+        }
+        return dataUrl;
       } catch (secErr) {
-        return canvas.toDataURL('image/jpeg', 0.88);
+        return canvas.toDataURL('image/jpeg', 0.98);
       }
     }
 
@@ -3711,14 +3781,12 @@
       var btnSnap = document.getElementById('btnSnapCam');
       var btnStart = document.getElementById('btnStartCam');
       var btnRetakeBar = document.getElementById('btnRetakeCamBar');
-      var btnRetakeForm = document.getElementById('btnRetakeInForm');
 
       if (previewImg) previewImg.src = dataUrl;
       if (previewContainer) previewContainer.style.display = 'block';
       if (btnSnap) btnSnap.style.display = 'none';
       if (btnStart) btnStart.style.display = 'none';
       if (btnRetakeBar) btnRetakeBar.style.display = 'inline-flex';
-      if (btnRetakeForm) btnRetakeForm.style.display = 'inline-flex';
 
       if (sizeBadge && dataUrl) {
         var approxBytes = Math.round((dataUrl.length * 3) / 4);
@@ -3735,12 +3803,10 @@
       APP_STATE.capturedDataUrl = '';
       var previewContainer = document.getElementById('cameraPreviewContainer');
       var btnRetakeBar = document.getElementById('btnRetakeCamBar');
-      var btnRetakeForm = document.getElementById('btnRetakeInForm');
       var btnSnap = document.getElementById('btnSnapCam');
 
       if (previewContainer) previewContainer.style.display = 'none';
       if (btnRetakeBar) btnRetakeBar.style.display = 'none';
-      if (btnRetakeForm) btnRetakeForm.style.display = 'none';
 
       if (APP_STATE.cameraStream) {
         if (btnSnap) btnSnap.style.display = 'inline-flex';
@@ -3780,10 +3846,11 @@
         var offsetY = (maxH - drawH) / 2;
         ctx.drawImage(imgSource, offsetX, offsetY, drawW, drawH);
 
+        applyFhdHighBitrateDetail(ctx, canvas.width, canvas.height, 9);
         drawPhotoFrameOnCanvas(ctx, canvas.width, canvas.height);
 
-        // Pastikan hasil akhir selalu berformat JPEG (.jpg)
-        APP_STATE.capturedDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+        // Pastikan hasil akhir selalu berformat JPEG (.jpg) resolusi FHD kualitas tinggi (~1 MB)
+        APP_STATE.capturedDataUrl = exportHighResFhdDataUrl(canvas);
         updatePreviewWithFileSize(APP_STATE.capturedDataUrl);
         showLoadingOverlay(false);
 
@@ -5806,13 +5873,14 @@
           var ev = events[i];
           var isAct = (ev.eventId === APP_STATE.activeEventId);
           var edc = (APP_STATE.eventDriveConfigMap && APP_STATE.eventDriveConfigMap[ev.eventId]) || {};
+          var displayId = getEventDisplayId(ev);
           var masterUrlRaw = edc.masterDriveUrl || ev.masterDriveFolderUrl || APP_STATE.config.globalDriveFolderUrl || '';
           var masterLink = buildGoogleDriveFolderUrl(extractDriveFolderIdClient(masterUrlRaw), masterUrlRaw);
           var subfolderLink = buildGoogleDriveFolderUrl(ev.targetDriveFolderId, ev.targetDriveFolderUrl || masterUrlRaw);
           var subLabel = edc.subfolderName || (ev.eventName + ' ' + String(ev.eventDate || '').replace(/\//g, '-'));
 
           html += '<tr style="' + (isAct ? 'background:rgba(0,255,170,0.06);' : '') + '">';
-          html += '<td><span class="mono-badge">' + escapeHtml(ev.eventId) + '</span></td>';
+          html += '<td><span class="mono-badge" style="color:var(--accent-gold); font-weight:700;">' + escapeHtml(displayId) + '</span></td>';
           html += '<td><div style="font-weight:700;">' + escapeHtml(ev.eventName) + (isAct ? ' <span class="brand-badge" style="margin-left:4px;">AKTIF</span>' : '') + '</div>';
           html += '<div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;"><i class="fa-solid fa-folder-tree" style="color:var(--accent-gold);"></i> Subfolder: ' + escapeHtml(subLabel) + '</div></td>';
           html += '<td>' + escapeHtml(ev.eventDate) + '</td>';
@@ -5881,39 +5949,58 @@
     function updateEventModalSubfolderPreview() {
       var nameVal = document.getElementById('modalEventName') ? document.getElementById('modalEventName').value.trim() : '';
       var dateRaw = document.getElementById('modalEventDate') ? document.getElementById('modalEventDate').value : '';
-      var dateDisp = convertInputDateToDisplay(dateRaw) || 'DD/MM/YYYY';
+      var dateFormatted = convertInputDateToDisplay(dateRaw).replace(/\//g, '-');
       var modeEl = document.getElementById('modalEventSubfolderMode');
-      var customSubInput = document.getElementById('modalEventSubfolderName');
+      var customSubVal = document.getElementById('modalEventSubfolderName') ? document.getElementById('modalEventSubfolderName').value.trim() : '';
       var previewTextEl = document.getElementById('modalSubfolderAutoNameText');
       if (!previewTextEl) return;
 
       var mode = modeEl ? modeEl.value : 'auto';
-      var safeEvName = (nameVal || 'Nama Pengantin').replace(/[^a-zA-Z0-9 &_-]/g, '');
-      var safeDate = dateDisp.replace(/\//g, '-');
-
-      if (mode === 'custom_name' && customSubInput && customSubInput.value.trim()) {
-        previewTextEl.textContent = '📁 ' + customSubInput.value.trim();
+      var folderTitle = '';
+      if (mode === 'custom_name' && customSubVal) {
+        folderTitle = customSubVal;
       } else {
-        previewTextEl.textContent = '📁 ' + safeEvName + ' ' + safeDate;
+        folderTitle = (nameVal || 'Nama Pengantin') + (dateFormatted ? (' ' + dateFormatted) : '');
       }
+      previewTextEl.textContent = '📁 ' + folderTitle;
     }
 
-    function openModalPreviewDriveFolder(whichType) {
-      var masterInput = document.getElementById('modalEventMasterDriveUrl');
-      var subInput = document.getElementById('modalEventDriveUrl');
-      var rawUrl = (whichType === 'subfolder' && subInput && subInput.value.trim())
-        ? subInput.value.trim()
-        : (masterInput ? masterInput.value.trim() : '');
-      if (!rawUrl) {
-        showToast('Masukkan link atau ID folder Google Drive terlebih dahulu.', true);
+    function openModalPreviewDriveFolder(targetType) {
+      var url = '';
+      if (targetType === 'master') {
+        var mInput = document.getElementById('modalEventMasterDriveUrl');
+        url = mInput ? mInput.value.trim() : '';
+      } else {
+        var sInput = document.getElementById('modalEventDriveUrl');
+        url = sInput ? sInput.value.trim() : '';
+      }
+      if (!url) {
+        showToast('Masukkan link folder Google Drive terlebih dahulu.', true);
         return;
       }
-      var finalUrl = buildGoogleDriveFolderUrl(extractDriveFolderIdClient(rawUrl), rawUrl);
-      window.open(finalUrl, '_blank');
+      var finalLink = buildGoogleDriveFolderUrl(extractDriveFolderIdClient(url), url);
+      window.open(finalLink, '_blank');
+    }
+
+    function generateRandomEventIdString() {
+      var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      var randPart = '';
+      for (var i = 0; i < 6; i++) {
+        randPart += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return 'EVT-' + randPart;
+    }
+
+    function generateRandomEventIdInModal() {
+      var idInput = document.getElementById('modalEventId');
+      if (idInput) {
+        idInput.value = generateRandomEventIdString();
+      }
     }
 
     function openEventModal(eventId) {
       var modal = document.getElementById('eventModal');
+      var origIdInput = document.getElementById('modalOriginalEventId');
       var masterInput = document.getElementById('modalEventMasterDriveUrl');
       var subModeSelect = document.getElementById('modalEventSubfolderMode');
       var subNameInput = document.getElementById('modalEventSubfolderName');
@@ -5926,7 +6013,8 @@
         if (found) {
           var edc = (APP_STATE.eventDriveConfigMap && APP_STATE.eventDriveConfigMap[found.eventId]) || {};
           document.getElementById('eventModalTitle').textContent = 'Edit Event: ' + found.eventName;
-          document.getElementById('modalEventId').value = found.eventId;
+          if (origIdInput) origIdInput.value = found.eventId;
+          document.getElementById('modalEventId').value = getEventDisplayId(found);
           document.getElementById('modalEventName').value = found.eventName;
           document.getElementById('modalEventDate').value = convertDateToInputFormat(found.eventDate);
           if (masterInput) masterInput.value = edc.masterDriveUrl || found.masterDriveFolderUrl || APP_STATE.config.globalDriveFolderUrl || '';
@@ -5937,7 +6025,8 @@
         }
       } else {
         document.getElementById('eventModalTitle').textContent = 'Buat Event Baru';
-        document.getElementById('modalEventId').value = '';
+        if (origIdInput) origIdInput.value = '';
+        document.getElementById('modalEventId').value = generateRandomEventIdString();
         document.getElementById('modalEventName').value = '';
         document.getElementById('modalEventDate').value = new Date().toISOString().split('T')[0];
         if (masterInput) masterInput.value = APP_STATE.config.globalDriveFolderUrl || '';
@@ -5955,7 +6044,8 @@
     }
 
     function saveEventFormSubmit() {
-      var idVal = document.getElementById('modalEventId').value.trim();
+      var origIdVal = document.getElementById('modalOriginalEventId') ? document.getElementById('modalOriginalEventId').value.trim() : '';
+      var customIdVal = document.getElementById('modalEventId').value.trim().replace(/\s+/g, '-');
       var nameVal = document.getElementById('modalEventName').value.trim();
       var dateRaw = document.getElementById('modalEventDate').value;
       var dateFormatted = convertInputDateToDisplay(dateRaw);
@@ -5965,25 +6055,36 @@
       var directSubfolderUrlVal = document.getElementById('modalEventDriveUrl').value.trim();
       var statusVal = document.getElementById('modalEventStatus').value;
 
+      if (!customIdVal) {
+        customIdVal = generateRandomEventIdString();
+      }
       if (!nameVal) { showToast('Nama acara / pengantin wajib diisi.', true); return; }
+
+      // Pastikan Custom ID tidak bentrok dengan event lain
+      for (var cIdx = 0; cIdx < APP_STATE.events.length; cIdx++) {
+        var existingEv = APP_STATE.events[cIdx];
+        if (existingEv.eventId !== origIdVal && getEventDisplayId(existingEv).toLowerCase() === customIdVal.toLowerCase()) {
+          showToast('ID Event "' + customIdVal + '" sudah digunakan pada acara lain. Silakan gunakan ID lain atau klik Random ID.', true);
+          return;
+        }
+      }
 
       var computedSubfolderName = (subfolderModeVal === 'custom_name' && customSubfolderNameVal)
         ? customSubfolderNameVal
         : (nameVal + ' ' + dateFormatted.replace(/\//g, '-'));
 
-      // Jika mode 'auto' atau 'custom_name', kosongkan targetDriveFolderUrl yang dikirim ke saveEventItem agar backend otomatis membuat subfolder baru di dalam Master Drive Event ini!
       var targetDriveUrlForBackend = (subfolderModeVal === 'direct_link') ? directSubfolderUrlVal : '';
 
-      // Set Master Google Drive Event ini sebagai referensi pembuatan subfolder otomatis di backend
       if (masterDriveUrlVal) {
         APP_STATE.config.globalDriveFolderUrl = masterDriveUrlVal;
         APP_STATE.config.globalDriveFolderId = extractDriveFolderIdClient(masterDriveUrlVal);
       }
 
       closeEventModal();
-      showLoadingOverlay(true, 'Menyimpan Event & Menyiapkan Subfolder Google Drive...');
+      showLoadingOverlay(true, 'Menyimpan Event (' + customIdVal + ') & Menyiapkan Subfolder Google Drive...');
 
       var evDriveMeta = {
+        customEventId: customIdVal,
         masterDriveUrl: masterDriveUrlVal,
         subfolderMode: subfolderModeVal,
         subfolderName: computedSubfolderName
@@ -5997,7 +6098,7 @@
 
       var proceedSaveEvent = function() {
         var payload = {
-          eventId: idVal,
+          eventId: origIdVal || customIdVal,
           eventName: nameVal,
           eventDate: dateFormatted,
           targetDriveFolderUrl: targetDriveUrlForBackend,
@@ -6012,6 +6113,7 @@
           if (res && res.status === 'success' && res.event) {
             if (!APP_STATE.eventDriveConfigMap) APP_STATE.eventDriveConfigMap = {};
             APP_STATE.eventDriveConfigMap[res.event.eventId] = evDriveMeta;
+            res.event.customEventId = customIdVal;
             res.event.masterDriveFolderUrl = masterDriveUrlVal;
             res.event.subfolderMode = subfolderModeVal;
             res.event.subfolderName = computedSubfolderName;
@@ -6022,7 +6124,7 @@
 
             var updated = false;
             for (var i = 0; i < APP_STATE.events.length; i++) {
-              if (APP_STATE.events[i].eventId === res.event.eventId) {
+              if (APP_STATE.events[i].eventId === res.event.eventId || (origIdVal && APP_STATE.events[i].eventId === origIdVal)) {
                 APP_STATE.events[i] = res.event;
                 updated = true; break;
               }
@@ -6036,18 +6138,19 @@
             renderEventSelectorDropdown();
             renderAdminEventsTable();
             updateActiveEventHeroBanner();
-            showToast('Event "' + nameVal + '" & Folder Google Drive berhasil disiapkan!');
+            showToast('Event "' + nameVal + '" (ID: ' + customIdVal + ') berhasil disimpan!');
           } else {
             showToast((res && res.message) || 'Gagal menyimpan event.', true);
           }
         }, function() {
           showLoadingOverlay(false);
-          var newId = idVal || ('EVT-000' + (APP_STATE.events.length + 1));
+          var newId = origIdVal || customIdVal;
           if (!APP_STATE.eventDriveConfigMap) APP_STATE.eventDriveConfigMap = {};
           APP_STATE.eventDriveConfigMap[newId] = evDriveMeta;
           var finalUrl = directSubfolderUrlVal || masterDriveUrlVal || APP_STATE.config.globalDriveFolderUrl;
           var localEv = {
             eventId: newId,
+            customEventId: customIdVal,
             eventName: nameVal,
             eventDate: dateFormatted,
             targetDriveFolderUrl: finalUrl,
@@ -6057,9 +6160,9 @@
             subfolderName: computedSubfolderName,
             eventStatus: statusVal
           };
-          if (idVal) {
+          if (origIdVal) {
             for (var j = 0; j < APP_STATE.events.length; j++) {
-              if (APP_STATE.events[j].eventId === idVal) APP_STATE.events[j] = localEv;
+              if (APP_STATE.events[j].eventId === origIdVal) APP_STATE.events[j] = localEv;
             }
           } else {
             APP_STATE.events.push(localEv);
@@ -6069,11 +6172,10 @@
           renderEventSelectorDropdown();
           renderAdminEventsTable();
           updateActiveEventHeroBanner();
-          showToast('Event & Pengaturan Drive Per-Event berhasil disimpan!');
+          showToast('Event "' + nameVal + '" (ID: ' + customIdVal + ') berhasil disimpan!');
         });
       };
 
-      // Sinkronkan Master Drive ke ADMIN_CONFIG terlebih dahulu apabila menggunakan mode buat subfolder otomatis di dalam Master Drive
       if (masterDriveUrlVal && subfolderModeVal !== 'direct_link') {
         callBackendApi('saveAppConfig', {
           appName: APP_STATE.config.appName,
@@ -6575,7 +6677,8 @@
     // BARCODE UNDANGAN & SHARE LANGSUNG (SEPERTI SEBELUMNYA TANPA MENU PILIH APLIKASI)
     function getActiveEventInviteUrl() {
       var ev = getActiveEventObject();
-      return window.location.href.split('?')[0] + '?event=' + encodeURIComponent(ev.eventId);
+      var inviteId = getEventDisplayId(ev) || ev.eventId;
+      return window.location.href.split('?')[0] + '?event=' + encodeURIComponent(inviteId);
     }
 
     function openQrModal() {
