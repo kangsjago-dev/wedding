@@ -544,114 +544,69 @@
                         </div>
                     </div>
                     <div style="display:flex; gap:8px; align-items:center;">
-                        <button type="button" class="btn btn-gold btn-sm" onclick="saveCurrentEventAllSettingsManual()"
-                            title="Simpan & Sinkronkan Pengaturan Event Aktif">
-                            <i class="fa-solid fa-floppy-disk"></i> Simpan Settingan Event
-                        </button>
                         <button type="button" class="btn btn-danger btn-sm" onclick="adminLogout()">
                             <i class="fa-solid fa-power-off"></i> Keluar
                         </button>
                     </div>
                 </div>
 
-                <!-- Panel Utama Mode Konfigurasi Spesifik Per-Event (Terhubung Langsung ke Menu 1 s/d 5) -->
-                <div class="event-scope-panel">
-                    <div class="event-scope-header">
-                        <div style="display:flex; align-items:flex-start; gap:12px; min-width:0; flex:1;">
+                <!-- Panel Seleksi Event Aktif (Terhubung Langsung ke Seluruh Menu) -->
+                <div class="event-scope-panel" style="margin-bottom:14px;">
+                    <div class="event-scope-header" style="padding:14px 18px;">
+                        <div style="display:flex; align-items:center; gap:12px; min-width:0; flex:1;">
                             <div
-                                style="width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg, rgba(0,255,170,0.2), rgba(245,197,66,0.2)); border:1px solid var(--accent-neon); display:flex; align-items:center; justify-content:center; color:var(--accent-neon); font-size:1.1rem; flex-shrink:0; box-shadow:0 0 15px rgba(0,255,170,0.2);">
-                                <i class="fa-solid fa-sliders"></i>
+                                style="width:38px; height:38px; border-radius:10px; background:rgba(0,255,170,0.15); border:1px solid var(--accent-neon); display:flex; align-items:center; justify-content:center; color:var(--accent-neon); font-size:1rem; flex-shrink:0;">
+                                <i class="fa-solid fa-calendar-check"></i>
                             </div>
                             <div style="min-width:0; flex:1;">
-                                <div
-                                    style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:3px;">
-                                    <span
-                                        style="font-size:0.88rem; color:#ffffff; font-weight:800; letter-spacing:0.2px;">
-                                        Mode Konfigurasi Spesifik Per-Event
+                                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                    <span style="font-size:0.88rem; color:#ffffff; font-weight:800;">
+                                        Pilih Event Aktif:
                                     </span>
-                                    <span class="brand-badge"
-                                        style="background:rgba(245,197,66,0.16); color:var(--accent-gold); border-color:var(--accent-gold);">
+                                    <span class="brand-badge" style="background:rgba(245,197,66,0.16); color:var(--accent-gold); border-color:var(--accent-gold); padding:2px 8px; font-size:0.68rem;">
                                         TERISOLASI PER ACARA
                                     </span>
                                 </div>
-                                <div style="font-size:0.74rem; color:var(--text-muted); line-height:1.4;">
-                                    Pilih acara di bawah ini terlebih dahulu. Seluruh pengaturan pada menu <strong>1.
-                                        Event & Drive</strong>, <strong>2. Kuota & Device</strong>, <strong>3. Bingkai &
-                                        Branding</strong>, hingga <strong>4. Moderasi & Galeri</strong> otomatis
-                                    diterapkan khusus untuk acara yang dipilih:
+                                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">
+                                    Event terpilih: <strong class="active-event-title" style="color:var(--accent-neon);">-</strong>. Pengaturan Event, Bingkai, Kuota & Moderasi otomatis berlaku khusus acara ini.
                                 </div>
                             </div>
                         </div>
 
-                        <div
-                            style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; width:100%; max-width:290px;">
+                        <div style="width:100%; max-width:280px;">
                             <select class="form-input event-selector-dropdown"
-                                style="padding:8px 12px; font-size:0.8rem; width:100%; background:#0b0f19; border-color:var(--accent-neon); font-weight:700; color:var(--accent-neon);"
+                                style="padding:8px 12px; font-size:0.82rem; width:100%; background:#0b0f19; border-color:var(--accent-neon); font-weight:700; color:var(--accent-neon);"
                                 onchange="onEventDropdownChange(this)">
                             </select>
                         </div>
                     </div>
 
                     <!-- Tombol Kapsul Pilihan Cepat Antar-Event -->
-                    <div id="adminEventQuickPills" class="event-Switcher-pills"></div>
-
-                    <!-- Ringkasan Status Konfigurasi Event (Kartu Pintasan Menu 1 s/d 5) -->
-                    <div id="adminEventScopeSummaryGrid" class="event-scope-summary-grid"></div>
-
-                    <!-- Toolbar Aksi Cepat (Salin Konfigurasi Antar-Event, Buat/Edit Event & Simpan) -->
-                    <div class="event-scope-toolbar">
-                        <div
-                            style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; flex:1; min-width:220px;">
-                            <span style="font-size:0.72rem; color:var(--text-muted); font-weight:600;"><i
-                                    class="fa-solid fa-copy" style="color:var(--accent-gold);"></i> Salin Settingan
-                                Dari:</span>
-                            <select id="adminCopyFromEventSelect" class="form-input"
-                                style="padding:5px 10px; font-size:0.74rem; width:auto; max-width:210px; background:#0b0f19;">
-                            </select>
-                            <button type="button" class="btn btn-secondary btn-sm"
-                                style="padding:5px 10px; font-size:0.72rem;"
-                                onclick="copyEventSettingsFromOtherEvent()">
-                                <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-gold);"></i>
-                                Terapkan ke Event Ini
-                            </button>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                            <button type="button" class="btn btn-neon btn-sm" onclick="openEventModal()"
-                                title="Tambah Acara Baru">
-                                <i class="fa-solid fa-plus"></i> Buat Event Baru
-                            </button>
-                            <button type="button" class="btn btn-secondary btn-sm"
-                                onclick="openEventModal(APP_STATE.activeEventId)"
-                                title="Edit Nama, Tanggal & Folder Drive Event Ini">
-                                <i class="fa-solid fa-pen-to-square" style="color:var(--accent-neon);"></i> Edit Event
-                                Aktif
-                            </button>
-                        </div>
-                    </div>
+                    <div id="adminEventQuickPills" class="event-Switcher-pills" style="padding:0 14px 10px 14px;"></div>
                 </div>
 
-                <!-- Bar Navigasi Utama Menu 1 s/d 5 (Berada Tepat di Atas Panel Konten) -->
+                <!-- Bar Navigasi Utama Menu 1 s/d 5 (Bebas Ganda & Rapi) -->
                 <div class="admin-main-tabs-bar">
                     <button type="button" id="adminTabBtn-driveEvents"
                         class="btn btn-secondary btn-sm admin-tab-btn active"
                         onclick="switchAdminSubTab('driveEvents', this)">
                         <i class="fa-solid fa-calendar-check"></i> 1. Event & Drive Acara
                     </button>
+                    <button type="button" id="adminTabBtn-frameStudio" class="btn btn-secondary btn-sm admin-tab-btn"
+                        onclick="switchAdminSubTab('frameStudio', this)">
+                        <i class="fa-solid fa-crop-simple"></i> 2. Bingkai Foto
+                    </button>
                     <button type="button" id="adminTabBtn-quotaDevices" class="btn btn-secondary btn-sm admin-tab-btn"
                         onclick="switchAdminSubTab('quotaDevices', this)">
-                        <i class="fa-solid fa-mobile-screen-button"></i> 2. Kuota & Device
-                    </button>
-                    <button type="button" id="adminTabBtn-config" class="btn btn-secondary btn-sm admin-tab-btn"
-                        onclick="switchAdminSubTab('config', this)">
-                        <i class="fa-solid fa-crop-simple"></i> 3. Bingkai & Branding
+                        <i class="fa-solid fa-mobile-screen-button"></i> 3. Kuota & Device
                     </button>
                     <button type="button" id="adminTabBtn-mod" class="btn btn-secondary btn-sm admin-tab-btn"
                         onclick="switchAdminSubTab('mod', this)">
                         <i class="fa-solid fa-list-check"></i> 4. Moderasi & Galeri
                     </button>
-                    <button type="button" id="adminTabBtn-users" class="btn btn-secondary btn-sm admin-tab-btn"
-                        onclick="switchAdminSubTab('users', this)">
-                        <i class="fa-solid fa-users-gear"></i> 5. User & Database
+                    <button type="button" id="adminTabBtn-systemConfig" class="btn btn-secondary btn-sm admin-tab-btn"
+                        onclick="switchAdminSubTab('systemConfig', this)">
+                        <i class="fa-solid fa-sliders"></i> 5. Sistem & Branding WO
                     </button>
                 </div>
 
@@ -677,7 +632,7 @@
                                     style="font-size:0.74rem; color:#fff; margin:0;">-</span></span>
                             <button type="button" class="btn btn-gold btn-sm"
                                 onclick="saveCurrentEventAllSettingsManual()">
-                                <i class="fa-solid fa-floppy-disk"></i> Simpan Menu 1
+                                <i class="fa-solid fa-floppy-disk"></i> Simpan Kategori Event Ini
                             </button>
                         </div>
                     </div>
@@ -789,7 +744,7 @@
                     <div class="admin-section-context-bar">
                         <div>
                             <div style="font-weight:800; font-size:0.92rem; color:var(--accent-gold);">
-                                <i class="fa-solid fa-mobile-screen-button"></i> Menu 2: Pengaturan Kuota Live Photo &
+                                <i class="fa-solid fa-mobile-screen-button"></i> Menu 3: Pengaturan Kuota Live Photo &
                                 Manajemen Device Per-Event
                             </div>
                             <div style="font-size:0.73rem; color:var(--text-muted);">
@@ -802,7 +757,7 @@
                                 <span class="active-event-title"
                                     style="font-size:0.74rem; color:#fff; margin:0;">-</span></span>
                             <button type="button" class="btn btn-gold btn-sm" onclick="saveUploadLimitsConfigForm()">
-                                <i class="fa-solid fa-floppy-disk"></i> Simpan Menu 2
+                                <i class="fa-solid fa-floppy-disk"></i> Simpan Kuota & Pengaturan Idle
                             </button>
                         </div>
                     </div>
@@ -989,19 +944,17 @@
                 </div>
 
                 <!-- =============================================================== -->
-                <!-- KELOMPOK 3: STUDIO CUSTOM BINGKAI FOTO & BRANDING APLIKASI WO   -->
+                <!-- KELOMPOK 2: STUDIO CUSTOM BINGKAI FOTO PER-EVENT                 -->
                 <!-- =============================================================== -->
-                <div id="adminSub-config" class="admin-panel-box" style="display:none;">
-                    <!-- Banner Konteks Menu 3 -->
+                <div id="adminSub-frameStudio" class="admin-panel-box" style="display:none;">
+                    <!-- Banner Konteks Menu 2 -->
                     <div class="admin-section-context-bar">
                         <div>
                             <div style="font-weight:800; font-size:0.92rem; color:var(--accent-gold);">
-                                <i class="fa-solid fa-crop-simple"></i> Menu 3: Studio Kustomisasi Bingkai Per-Event &
-                                Branding WO
+                                <i class="fa-solid fa-crop-simple"></i> Menu 2: Studio Kustomisasi Bingkai Foto Per-Event
                             </div>
                             <div style="font-size:0.73rem; color:var(--text-muted);">
-                                Desain bingkai, warna, tulisan pasangan, dan PNG transparan diterapkan khusus pada event
-                                aktif.
+                                Desain bingkai, warna, tulisan nama pengantin, dan upload PNG transparan otomatis tersimpan di Google Drive event aktif.
                             </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -1009,7 +962,7 @@
                                 <span class="active-event-title"
                                     style="font-size:0.74rem; color:#fff; margin:0;">-</span></span>
                             <button type="button" class="btn btn-gold btn-sm" onclick="saveFrameConfigForm()">
-                                <i class="fa-solid fa-floppy-disk"></i> Simpan Bingkai Event
+                                <i class="fa-solid fa-floppy-disk"></i> Simpan Bingkai Event Ini
                             </button>
                         </div>
                     </div>
@@ -1170,19 +1123,17 @@
                                 </div>
                             </div>
 
-                            <!-- URL Gambar Bingkai PNG Transparan / Upload File PNG (Opsional) -->
+                            <!-- Upload PNG Bingkai Transparan Langsung ke Google Drive Event -->
                             <div class="form-group" style="grid-column:1/-1;">
-                                <label class="form-label">URL Gambar Bingkai PNG Transparan / Upload File PNG
-                                    (Opsional)</label>
+                                <label class="form-label">Bingkai Kustom PNG Transparan (Tersimpan di Google Drive Event)</label>
                                 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                                     <input type="text" id="adminFrameOverlayUrl" class="form-input"
                                         style="flex:1; min-width:200px;"
-                                        placeholder="Paste URL PNG transparan atau klik Upload PNG Bingkai..."
+                                        placeholder="URL PNG transparan atau klik Upload PNG ke Drive Event di kanan..."
                                         oninput="onFrameOverlayUrlManualInput(this.value)" />
-                                    <label class="btn btn-secondary btn-sm"
+                                    <label class="btn btn-neon btn-sm"
                                         style="cursor:pointer; margin:0; padding:10px 14px;">
-                                        <i class="fa-solid fa-upload" style="color:var(--accent-neon);"></i> Upload PNG
-                                        Bingkai
+                                        <i class="fa-solid fa-cloud-arrow-up"></i> Upload PNG ke Drive Event
                                         <input type="file" id="adminFramePngFileInput" accept="image/png,image/webp"
                                             style="display:none;" onchange="handleCustomFramePngUpload(this)" />
                                     </label>
@@ -1208,68 +1159,6 @@
                             <div style="grid-column:1/-1; display:flex; justify-content:flex-end;">
                                 <button type="submit" class="btn btn-gold">
                                     <i class="fa-solid fa-floppy-disk"></i> Simpan & Aktifkan Bingkai Foto
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- IDENTITAS APLIKASI & BRANDING WO -->
-                    <div class="glass-card">
-                        <div style="font-weight:700; color:var(--accent-neon); font-size:1rem; margin-bottom:14px;">
-                            <i class="fa-solid fa-palette"></i> Identitas Nama Aplikasi & Kustomisasi Branding WO
-                        </div>
-                        <form onsubmit="event.preventDefault(); saveGeneralConfigForm();" class="admin-form-grid">
-                            <div class="form-group">
-                                <label class="form-label">Nama Aplikasi (Header & Watermark)</label>
-                                <input type="text" id="adminAppName" class="form-input" required />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Nama Wedding Organizer (WO)</label>
-                                <input type="text" id="adminWoName" class="form-input" required />
-                            </div>
-                            <div class="form-group" style="grid-column:1/-1;">
-                                <label class="form-label">Tagline / Slogan Aplikasi</label>
-                                <input type="text" id="adminAppTagline" class="form-input" />
-                            </div>
-                            <div class="form-group" style="grid-column:1/-1;">
-                                <label class="form-label">Logo Aplikasi & Halaman Login Admin (Default Logo Runway WO /
-                                    Custom URL / Upload File Logo)</label>
-                                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                                    <input type="text" id="adminWoLogoUrl" class="form-input"
-                                        style="flex:1; min-width:200px;"
-                                        placeholder="Kosongkan untuk Logo Runway WO bawaan, paste URL, atau Upload Logo..."
-                                        oninput="onAdminLogoUrlInput(this.value)" />
-                                    <label class="btn btn-secondary btn-sm"
-                                        style="cursor:pointer; margin:0; padding:10px 14px;">
-                                        <i class="fa-solid fa-upload" style="color:var(--accent-neon);"></i> Upload
-                                        Custom Logo
-                                        <input type="file" id="adminCustomLogoFileInput"
-                                            accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display:none;"
-                                            onchange="handleCustomWoLogoUpload(this)" />
-                                    </label>
-                                    <button type="button" class="btn btn-secondary btn-sm" onclick="resetToRunwayLogo()"
-                                        style="padding:10px 12px;">
-                                        <i class="fa-solid fa-rotate-left" style="color:var(--accent-gold);"></i>
-                                        Gunakan Logo Runway WO
-                                    </button>
-                                </div>
-                                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px;">
-                                    Logo ini otomatis ditampilkan pada <strong>Header Navigasi Atas</strong> dan
-                                    <strong>Halaman Login Admin</strong> (ideal rasio 320×220 px atau persegi, format
-                                    PNG/SVG/JPG).
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Kontak WO / Instagram</label>
-                                <input type="text" id="adminWoContact" class="form-input" />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Teks Footer Aplikasi</label>
-                                <input type="text" id="adminCustomFooter" class="form-input" />
-                            </div>
-                            <div style="grid-column:1/-1; display:flex; justify-content:flex-end;">
-                                <button type="submit" class="btn btn-neon">
-                                    <i class="fa-solid fa-floppy-disk"></i> Simpan & Terapkan Branding
                                 </button>
                             </div>
                         </form>
@@ -1351,19 +1240,17 @@
                 </div>
 
                 <!-- =============================================================== -->
-                <!-- KELOMPOK 5: MANAJEMEN USER & KONEKSI DATABASE                   -->
+                <!-- KELOMPOK 5: SISTEM, BRANDING WO & USER CREW                     -->
                 <!-- =============================================================== -->
-                <div id="adminSub-users" class="admin-panel-box" style="display:none;">
+                <div id="adminSub-systemConfig" class="admin-panel-box" style="display:none;">
                     <!-- Banner Konteks Menu 5 -->
                     <div class="admin-section-context-bar">
                         <div>
                             <div style="font-weight:800; font-size:0.92rem; color:var(--accent-neon);">
-                                <i class="fa-solid fa-users-gear"></i> Menu 5: Manajemen Akun User Crew & Koneksi
-                                Database Global
+                                <i class="fa-solid fa-sliders"></i> Menu 5: Sistem, Branding WO & Akun Crew
                             </div>
                             <div style="font-size:0.73rem; color:var(--text-muted);">
-                                Mengelola hak akses login (Super Admin, Admin Event, Operator) dan sinkronisasi penuh ke
-                                Google Sheets.
+                                Mengatur identitas global Wedding Organizer, akun kru (Super Admin, Admin Event, Operator), dan database.
                             </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -1373,6 +1260,69 @@
                         </div>
                     </div>
 
+                    <!-- IDENTITAS APLIKASI & BRANDING WO GLOBAL -->
+                    <div class="glass-card" style="margin-bottom:16px;">
+                        <div style="font-weight:700; color:var(--accent-neon); font-size:1rem; margin-bottom:14px;">
+                            <i class="fa-solid fa-palette"></i> Identitas Nama Aplikasi & Kustomisasi Branding WO (Global)
+                        </div>
+                        <form onsubmit="event.preventDefault(); saveGeneralConfigForm();" class="admin-form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Nama Aplikasi (Header & Watermark)</label>
+                                <input type="text" id="adminAppName" class="form-input" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Nama Wedding Organizer (WO)</label>
+                                <input type="text" id="adminWoName" class="form-input" required />
+                            </div>
+                            <div class="form-group" style="grid-column:1/-1;">
+                                <label class="form-label">Tagline / Slogan Aplikasi</label>
+                                <input type="text" id="adminAppTagline" class="form-input" />
+                            </div>
+                            <div class="form-group" style="grid-column:1/-1;">
+                                <label class="form-label">Logo Aplikasi & Halaman Login Admin (Default Logo Runway WO /
+                                    Custom URL / Upload File Logo)</label>
+                                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                    <input type="text" id="adminWoLogoUrl" class="form-input"
+                                        style="flex:1; min-width:200px;"
+                                        placeholder="Kosongkan untuk Logo Runway WO bawaan, paste URL, atau Upload Logo..."
+                                        oninput="onAdminLogoUrlInput(this.value)" />
+                                    <label class="btn btn-secondary btn-sm"
+                                        style="cursor:pointer; margin:0; padding:10px 14px;">
+                                        <i class="fa-solid fa-upload" style="color:var(--accent-neon);"></i> Upload
+                                        Custom Logo
+                                        <input type="file" id="adminCustomLogoFileInput"
+                                            accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display:none;"
+                                            onchange="handleCustomWoLogoUpload(this)" />
+                                    </label>
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="resetToRunwayLogo()"
+                                        style="padding:10px 12px;">
+                                        <i class="fa-solid fa-rotate-left" style="color:var(--accent-gold);"></i>
+                                        Gunakan Logo Runway WO
+                                    </button>
+                                </div>
+                                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px;">
+                                    Logo ini otomatis ditampilkan pada <strong>Header Navigasi Atas</strong> dan
+                                    <strong>Halaman Login Admin</strong> (ideal rasio 320×220 px atau persegi, format
+                                    PNG/SVG/JPG).
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Kontak WO / Instagram</label>
+                                <input type="text" id="adminWoContact" class="form-input" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Teks Footer Aplikasi</label>
+                                <input type="text" id="adminCustomFooter" class="form-input" />
+                            </div>
+                            <div style="grid-column:1/-1; display:flex; justify-content:flex-end;">
+                                <button type="submit" class="btn btn-neon">
+                                    <i class="fa-solid fa-floppy-disk"></i> Simpan & Terapkan Branding WO
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- MANAJEMEN USER CREW -->
                     <div class="glass-card" style="margin-bottom:16px;">
                         <div
                             style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
@@ -1407,6 +1357,7 @@
                         </div>
                     </div>
 
+                    <!-- KONEKSI ENDPOINT DATABASE -->
                     <div class="glass-card">
                         <div style="font-weight:700; color:var(--accent-neon); font-size:0.95rem; margin-bottom:6px;">
                             <i class="fa-solid fa-plug-circle-check"></i> Endpoint Koneksi Database Google Apps Script
