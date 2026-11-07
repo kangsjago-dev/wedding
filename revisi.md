@@ -1,7 +1,7 @@
-# LAPORAN PENYELESAIAN REVISI & PENYEMPURNAAN SISTEM: SATUALBUM (DISPOCAM) v1.4.1
+# LAPORAN PENYELESAIAN REVISI & PENYEMPURNAAN SISTEM: SATUALBUM (DISPOCAM) v1.4.2
 ================================================================================
 ENGINE: ZettBOT Core v4.1 (by Zettbos)
-STATUS: SELESAI DITERAPKAN & DIVERIFIKASI (v1.4.1 PRODUCTION-READY)
+STATUS: SELESAI DITERAPKAN & DIVERIFIKASI (v1.4.2 PRODUCTION-READY)
 DOKUMEN RUJUKAN: prd.md (v1.4)
 TANGGAL PENYELESAIAN: 2026-11-08
 ================================================================================
@@ -10,9 +10,10 @@ TANGGAL PENYELESAIAN: 2026-11-08
 
 | No | Permintaan Pengguna | Solusi Rekayasa yang Diterapkan | Status | Berkas Terdampak |
 | :---: | :--- | :--- | :--- | :--- |
-| **1** | **Hapus berkas yang tidak digunakan pada folder** | Menghapus 9 berkas monolitik/templat GAS lama yang sudah usang (`gas_index.html`, `css.html`, `modals.html`, `js_core.html`, `js_camera.html`, `js_gallery.html`, `js_vote.html`, `js_guestbook.html`, `js_admin.html`) serta berkas temporary testing. Folder kerja kini bersih, rapi, dan hanya memuat aset produksi yang aktif. | **SELESAI** | Root folder |
-| **2** | **Aplikasi tidak bisa jalan dengan normal & perbaiki** | Mengidentifikasi dan memperbaiki syntax error `Unexpected token '}'` pada `js/core.js` (pada fungsi `setLiveSyncIndicator`), menambahkan guard `typeof func === 'function'` di seluruh fungsi inisialisasi lintas-modul, serta memindahkan kendali Lightbox Preview & Zoom ke `js/gallery.js` agar mandiri dan siap pakai seketika. | **SELESAI** | `js/core.js`, `js/gallery.js`, `js/admin.js`, `build.ps1` |
-| **3** | **Pengujian Integritas & Kesiapan Produksi** | Menguji `index.html` dan seluruh 6 modul JS menggunakan Chrome Headless. Menghasilkan **0 Syntax Errors**, **0 Reference Errors**, dan **0 TypeErrors**. Backend REST API Apps Script merespons HTTP 200 OK secara langsung. | **SELESAI** | Seluruh Repositori |
+| **1** | **Perbaiki menu yang dobel pada halaman admin** | Menghilangkan bilah konteks redundan (`admin-section-context-bar`) di setiap tab yang sebelumnya memuat tombol aksi ganda; menyatukan tombol simpan kuota, bingkai, dan sinkronisasi database voting menjadi tombol primer tunggal yang jelas di bagian bawah masing-masing formulir. | **SELESAI** | `index.html`, `css/style.css` |
+| **2** | **Urutan Tab & Tampilan Mudah Dimengerti** | Menyelaraskan urutan tab navigasi 1 sampai 5 secara sekuensial baik pada antarmuka maupun hierarki DOM: (1) Event & Drive, (2) Bingkai Foto, (3) Batas & Kuota, (4) Moderasi Galeri, (5) Branding & Sistem. Mengganti deskripsi panjang yang bertele-tele dengan label yang ringkas, lugas, dan terstruktur. | **SELESAI** | `index.html`, `js/core.js` |
+| **3** | **Sinkronisasi ID Hak Akses / Role-Based Admin** | Memperbarui pemetaan ID tombol tab (`adminTabBtn-frameStudio` & `adminTabBtn-systemConfig`) pada `applyRoleBasedAdminView` dan `renderAdminEventScopeSummary` di `js/core.js` agar filter hak akses (Operator, Admin Event, Super Admin) berfungsi akurat tanpa menu hilang atau error. | **SELESAI** | `js/core.js` |
+| **4** | **Pemeriksaan Integritas Syntax & Headless Testing** | Menghilangkan sisa syntax error pada `js/core.js` dan menutup blok kondisi pada `js/admin.js`. Diverifikasi menggunakan Chrome Headless dengan hasil **0 SyntaxError / 0 Runtime Error**. | **SELESAI** | `js/core.js`, `js/admin.js`, `build.ps1` |
 
 ---
 

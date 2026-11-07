@@ -1,102 +1,48 @@
-﻿// =====================================================================
-        // MODUL 2: GALERI PUBLIK, UNDUH FOTO & TOMBOL VOTE LANGSUNG
-        // =====================================================================
-        var _galleryPollTimer = null;
-        var _isGalleryPolling = false;
+// =====================================================================
+// MODUL 2: GALERI PUBLIK, UNDUH FOTO & TOMBOL VOTE LANGSUNG
+// =====================================================================
+var _galleryPollTimer = null;
+var _isGalleryPolling = false;
 
-        function startGalleryAutoPolling() {
-            if (_galleryPollTimer) return;
-            _galleryPollTimer = setInterval(function () {
-                if (document.hidden || !APP_STATE.activeEventId) return;
-                if (_isGalleryPolling) return;
-                _isGalleryPolling = true;
+function startGalleryAutoPolling() {
+    if (_galleryPollTimer) return;
+    _galleryPollTimer = setInterval(function () {
+        if (document.hidden || !APP_STATE.activeEventId) return;
+        if (_isGalleryPolling) return;
+        _isGalleryPolling = true;
 
-                var payload = {
-                    dataType: 'photos',
-                    eventId: APP_STATE.activeEventId,
-                    category: 'ALL',
-                    search: '',
-                    offset: 0,
-                    limit: 200
-                };
+        var payload = {
+            dataType: 'photos',
+            eventId: APP_STATE.activeEventId,
+            category: 'ALL',
+            search: '',
+            offset: 0,
+            limit: 200
+        };
 
-                callBackendApi('getPaginatedData', payload, function (res) {
-                    _isGalleryPolling = false;
-                    if (res && res.status === 'success' && Array.isArray(res.items)) {
-                        var serverItems = res.items;
-                        var currentItems = APP_STATE.allEventPhotos || [];
-                        var existingMap = {};
-                        for (var i = 0; i < currentItems.length; i++) {
-                            existingMap[currentItems[i].photoId] = true;
-                        }
+        callBackendApi('getPaginatedData', payload, function (res) {
+            _isGalleryPolling = false;
+            if (res && res.status === 'success' && Array.isArray(res.items)) {
+                var serverItems = res.items;
+                var currentItems = APP_STATE.allEventPhotos || [];
+                var existingMap = {};
+                for (var i = 0; i < currentItems.length; i++) {
+                    existingMap[currentItems[i].photoId] = true;
+                }
 
-                        var newFound = 0;
-                        for (var j = 0; j < serverItems.length; j++) {
-                            if (!existingMap[serverItems[j].photoId]) {
-                                newFound++;
-                            }
-                        }
-
-                        if (newFound > 0) {
-                            var pendingMap = {};
-                            for (var q = 0; q < APP_STATE.backgroundUploadQueue.length; q++) {
-                                pendingMap[APP_STATE.backgroundUploadQueue[q].tempPhotoId] = true;
-                            }
-                            var pendingPhotos = currentItems.filter(function (item) {
-                                return Boolean(pendingMap[item.photoId]);
-                            });
-
-                            var combined = pendingPhotos.concat(serverItems);
-                            var fetched = mergePhotosWithLocalVoteCache(combined);
-                            APP_STATE.allEventPhotos = fetched;
-                            APP_STATE.photos = fetched.slice();
-                            renderGalleryGrid();
-                            renderVoteSection();
-                            renderLiveLeaderboard();
-                            renderAdminModerationTable();
-                            updateHeroCounters();
-                            showToast(newFound + ' foto baru masuk ke galeri!');
-                        }
+                var newFound = 0;
+                for (var j = 0; j < serverItems.length; j++) {
+                    if (!existingMap[serverItems[j].photoId]) {
+                        newFound++;
                     }
-                }, function () {
-                    _isGalleryPolling = false;
-                });
-            }, 12000);
-        }
+                }
 
-        function stopGalleryAutoPolling() {
-            if (_galleryPollTimer) {
-                clearInterval(_galleryPollTimer);
-                _galleryPollTimer = null;
-            }
-        }
-
-        // Jalankan auto polling otomatis saat modul galeri dimuat
-        try {
-            startGalleryAutoPolling();
-        } catch (e) {}
-
-        function reloadGalleryFeed(reset) {
-            if (reset) {
-                APP_STATE.galleryOffset = 0;
-            }
-            var payload = {
-                dataType: 'photos',
-                eventId: APP_STATE.activeEventId,
-                category: 'ALL',
-                search: '',
-                offset: 0,
-                limit: 200
-            };
-            callBackendApi('getPaginatedData', payload, function (res) {
-                if (res && res.status === 'success') {
-                    var serverItems = res.items || [];
-                    // Pertahankan foto yang sedang dalam antrean background upload agar tidak hilang saat refresh
+                if (newFound > 0) {
                     var pendingMap = {};
                     for (var q = 0; q < APP_STATE.backgroundUploadQueue.length; q++) {
                         pendingMap[APP_STATE.backgroundUploadQueue[q].tempPhotoId] = true;
                     }
-                    var pendingPhotos = (APP_STATE.allEventPhotos || []).filter(function (item) {
+                    var pendingPhotos = currentItems.filter(function (item) {
                         return Boolean(pendingMap[item.photoId]);
                     });
 
@@ -104,190 +50,340 @@
                     var fetched = mergePhotosWithLocalVoteCache(combined);
                     APP_STATE.allEventPhotos = fetched;
                     APP_STATE.photos = fetched.slice();
-                    APP_STATE.galleryHasMore = false;
                     renderGalleryGrid();
                     renderVoteSection();
                     renderLiveLeaderboard();
                     renderAdminModerationTable();
                     updateHeroCounters();
-                } else {
-                    APP_STATE.allEventPhotos = mergePhotosWithLocalVoteCache(APP_STATE.allEventPhotos || APP_STATE.photos || []);
-                    APP_STATE.photos = APP_STATE.allEventPhotos.slice();
-                    renderGalleryGrid();
-                    updateHeroCounters();
+                    showToast(newFound + ' foto baru masuk ke galeri!');
                 }
-            }, function () {
-                APP_STATE.allEventPhotos = mergePhotosWithLocalVoteCache(APP_STATE.allEventPhotos || APP_STATE.photos || []);
-                APP_STATE.photos = APP_STATE.allEventPhotos.slice();
-                renderGalleryGrid();
-                renderVoteSection();
-                renderLiveLeaderboard();
-                renderAdminModerationTable();
-                updateHeroCounters();
+            }
+        }, function () {
+            _isGalleryPolling = false;
+        });
+    }, 12000);
+}
+
+function stopGalleryAutoPolling() {
+    if (_galleryPollTimer) {
+        clearInterval(_galleryPollTimer);
+        _galleryPollTimer = null;
+    }
+}
+
+// Jalankan auto polling otomatis saat modul galeri dimuat
+try {
+    startGalleryAutoPolling();
+} catch (e) { }
+
+function reloadGalleryFeed(reset) {
+    if (reset) {
+        APP_STATE.galleryOffset = 0;
+    }
+    var payload = {
+        dataType: 'photos',
+        eventId: APP_STATE.activeEventId,
+        category: 'ALL',
+        search: '',
+        offset: 0,
+        limit: 200
+    };
+    callBackendApi('getPaginatedData', payload, function (res) {
+        if (res && res.status === 'success') {
+            var serverItems = res.items || [];
+            // Pertahankan foto yang sedang dalam antrean background upload agar tidak hilang saat refresh
+            var pendingMap = {};
+            for (var q = 0; q < APP_STATE.backgroundUploadQueue.length; q++) {
+                pendingMap[APP_STATE.backgroundUploadQueue[q].tempPhotoId] = true;
+            }
+            var pendingPhotos = (APP_STATE.allEventPhotos || []).filter(function (item) {
+                return Boolean(pendingMap[item.photoId]);
             });
-        }
 
-        function filterGalleryCategory(catName, btnEl) {
-            APP_STATE.galleryCategory = catName;
-            var chips = document.querySelectorAll('#galleryCategoryPills .filter-chip');
-            for (var i = 0; i < chips.length; i++) chips[i].classList.remove('active');
-            if (btnEl) btnEl.classList.add('active');
+            var combined = pendingPhotos.concat(serverItems);
+            var fetched = mergePhotosWithLocalVoteCache(combined);
+            APP_STATE.allEventPhotos = fetched;
+            APP_STATE.photos = fetched.slice();
+            APP_STATE.galleryHasMore = false;
             renderGalleryGrid();
-        }
-
-        function onGallerySearchInput(inputEl) {
-            APP_STATE.gallerySearch = (inputEl.value || '').toLowerCase().trim();
+            renderVoteSection();
+            renderLiveLeaderboard();
+            renderAdminModerationTable();
+            updateHeroCounters();
+        } else {
+            APP_STATE.allEventPhotos = mergePhotosWithLocalVoteCache(APP_STATE.allEventPhotos || APP_STATE.photos || []);
+            APP_STATE.photos = APP_STATE.allEventPhotos.slice();
             renderGalleryGrid();
+            updateHeroCounters();
         }
+    }, function () {
+        APP_STATE.allEventPhotos = mergePhotosWithLocalVoteCache(APP_STATE.allEventPhotos || APP_STATE.photos || []);
+        APP_STATE.photos = APP_STATE.allEventPhotos.slice();
+        renderGalleryGrid();
+        renderVoteSection();
+        renderLiveLeaderboard();
+        renderAdminModerationTable();
+        updateHeroCounters();
+    });
+}
 
-        function loadMoreGalleryPhotos() {
-            APP_STATE.galleryOffset += APP_STATE.galleryLimit;
-            renderGalleryGrid();
+function filterGalleryCategory(catName, btnEl) {
+    APP_STATE.galleryCategory = catName;
+    var chips = document.querySelectorAll('#galleryCategoryPills .filter-chip');
+    for (var i = 0; i < chips.length; i++) chips[i].classList.remove('active');
+    if (btnEl) btnEl.classList.add('active');
+    renderGalleryGrid();
+}
+
+function onGallerySearchInput(inputEl) {
+    APP_STATE.gallerySearch = (inputEl.value || '').toLowerCase().trim();
+    renderGalleryGrid();
+}
+
+function loadMoreGalleryPhotos() {
+    APP_STATE.galleryOffset += APP_STATE.galleryLimit;
+    renderGalleryGrid();
+}
+
+function buildVoteBreakdownBadgesHtml(photoObj) {
+    var map = photoObj.votesByCategory || {};
+    var chips = '';
+    for (var k in map) {
+        if (map.hasOwnProperty(k) && map[k] > 0) {
+            chips += '<span style="font-size:0.66rem; background:rgba(245,197,66,0.14); color:var(--accent-gold); border:1px solid rgba(245,197,66,0.35); padding:2px 7px; border-radius:12px; font-weight:600;">' + escapeHtml(k) + ': ' + map[k] + '</span>';
         }
+    }
+    return chips;
+}
 
-        function buildVoteBreakdownBadgesHtml(photoObj) {
-            var map = photoObj.votesByCategory || {};
-            var chips = '';
-            for (var k in map) {
-                if (map.hasOwnProperty(k) && map[k] > 0) {
-                    chips += '<span style="font-size:0.66rem; background:rgba(245,197,66,0.14); color:var(--accent-gold); border:1px solid rgba(245,197,66,0.35); padding:2px 7px; border-radius:12px; font-weight:600;">' + escapeHtml(k) + ': ' + map[k] + '</span>';
-                }
+function renderGalleryGrid() {
+    var gridEl = document.getElementById('publicGalleryGrid');
+    var loadMoreBtn = document.getElementById('galleryLoadMoreBtn');
+    if (!gridEl) return;
+    var html = '';
+    var sourceList = APP_STATE.allEventPhotos || APP_STATE.photos || [];
+    var list = [];
+    for (var s = 0; s < sourceList.length; s++) {
+        var item = sourceList[s];
+        if (item.eventId && item.eventId !== APP_STATE.activeEventId) {
+            continue;
+        }
+        if (APP_STATE.galleryCategory && APP_STATE.galleryCategory !== 'ALL' && item.category !== APP_STATE.galleryCategory) {
+            continue;
+        }
+        if (APP_STATE.gallerySearch) {
+            var hay = ((item.uploadedBy || '') + ' ' + (item.category || '') + ' ' + (item.awardTitle || '')).toLowerCase();
+            if (hay.indexOf(APP_STATE.gallerySearch) === -1) continue;
+        }
+        list.push(item);
+    }
+
+    if (list.length === 0) {
+        html = '<div style="grid-column:1/-1; text-align:center; padding:40px 20px; color:var(--text-muted);">Belum ada foto untuk kategori ini. Yuk ambil foto pertama lewat menu Live Kamera!</div>';
+    } else {
+        for (var i = 0; i < list.length; i++) {
+            var p = list[i];
+            var totalV = parseInt(p.votes, 10) || 0;
+            var badgeAward = p.awardTitle ? '<span style="position:absolute; top:8px; left:8px; font-size:0.68rem; font-weight:800; padding:4px 9px; border-radius:8px; background:var(--accent-gold); color:#0b0f19; box-shadow:0 4px 10px rgba(0,0,0,0.4);"><i class="fa-solid fa-crown"></i> ' + escapeHtml(p.awardTitle) + '</span>' : '';
+            var breakdownHtml = buildVoteBreakdownBadgesHtml(p);
+
+            html += '<div class="glass-card photo-card">';
+            html += '<div>';
+            html += '<div class="photo-img-box">';
+            html += '<img src="' + escapeHtml(p.directImageUrl) + '" onclick="openImageLightBox(\'' + escapeHtml(p.directImageUrl) + '\', \'' + escapeHtml(p.uploadedBy) + '\')" onerror="this.src=\'https://placehold.co/640x360/151b26/00ffaa?text=Foto+Acara\'" />';
+            html += badgeAward;
+            html += '<span style="position:absolute; bottom:8px; right:8px; font-size:0.68rem; font-weight:600; padding:3px 8px; border-radius:6px; background:rgba(11,15,25,0.82); color:var(--accent-neon); border:1px solid var(--border-glass);">' + escapeHtml(p.category) + '</span>';
+            html += '</div>';
+            html += '<div style="font-size:0.86rem; font-weight:700; margin-bottom:2px;"><i class="fa-solid fa-user-check" style="color:var(--accent-neon); margin-right:4px;"></i> ' + escapeHtml(p.uploadedBy) + '</div>';
+            html += '<div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:8px;">' + escapeHtml(p.uploadedAt || '') + '</div>';
+            if (breakdownHtml) {
+                html += '<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px;">' + breakdownHtml + '</div>';
             }
-            return chips;
+            html += '</div>';
+            html += '<div style="display:flex; justify-content:space-between; align-items:center; gap:6px; padding-top:8px; border-top:1px solid var(--border-subtle);">';
+            html += '<span style="font-size:0.75rem; font-weight:700; color:var(--accent-gold);"><i class="fa-solid fa-fire"></i> ' + totalV + ' Suara</span>';
+            html += '<div style="display:flex; gap:6px;">';
+            html += '<button type="button" class="btn btn-secondary btn-sm" onclick="downloadPhotoById(\'' + escapeHtml(p.photoId) + '\')" title="Download Foto FHD"><i class="fa-solid fa-download"></i></button>';
+            html += '<button type="button" class="btn btn-neon btn-sm" onclick="openVoteCategoryModal(\'' + escapeHtml(p.photoId) + '\')"><i class="fa-solid fa-check-to-slot"></i> Vote</button>';
+            html += '</div>';
+            html += '</div>';
+            html += '</div>';
         }
+    }
+    gridEl.innerHTML = html;
+    if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+}
 
-        function renderGalleryGrid() {
-            var gridEl = document.getElementById('publicGalleryGrid');
-            var loadMoreBtn = document.getElementById('galleryLoadMoreBtn');
-            if (!gridEl) return;
-            var html = '';
-            var sourceList = APP_STATE.allEventPhotos || APP_STATE.photos || [];
-            var list = [];
-            for (var s = 0; s < sourceList.length; s++) {
-                var item = sourceList[s];
-                if (item.eventId && item.eventId !== APP_STATE.activeEventId) {
-                    continue;
-                }
-                if (APP_STATE.galleryCategory && APP_STATE.galleryCategory !== 'ALL' && item.category !== APP_STATE.galleryCategory) {
-                    continue;
-                }
-                if (APP_STATE.gallerySearch) {
-                    var hay = ((item.uploadedBy || '') + ' ' + (item.category || '') + ' ' + (item.awardTitle || '')).toLowerCase();
-                    if (hay.indexOf(APP_STATE.gallerySearch) === -1) continue;
-                }
-                list.push(item);
+function downloadPhotoById(photoId) {
+    var list = APP_STATE.allEventPhotos || APP_STATE.photos || [];
+    var target = null;
+    for (var i = 0; i < list.length; i++) {
+        if (list[i].photoId === photoId) {
+            target = list[i];
+            break;
+        }
+    }
+    if (!target) return;
+    triggerImageDownload(target.directImageUrl, target.fileName || ('SatuAlbum_' + photoId + '.jpg'));
+}
+
+function downloadCurrentLightboxPhoto() {
+    var imgEl = document.getElementById('lightboxImgEl');
+    if (!imgEl || !imgEl.src) return;
+    triggerImageDownload(imgEl.src, 'SatuAlbum_Photo_' + Date.now() + '.jpg');
+}
+
+function triggerImageDownload(imgUrl, fileName) {
+    if (!imgUrl) return;
+    if (imgUrl.indexOf('data:image') === 0) {
+        var a = document.createElement('a');
+        a.href = imgUrl;
+        a.download = fileName || 'SatuAlbum_Foto.jpg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('Mengunduh foto ke perangkat Anda...');
+        return;
+    }
+    var matchId = imgUrl.match(/[?&]id=([a-zA-Z0-9_-]{10,})/) || imgUrl.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
+    if (matchId && matchId[1]) {
+        var dlUrl = 'https://drive.google.com/uc?export=download&id=' + matchId[1];
+        window.open(dlUrl, '_blank');
+        showToast('Membuka unduhan foto resolusi penuh...');
+        return;
+    }
+    var link = document.createElement('a');
+    link.href = imgUrl;
+    link.target = '_blank';
+    link.download = fileName || 'SatuAlbum_Foto.jpg';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Mengunduh foto...');
+}
+
+// =====================================================================
+// LIGHTBOX PREVIEW, ZOOM (100% - 400%), PAN & SENTUHAN PINCH
+// =====================================================================
+var _lightboxScale = 1.0;
+var _lightboxPanX = 0;
+var _lightboxPanY = 0;
+var _isLightboxPanning = false;
+var _panStartX = 0;
+var _panStartY = 0;
+var _initialPinchDistance = 0;
+var _initialPinchScale = 1.0;
+
+function updateLightboxTransform() {
+    var imgEl = document.getElementById('lightboxImgEl');
+    var badge = document.getElementById('lightboxZoomBadge');
+    var hint = document.getElementById('lightboxZoomHint');
+    if (!imgEl) return;
+    imgEl.style.transform = 'translate(' + _lightboxPanX + 'px, ' + _lightboxPanY + 'px) scale(' + _lightboxScale + ')';
+    if (badge) badge.textContent = Math.round(_lightboxScale * 100) + '%';
+    if (hint) hint.style.display = (_lightboxScale > 1.0) ? 'none' : 'block';
+}
+
+function zoomLightbox(delta) {
+    var newScale = _lightboxScale + delta;
+    if (newScale < 1.0) newScale = 1.0;
+    if (newScale > 4.0) newScale = 4.0;
+    _lightboxScale = Math.round(newScale * 100) / 100;
+    if (_lightboxScale === 1.0) {
+        _lightboxPanX = 0;
+        _lightboxPanY = 0;
+    }
+    updateLightboxTransform();
+}
+
+function resetLightboxZoom() {
+    _lightboxScale = 1.0;
+    _lightboxPanX = 0;
+    _lightboxPanY = 0;
+    updateLightboxTransform();
+}
+
+function openImageLightBox(imgUrl, uploaderName) {
+    resetLightboxZoom();
+    var imgEl = document.getElementById('lightboxImgEl');
+    var capEl = document.getElementById('lightboxCaptionEl');
+    if (imgEl) imgEl.src = imgUrl;
+    if (capEl) capEl.innerHTML = '<i class="fa-solid fa-camera" style="color:var(--accent-neon);"></i> <span>' + escapeHtml(uploaderName ? ('Foto oleh: ' + uploaderName) : 'Preview Foto') + '</span>';
+    var modal = document.getElementById('lightboxModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeImageLightBox() {
+    resetLightboxZoom();
+    var modal = document.getElementById('lightboxModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function initLightboxInteractiveControls() {
+    var vp = document.getElementById('lightboxViewport');
+    if (!vp || vp._hasZoomInit) return;
+    vp._hasZoomInit = true;
+
+    // Mouse wheel zoom
+    vp.addEventListener('wheel', function (e) {
+        e.preventDefault();
+        var delta = e.deltaY < 0 ? 0.25 : -0.25;
+        zoomLightbox(delta);
+    }, { passive: false });
+
+    // Mouse drag pan
+    vp.addEventListener('mousedown', function (e) {
+        if (_lightboxScale <= 1.0) return;
+        _isLightboxPanning = true;
+        _panStartX = e.clientX - _lightboxPanX;
+        _panStartY = e.clientY - _lightboxPanY;
+        vp.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mousemove', function (e) {
+        if (!_isLightboxPanning) return;
+        _lightboxPanX = e.clientX - _panStartX;
+        _lightboxPanY = e.clientY - _panStartY;
+        updateLightboxTransform();
+    });
+
+    window.addEventListener('mouseup', function () {
+        if (_isLightboxPanning) {
+            _isLightboxPanning = false;
+            if (vp) vp.style.cursor = (_lightboxScale > 1.0) ? 'grab' : 'default';
+        }
+    });
+
+    // Touch pinch & pan
+    vp.addEventListener('touchstart', function (e) {
+        if (e.touches.length === 1) {
+            if (_lightboxScale > 1.0) {
+                _isLightboxPanning = true;
+                _panStartX = e.touches[0].clientX - _lightboxPanX;
+                _panStartY = e.touches[0].clientY - _lightboxPanY;
             }
-
-            if (list.length === 0) {
-                html = '<div style="grid-column:1/-1; text-align:center; padding:40px 20px; color:var(--text-muted);">Belum ada foto untuk kategori ini. Yuk ambil foto pertama lewat menu Live Kamera!</div>';
-            } else {
-                for (var i = 0; i < list.length; i++) {
-                    var p = list[i];
-                    var totalV = parseInt(p.votes, 10) || 0;
-                    var badgeAward = p.awardTitle ? '<span style="position:absolute; top:8px; left:8px; font-size:0.68rem; font-weight:800; padding:4px 9px; border-radius:8px; background:var(--accent-gold); color:#0b0f19; box-shadow:0 4px 10px rgba(0,0,0,0.4);"><i class="fa-solid fa-crown"></i> ' + escapeHtml(p.awardTitle) + '</span>' : '';
-                    var breakdownHtml = buildVoteBreakdownBadgesHtml(p);
-
-                    html += '<div class="glass-card photo-card">';
-                    html += '<div>';
-                    html += '<div class="photo-img-box">';
-                    html += '<img src="' + escapeHtml(p.directImageUrl) + '" onclick="openImageLightBox(\'' + escapeHtml(p.directImageUrl) + '\', \'' + escapeHtml(p.uploadedBy) + '\')" onerror="this.src=\'https://placehold.co/640x360/151b26/00ffaa?text=Foto+Acara\'" />';
-                    html += badgeAward;
-                    html += '<span style="position:absolute; bottom:8px; right:8px; font-size:0.68rem; font-weight:600; padding:3px 8px; border-radius:6px; background:rgba(11,15,25,0.82); color:var(--accent-neon); border:1px solid var(--border-glass);">' + escapeHtml(p.category) + '</span>';
-                    html += '</div>';
-                    html += '<div style="font-size:0.86rem; font-weight:700; margin-bottom:2px;"><i class="fa-solid fa-user-check" style="color:var(--accent-neon); margin-right:4px;"></i> ' + escapeHtml(p.uploadedBy) + '</div>';
-                    html += '<div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:8px;">' + escapeHtml(p.uploadedAt || '') + '</div>';
-                    if (breakdownHtml) {
-                        html += '<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px;">' + breakdownHtml + '</div>';
-                    }
-                    html += '</div>';
-                    html += '<div style="display:flex; justify-content:space-between; align-items:center; gap:6px; padding-top:8px; border-top:1px solid var(--border-subtle);">';
-                    html += '<span style="font-size:0.75rem; font-weight:700; color:var(--accent-gold);"><i class="fa-solid fa-fire"></i> ' + totalV + ' Suara</span>';
-                    html += '<div style="display:flex; gap:6px;">';
-                    html += '<button type="button" class="btn btn-secondary btn-sm" onclick="downloadPhotoById(\'' + escapeHtml(p.photoId) + '\')" title="Download Foto FHD"><i class="fa-solid fa-download"></i></button>';
-                    html += '<button type="button" class="btn btn-neon btn-sm" onclick="openVoteCategoryModal(\'' + escapeHtml(p.photoId) + '\')"><i class="fa-solid fa-check-to-slot"></i> Vote</button>';
-                    html += '</div>';
-                    html += '</div>';
-                    html += '</div>';
-                }
-            }
-            gridEl.innerHTML = html;
-            if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+        } else if (e.touches.length === 2) {
+            _isLightboxPanning = false;
+            var dx = e.touches[0].clientX - e.touches[1].clientX;
+            var dy = e.touches[0].clientY - e.touches[1].clientY;
+            _initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
+            _initialPinchScale = _lightboxScale;
         }
+    }, { passive: true });
 
-        function downloadPhotoById(photoId) {
-            var list = APP_STATE.allEventPhotos || APP_STATE.photos || [];
-            var target = null;
-            for (var i = 0; i < list.length; i++) {
-                if (list[i].photoId === photoId) {
-                    target = list[i];
-                    break;
-                }
-            }
-            if (!target) return;
-            triggerImageDownload(target.directImageUrl, target.fileName || ('SatuAlbum_' + photoId + '.jpg'));
-        }
-
-        function downloadCurrentLightboxPhoto() {
-            var imgEl = document.getElementById('lightboxImgEl');
-            if (!imgEl || !imgEl.src) return;
-            triggerImageDownload(imgEl.src, 'SatuAlbum_Photo_' + Date.now() + '.jpg');
-        }
-
-        function triggerImageDownload(imgUrl, fileName) {
-            if (!imgUrl) return;
-            if (imgUrl.indexOf('data:image') === 0) {
-                var a = document.createElement('a');
-                a.href = imgUrl;
-                a.download = fileName || 'SatuAlbum_Foto.jpg';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                showToast('Mengunduh foto ke perangkat Anda...');
-                return;
-            }
-            var matchId = imgUrl.match(/[?&]id=([a-zA-Z0-9_-]{10,})/) || imgUrl.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
-            if (matchId && matchId[1]) {
-                var dlUrl = 'https://drive.google.com/uc?export=download&id=' + matchId[1];
-                window.open(dlUrl, '_blank');
-                showToast('Membuka unduhan foto resolusi penuh...');
-                return;
-            }
-            var link = document.createElement('a');
-            link.href = imgUrl;
-            link.target = '_blank';
-            link.download = fileName || 'SatuAlbum_Foto.jpg';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast('Mengunduh foto...');
-        }
-
-        // =====================================================================
-        // LIGHTBOX PREVIEW, ZOOM (100% - 400%), PAN & SENTUHAN PINCH
-        // =====================================================================
-        var _lightboxScale = 1.0;
-        var _lightboxPanX = 0;
-        var _lightboxPanY = 0;
-        var _isLightboxPanning = false;
-        var _panStartX = 0;
-        var _panStartY = 0;
-        var _initialPinchDistance = 0;
-        var _initialPinchScale = 1.0;
-
-        function updateLightboxTransform() {
-            var imgEl = document.getElementById('lightboxImgEl');
-            var badge = document.getElementById('lightboxZoomBadge');
-            var hint = document.getElementById('lightboxZoomHint');
-            if (!imgEl) return;
-            imgEl.style.transform = 'translate(' + _lightboxPanX + 'px, ' + _lightboxPanY + 'px) scale(' + _lightboxScale + ')';
-            if (badge) badge.textContent = Math.round(_lightboxScale * 100) + '%';
-            if (hint) hint.style.display = (_lightboxScale > 1.0) ? 'none' : 'block';
-        }
-
-        function zoomLightbox(delta) {
-            var newScale = _lightboxScale + delta;
-            if (newScale < 1.0) newScale = 1.0;
-            if (newScale > 4.0) newScale = 4.0;
+    vp.addEventListener('touchmove', function (e) {
+        if (e.touches.length === 1 && _isLightboxPanning) {
+            e.preventDefault();
+            _lightboxPanX = e.touches[0].clientX - _panStartX;
+            _lightboxPanY = e.touches[0].clientY - _panStartY;
+            updateLightboxTransform();
+        } else if (e.touches.length === 2 && _initialPinchDistance > 0) {
+            e.preventDefault();
+            var dx = e.touches[0].clientX - e.touches[1].clientX;
+            var dy = e.touches[0].clientY - e.touches[1].clientY;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            var factor = dist / _initialPinchDistance;
+            var newScale = Math.min(4.0, Math.max(1.0, _initialPinchScale * factor));
             _lightboxScale = Math.round(newScale * 100) / 100;
             if (_lightboxScale === 1.0) {
                 _lightboxPanX = 0;
@@ -295,114 +391,18 @@
             }
             updateLightboxTransform();
         }
+    }, { passive: false });
 
-        function resetLightboxZoom() {
-            _lightboxScale = 1.0;
-            _lightboxPanX = 0;
-            _lightboxPanY = 0;
-            updateLightboxTransform();
+    vp.addEventListener('touchend', function (e) {
+        if (e.touches.length === 0) {
+            _isLightboxPanning = false;
+            _initialPinchDistance = 0;
         }
+    }, { passive: true });
+}
 
-        function openImageLightBox(imgUrl, uploaderName) {
-            resetLightboxZoom();
-            var imgEl = document.getElementById('lightboxImgEl');
-            var capEl = document.getElementById('lightboxCaptionEl');
-            if (imgEl) imgEl.src = imgUrl;
-            if (capEl) capEl.innerHTML = '<i class="fa-solid fa-camera" style="color:var(--accent-neon);"></i> <span>' + escapeHtml(uploaderName ? ('Foto oleh: ' + uploaderName) : 'Preview Foto') + '</span>';
-            var modal = document.getElementById('lightboxModal');
-            if (modal) modal.style.display = 'flex';
-        }
-
-        function closeImageLightBox() {
-            resetLightboxZoom();
-            var modal = document.getElementById('lightboxModal');
-            if (modal) modal.style.display = 'none';
-        }
-
-        function initLightboxInteractiveControls() {
-            var vp = document.getElementById('lightboxViewport');
-            if (!vp || vp._hasZoomInit) return;
-            vp._hasZoomInit = true;
-
-            // Mouse wheel zoom
-            vp.addEventListener('wheel', function (e) {
-                e.preventDefault();
-                var delta = e.deltaY < 0 ? 0.25 : -0.25;
-                zoomLightbox(delta);
-            }, { passive: false });
-
-            // Mouse drag pan
-            vp.addEventListener('mousedown', function (e) {
-                if (_lightboxScale <= 1.0) return;
-                _isLightboxPanning = true;
-                _panStartX = e.clientX - _lightboxPanX;
-                _panStartY = e.clientY - _lightboxPanY;
-                vp.style.cursor = 'grabbing';
-            });
-
-            window.addEventListener('mousemove', function (e) {
-                if (!_isLightboxPanning) return;
-                _lightboxPanX = e.clientX - _panStartX;
-                _lightboxPanY = e.clientY - _panStartY;
-                updateLightboxTransform();
-            });
-
-            window.addEventListener('mouseup', function () {
-                if (_isLightboxPanning) {
-                    _isLightboxPanning = false;
-                    if (vp) vp.style.cursor = (_lightboxScale > 1.0) ? 'grab' : 'default';
-                }
-            });
-
-            // Touch pinch & pan
-            vp.addEventListener('touchstart', function (e) {
-                if (e.touches.length === 1) {
-                    if (_lightboxScale > 1.0) {
-                        _isLightboxPanning = true;
-                        _panStartX = e.touches[0].clientX - _lightboxPanX;
-                        _panStartY = e.touches[0].clientY - _lightboxPanY;
-                    }
-                } else if (e.touches.length === 2) {
-                    _isLightboxPanning = false;
-                    var dx = e.touches[0].clientX - e.touches[1].clientX;
-                    var dy = e.touches[0].clientY - e.touches[1].clientY;
-                    _initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
-                    _initialPinchScale = _lightboxScale;
-                }
-            }, { passive: true });
-
-            vp.addEventListener('touchmove', function (e) {
-                if (e.touches.length === 1 && _isLightboxPanning) {
-                    e.preventDefault();
-                    _lightboxPanX = e.touches[0].clientX - _panStartX;
-                    _lightboxPanY = e.touches[0].clientY - _panStartY;
-                    updateLightboxTransform();
-                } else if (e.touches.length === 2 && _initialPinchDistance > 0) {
-                    e.preventDefault();
-                    var dx = e.touches[0].clientX - e.touches[1].clientX;
-                    var dy = e.touches[0].clientY - e.touches[1].clientY;
-                    var dist = Math.sqrt(dx * dx + dy * dy);
-                    var factor = dist / _initialPinchDistance;
-                    var newScale = Math.min(4.0, Math.max(1.0, _initialPinchScale * factor));
-                    _lightboxScale = Math.round(newScale * 100) / 100;
-                    if (_lightboxScale === 1.0) {
-                        _lightboxPanX = 0;
-                        _lightboxPanY = 0;
-                    }
-                    updateLightboxTransform();
-                }
-            }, { passive: false });
-
-            vp.addEventListener('touchend', function (e) {
-                if (e.touches.length === 0) {
-                    _isLightboxPanning = false;
-                    _initialPinchDistance = 0;
-                }
-            }, { passive: true });
-        }
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initLightboxInteractiveControls);
-        } else {
-            initLightboxInteractiveControls();
-        }
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLightboxInteractiveControls);
+} else {
+    initLightboxInteractiveControls();
+}

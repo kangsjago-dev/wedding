@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 
 <head>
@@ -550,42 +550,38 @@
                     </div>
                 </div>
 
-                <!-- Panel Seleksi Event Aktif (Terhubung Langsung ke Seluruh Menu) -->
-                <div class="event-scope-panel" style="margin-bottom:14px;">
-                    <div class="event-scope-header" style="padding:14px 18px;">
-                        <div style="display:flex; align-items:center; gap:12px; min-width:0; flex:1;">
-                            <div
-                                style="width:38px; height:38px; border-radius:10px; background:rgba(0,255,170,0.15); border:1px solid var(--accent-neon); display:flex; align-items:center; justify-content:center; color:var(--accent-neon); font-size:1rem; flex-shrink:0;">
+                <!-- Panel Seleksi Event Aktif Terpadu -->
+                <div class="event-scope-panel" style="margin-bottom:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:38px; height:38px; border-radius:10px; background:rgba(0,255,170,0.15); border:1px solid var(--accent-neon); display:flex; align-items:center; justify-content:center; color:var(--accent-neon); font-size:1.05rem; flex-shrink:0;">
                                 <i class="fa-solid fa-calendar-check"></i>
                             </div>
-                            <div style="min-width:0; flex:1;">
-                                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                                    <span style="font-size:0.88rem; color:#ffffff; font-weight:800;">
-                                        Pilih Event Aktif:
-                                    </span>
-                                    <span class="brand-badge" style="background:rgba(245,197,66,0.16); color:var(--accent-gold); border-color:var(--accent-gold); padding:2px 8px; font-size:0.68rem;">
-                                        TERISOLASI PER ACARA
-                                    </span>
-                                </div>
-                                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">
-                                    Event terpilih: <strong class="active-event-title" style="color:var(--accent-neon);">-</strong>. Pengaturan Event, Bingkai, Kuota & Moderasi otomatis berlaku khusus acara ini.
+                            <div>
+                                <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; font-weight:700;">Event yang Sedang Dikelola:</div>
+                                <div style="font-size:1rem; font-weight:800; color:#ffffff;">
+                                    <span class="active-event-title" style="color:var(--accent-neon);">-</span>
+                                    <span class="brand-badge" style="background:rgba(245,197,66,0.15); color:var(--accent-gold); border-color:var(--accent-gold); font-size:0.65rem; margin-left:6px;">TERISOLASI</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div style="width:100%; max-width:280px;">
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                             <select class="form-input event-selector-dropdown"
-                                style="padding:8px 12px; font-size:0.82rem; width:100%; background:#0b0f19; border-color:var(--accent-neon); font-weight:700; color:var(--accent-neon);"
+                                style="padding:8px 12px; font-size:0.82rem; min-width:200px; background:#0b0f19; border-color:var(--accent-neon); font-weight:700; color:var(--accent-neon);"
                                 onchange="onEventDropdownChange(this)">
                             </select>
+                            <button type="button" class="btn btn-neon btn-sm" onclick="openEventModal()" title="Buat Event Baru">
+                                <i class="fa-solid fa-plus"></i> Event Baru
+                            </button>
                         </div>
                     </div>
 
                     <!-- Tombol Kapsul Pilihan Cepat Antar-Event -->
-                    <div id="adminEventQuickPills" class="event-Switcher-pills" style="padding:0 14px 10px 14px;"></div>
+                    <div id="adminEventQuickPills" class="event-Switcher-pills" style="margin-bottom:0; padding-bottom:2px;"></div>
                 </div>
 
-                <!-- Bar Navigasi Utama Menu 1 s/d 5 (Bebas Ganda & Rapi) -->
+                <!-- Bar Navigasi Utama Menu 1 s/d 5 (Urut, Bersih & Bebas Ganda) -->
                 <div class="admin-main-tabs-bar">
                     <button type="button" id="adminTabBtn-driveEvents"
                         class="btn btn-secondary btn-sm admin-tab-btn active"
@@ -598,42 +594,22 @@
                     </button>
                     <button type="button" id="adminTabBtn-quotaDevices" class="btn btn-secondary btn-sm admin-tab-btn"
                         onclick="switchAdminSubTab('quotaDevices', this)">
-                        <i class="fa-solid fa-mobile-screen-button"></i> 3. Kuota & Device
+                        <i class="fa-solid fa-sliders"></i> 3. Batas & Kuota
                     </button>
                     <button type="button" id="adminTabBtn-mod" class="btn btn-secondary btn-sm admin-tab-btn"
                         onclick="switchAdminSubTab('mod', this)">
-                        <i class="fa-solid fa-list-check"></i> 4. Moderasi
+                        <i class="fa-solid fa-list-check"></i> 4. Moderasi Galeri
                     </button>
                     <button type="button" id="adminTabBtn-systemConfig" class="btn btn-secondary btn-sm admin-tab-btn"
                         onclick="switchAdminSubTab('systemConfig', this)">
-                        <i class="fa-solid fa-sliders"></i> 5. Sistem & Branding
+                        <i class="fa-solid fa-gear"></i> 5. Branding & Sistem
                     </button>
                 </div>
 
                 <!-- =============================================================== -->
-                <!-- KELOMPOK 1: MANAJEMEN EVENT, GOOGLE DRIVE PER-EVENT & KATEGORI  -->
+                <!-- MENU 1: MANAJEMEN EVENT, GOOGLE DRIVE PER-EVENT & KATEGORI     -->
                 <!-- =============================================================== -->
                 <div id="adminSub-driveEvents" class="admin-panel-box">
-                    <!-- Banner Konteks Menu 1 -->
-                    <div class="admin-section-context-bar">
-                        <div>
-                            <div style="font-weight:800; font-size:0.92rem; color:var(--accent-neon);">
-                                <i class="fa-solid fa-calendar-check"></i> Menu 1: Event, Google Drive & Kategori
-                            </div>
-                            <div style="font-size:0.73rem; color:var(--text-muted);">
-                                Kelola daftar acara, folder Google Drive, serta kategori foto & voting untuk event terpilih.
-                            </div>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                            <span class="event-target-pill"><i class="fa-solid fa-bolt"></i> Event Aktif: <span
-                                    class="active-event-title"
-                                    style="font-size:0.74rem; color:#fff; margin:0;">-</span></span>
-                            <button type="button" class="btn btn-gold btn-sm"
-                                onclick="saveCurrentEventAllSettingsManual()">
-                                <i class="fa-solid fa-floppy-disk"></i> Simpan Kategori Event Ini
-                            </button>
-                        </div>
-                    </div>
 
                     <!-- Card 1A: Daftar Multi-Event & Drive Per-Event -->
                     <div class="glass-card" style="margin-bottom:16px; border-color:rgba(0,255,170,0.38);">
@@ -735,362 +711,116 @@
                 </div>
 
                 <!-- =============================================================== -->
-                <!-- KELOMPOK 3: KUOTA UPLOAD, LIMITASI USER & MANAJEMEN DEVICE      -->
-                <!-- =============================================================== -->
-                <div id="adminSub-quotaDevices" class="admin-panel-box" style="display:none;">
-                    <!-- Banner Konteks Menu 3 -->
-                    <div class="admin-section-context-bar">
-                        <div>
-                            <div style="font-weight:800; font-size:0.92rem; color:var(--accent-gold);">
-                                <i class="fa-solid fa-mobile-screen-button"></i> Menu 3: Kuota Live Photo & Device
-                            </div>
-                            <div style="font-size:0.73rem; color:var(--text-muted);">
-                                Atur batas partisipan live photo, kuota upload per HP, dan kontrol perangkat event aktif.
-                            </div>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                            <span class="event-target-pill"><i class="fa-solid fa-calendar-check"></i> Event Aktif:
-                                <span class="active-event-title"
-                                    style="font-size:0.74rem; color:#fff; margin:0;">-</span></span>
-                            <button type="button" class="btn btn-gold btn-sm" onclick="saveUploadLimitsConfigForm()">
-                                <i class="fa-solid fa-floppy-disk"></i> Simpan Kuota & Pengaturan Idle
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Card 2A: Limitasi User Live Photo, Limitasi Upload per User & Waktu Idle Admin -->
-                    <div class="glass-card" style="margin-bottom:16px; border-color:rgba(245,197,66,0.35);">
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
-                            <div style="font-weight:700; color:var(--accent-gold); font-size:1rem;">
-                                <i class="fa-solid fa-sliders"></i> Pengaturan Limitasi User Live Photo, Kuota Upload &
-                                Waktu Idle Login
-                            </div>
-                            <span class="event-target-pill"><i class="fa-solid fa-calendar-check"></i> Event: <span
-                                    class="active-event-title"
-                                    style="font-size:0.74rem; color:#fff; margin:0;">-</span></span>
-                        </div>
-                        <p style="font-size:0.76rem; color:var(--text-muted); margin-bottom:12px;">
-                            Atur kuota partisipan Live Photo per acara, batas maksimal upload per perangkat tamu, serta
-                            durasi *auto-logout* sesi login Admin jika tidak ada aktivitas (*Idle Timeout*).
-                        </p>
-                        <form onsubmit="event.preventDefault(); saveUploadLimitsConfigForm();" class="admin-form-grid">
-                            <div class="form-group">
-                                <label class="form-label">Batas Maksimal User Live Photo (Per Acara)</label>
-                                <div style="display:flex; gap:8px;">
-                                    <select id="adminMaxUsersPreset" class="form-input"
-                                        onchange="onLimitPresetChange('users', this.value)">
-                                        <option value="0">♾️ Unlimited (Tanpa Batas User)</option>
-                                        <option value="10">👥 Maksimal 10 User</option>
-                                        <option value="50">👥 Maksimal 50 User</option>
-                                        <option value="100">👥 Maksimal 100 User</option>
-                                        <option value="custom">✏️ Custom Jumlah User...</option>
-                                    </select>
-                                    <input type="number" id="adminMaxUsersCustomInput" class="form-input" min="0"
-                                        style="max-width:105px;" placeholder="Angka"
-                                        oninput="onLimitCustomNumberInput('users', this.value)" />
-                                </div>
-                                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Partisipan aktif
-                                    saat ini: <strong id="adminCurrentUniqueUsersCount"
-                                        style="color:var(--accent-neon);">0</strong> User (Isi 0 untuk Unlimited)</div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Batas Upload Foto per 1 User / Device</label>
-                                <div style="display:flex; gap:8px;">
-                                    <select id="adminMaxUploadsPerUserPreset" class="form-input"
-                                        onchange="onLimitPresetChange('uploads', this.value)">
-                                        <option value="0">♾️ Unlimited (Bebas Upload)</option>
-                                        <option value="3">📸 Maksimal 3x Upload / User</option>
-                                        <option value="5">📸 Maksimal 5x Upload / User</option>
-                                        <option value="10">📸 Maksimal 10x Upload / User</option>
-                                        <option value="custom">✏️ Custom Batas Upload...</option>
-                                    </select>
-                                    <input type="number" id="adminMaxUploadsPerUserCustomInput" class="form-input"
-                                        min="0" style="max-width:105px;" placeholder="Angka"
-                                        oninput="onLimitCustomNumberInput('uploads', this.value)" />
-                                </div>
-                                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Isi angka 0
-                                    untuk membebaskan jumlah upload per perangkat (Unlimited).</div>
-                            </div>
-
-                            <div class="form-group" style="grid-column:1/-1;">
-                                <label class="form-label">Durasi Waktu Idle Login Admin (Auto-Logout Sesi)</label>
-                                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                                    <select id="adminIdleTimeoutPreset" class="form-input"
-                                        style="flex:1; min-width:210px;"
-                                        onchange="onLimitPresetChange('idle', this.value)">
-                                        <option value="1">⏱️ 1 Menit (Keamanan Cepat / Uji Coba)</option>
-                                        <option value="15">⏱️ 15 Menit</option>
-                                        <option value="60">⏱️ 60 Menit (1 Jam)</option>
-                                        <option value="0">♾️ Unlimited (Tidak Pernah Auto-Logout)</option>
-                                        <option value="custom">✏️ Custom Menit Idle...</option>
-                                    </select>
-                                    <input type="number" id="adminIdleTimeoutCustomInput" class="form-input" min="0"
-                                        style="max-width:130px;" placeholder="Menit (0=Unl)"
-                                        oninput="onLimitCustomNumberInput('idle', this.value)" />
-                                </div>
-                                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Pilih <strong>1
-                                        Menit</strong> untuk auto-logout setelah 1 menit tanpa aktivitas, atau
-                                    <strong>Unlimited (0)</strong> agar tetap login.</div>
-                            </div>
-
-                            <div
-                                style="grid-column:1/-1; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                                <button type="button" class="btn btn-secondary btn-sm"
-                                    onclick="resetDeviceUploadQuotaCounter()"
-                                    title="Reset hitungan upload perangkat ini untuk pengujian">
-                                    <i class="fa-solid fa-rotate-left" style="color:var(--accent-neon);"></i> Reset
-                                    Kuota Device Ini
-                                </button>
-                                <button type="submit" class="btn btn-gold btn-sm">
-                                    <i class="fa-solid fa-floppy-disk"></i> Simpan Kuota & Pengaturan Idle
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Card 2B: Manajemen Device (Reset Kuota, Tambah Kuota Foto) & Log Aktivitas Device -->
-                    <div class="glass-card" style="border-color:rgba(0,255,170,0.35);">
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
-                            <div>
-                                <div style="font-weight:700; color:var(--accent-neon); font-size:1rem;">
-                                    <i class="fa-solid fa-mobile-screen-button"></i> Manajemen Device, Kuota Foto & Log
-                                    Perangkat
-                                </div>
-                                <div style="font-size:0.75rem; color:var(--text-muted);">
-                                    Kelola kuota upload masing-masing perangkat tamu (Reset Kuota ke 0 atau Tambah Kuota
-                                    Foto ekstra) dan pantau riwayat aktivitas perangkat.
-                                </div>
-                            </div>
-                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                                <button type="button" class="btn btn-secondary btn-sm"
-                                    onclick="resetAllDevicesQuotaAdmin()">
-                                    <i class="fa-solid fa-arrows-rotate" style="color:var(--accent-neon);"></i> Reset
-                                    Kuota Semua Device
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Form Tambah / Atur Kuota Manual Berdasarkan Device ID / Nama -->
-                        <div
-                            style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; background:rgba(255,255,255,0.03); padding:10px; border-radius:10px; border:1px solid var(--border-subtle);">
-                            <input type="text" id="adminManualDeviceIdInput" class="form-input"
-                                style="flex:1; min-width:170px;"
-                                placeholder="ID Device / Nama Tamu (Pilih dari tabel atau ketik)..." />
-                            <input type="number" id="adminManualBonusQuotaInput" class="form-input"
-                                style="max-width:135px;" value="3" min="1" placeholder="+ Kuota" />
-                            <button type="button" class="btn btn-neon btn-sm"
-                                onclick="addCustomQuotaToDeviceFromInput()">
-                                <i class="fa-solid fa-plus"></i> Tambah Kuota Foto
-                            </button>
-                            <button type="button" class="btn btn-gold btn-sm"
-                                onclick="resetSpecificDeviceQuotaFromInput()">
-                                <i class="fa-solid fa-rotate-left"></i> Reset Kuota Device
-                            </button>
-                        </div>
-
-                        <!-- Tabel Daftar Device Terdeteksi -->
-                        <div style="font-weight:700; font-size:0.82rem; color:var(--accent-gold); margin-bottom:6px;">
-                            <i class="fa-solid fa-laptop-mobile"></i> Daftar Perangkat Tamu Aktif:
-                        </div>
-                        <div class="table-responsive" style="margin-bottom:14px;">
-                            <table class="zett-table">
-                                <thead>
-                                    <tr>
-                                        <th>ID Device</th>
-                                        <th>Nama Pengguna / Tamu</th>
-                                        <th>Foto Terupload</th>
-                                        <th>Status Kuota</th>
-                                        <th>Bonus Kuota</th>
-                                        <th>Aksi Kuota Device</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="adminDeviceManagerTableBody"></tbody>
-                            </table>
-                        </div>
-
-                        <!-- Tabel Log Aktivitas Device -->
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
-                            <div style="font-weight:700; font-size:0.82rem; color:var(--accent-neon);">
-                                <i class="fa-solid fa-clock-rotate-left"></i> Log Aktivitas Device (Real-Time):
-                            </div>
-                            <button type="button" class="btn btn-danger btn-sm"
-                                style="padding:4px 10px; font-size:0.7rem;" onclick="clearDeviceActivityLogsAdmin()">
-                                <i class="fa-solid fa-trash"></i> Bersihkan Log
-                            </button>
-                        </div>
-                        <div class="table-responsive" style="max-height:240px; overflow-y:auto;">
-                            <table class="zett-table">
-                                <thead>
-                                    <tr>
-                                        <th>Waktu</th>
-                                        <th>ID Device</th>
-                                        <th>Nama Tamu</th>
-                                        <th>Aktivitas</th>
-                                        <th>Keterangan</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="adminDeviceLogsTableBody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- =============================================================== -->
-                <!-- KELOMPOK 2: STUDIO CUSTOM BINGKAI FOTO PER-EVENT                 -->
+                <!-- MENU 2: STUDIO BINGKAI FOTO PER-EVENT (FHD 1920×1080)          -->
                 <!-- =============================================================== -->
                 <div id="adminSub-frameStudio" class="admin-panel-box" style="display:none;">
-                    <!-- Banner Konteks Menu 2 -->
-                    <div class="admin-section-context-bar">
-                        <div>
-                            <div style="font-weight:800; font-size:0.92rem; color:var(--accent-gold);">
-                                <i class="fa-solid fa-crop-simple"></i> Menu 2: Studio Bingkai Foto
-                            </div>
-                            <div style="font-size:0.73rem; color:var(--text-muted);">
-                                Desain bingkai, warna, ucapan, dan upload file PNG transparan untuk event aktif.
-                            </div>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                            <span class="event-target-pill"><i class="fa-solid fa-wand-magic-sparkles"></i> Event Aktif:
-                                <span class="active-event-title"
-                                    style="font-size:0.74rem; color:#fff; margin:0;">-</span></span>
-                            <button type="button" class="btn btn-gold btn-sm" onclick="saveFrameConfigForm()">
-                                <i class="fa-solid fa-floppy-disk"></i> Simpan Bingkai Event Ini
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- STUDIO KUSTOMISASI BINGKAI FOTO DILETAKKAN PALING ATAS AGAR MUDAH DIGUNAKAN -->
                     <div class="glass-card" style="border-color:rgba(245,197,66,0.4); margin-bottom:16px;">
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
-                            <div style="font-weight:800; color:var(--accent-gold); font-size:1.05rem;">
-                                <i class="fa-solid fa-crop-simple"></i> Studio Kustomisasi Bingkai Foto (FHD 1920×1080)
-                                & Pengaturan Teks
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+                            <div>
+                                <div style="font-weight:800; color:var(--accent-gold); font-size:1.05rem;">
+                                    <i class="fa-solid fa-crop-simple"></i> Studio Bingkai Foto (<span class="active-event-title" style="color:var(--accent-neon);">-</span>)
+                                </div>
+                                <div style="font-size:0.75rem; color:var(--text-muted);">
+                                    Setiap foto pada event ini otomatis dibungkus dengan bingkai dan ucapan di bawah ini.
+                                </div>
                             </div>
-                            <span class="event-target-pill"><i class="fa-solid fa-wand-magic-sparkles"></i> Bingkai
-                                Event: <span class="active-event-title"
-                                    style="font-size:0.74rem; color:#fff; margin:0;">-</span></span>
                         </div>
-                        <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px;">
-                            Setiap event memiliki desain bingkai tersendiri. Setiap foto yang diambil atau diunggah pada
-                            event <strong class="active-event-title"
-                                style="font-size:0.8rem; color:var(--accent-neon);">-</strong> akan otomatis dibungkus
-                            dengan bingkai di bawah ini.
-                        </p>
 
-                        <!-- Kotak Panduan Spesifikasi Desain Bingkai Custom -->
-                        <div class="spec-badge-grid">
+                        <!-- Kotak Ringkas Spesifikasi Bingkai -->
+                        <div class="spec-badge-grid" style="margin-bottom:14px;">
                             <div class="spec-item">
-                                <div style="color:var(--accent-neon); font-weight:700;">📐 Resolusi Output FHD</div>
-                                <div><strong>1920 × 1080 px</strong> (Rasio <strong>16:9</strong> Widescreen)</div>
+                                <div style="color:var(--accent-neon); font-weight:700;"><i class="fa-solid fa-expand"></i> Resolusi Output</div>
+                                <div><strong>1920 × 1080 px</strong> (FHD 16:9)</div>
                             </div>
                             <div class="spec-item">
-                                <div style="color:var(--accent-gold); font-weight:700;">🖼️ Format File Overlay</div>
-                                <div><strong>PNG Transparan (.png)</strong> tengah kosong</div>
+                                <div style="color:var(--accent-gold); font-weight:700;"><i class="fa-solid fa-file-image"></i> Format Overlay</div>
+                                <div><strong>PNG Transparan</strong> tengah bolong</div>
                             </div>
                             <div class="spec-item">
-                                <div style="color:var(--accent-neon); font-weight:700;">🖋️ Mode Teks Fleksibel</div>
-                                <div><strong>Default, Custom Manual, atau Polos Tanpa Teks</strong></div>
+                                <div style="color:var(--accent-neon); font-weight:700;"><i class="fa-solid fa-pen-nib"></i> Mode Teks</div>
+                                <div><strong>Harmoni / Kustom / Polos</strong></div>
                             </div>
                             <div class="spec-item">
-                                <div style="color:var(--accent-gold); font-weight:700;">✨ Kustomisasi Warna</div>
-                                <div>Warna Judul + Menu <strong>None (Tanpa Warna)</strong></div>
+                                <div style="color:var(--accent-gold); font-weight:700;"><i class="fa-solid fa-palette"></i> Warna Tema</div>
+                                <div>Pilihan Warna / <strong>None</strong></div>
                             </div>
                         </div>
 
                         <form onsubmit="event.preventDefault(); saveFrameConfigForm();" class="admin-form-grid">
                             <div class="form-group" style="grid-column:1/-1;">
-                                <label class="form-label">Pilih Template Desain Bingkai Elegan (Wedding & Event)</label>
+                                <label class="form-label">Pilih Template Desain Bingkai Elegan</label>
                                 <select id="adminFrameStyleSelect" class="form-input"
                                     onchange="renderAdminFrameLivePreview()">
-                                    <option value="royal_wedding_floral">💍 Royal Wedding Floral & Gold (Ornamen Bunga &
-                                        Garis Emas Mewah)</option>
-                                    <option value="minimalist_wedding_vow">🕊️ Minimalist White & Rose Gold Wedding
-                                        (Bersih, Anggun & Romantis)</option>
-                                    <option value="emerald_islamic_walimah">🌙 Emerald & Gold Walimatul Ursy (Nuansa
-                                        Zamrud & Kubah Emas)</option>
-                                    <option value="rustic_botanical">🌿 Rustic Botanical Garden (Tema Engagement &
-                                        Garden Party Hangat)</option>
-                                    <option value="gold_luxury">👑 Gold Luxury Runway (Bingkai Klasik Eksklusif Hitam &
-                                        Emas)</option>
-                                    <option value="neon_party">⚡ Neon Cyber Glow (Tema Afterparty / Birthday Modern)
-                                    </option>
-                                    <option value="polaroid_classic">📸 Polaroid Classic Frame (Gaya Cetak Instan Putih)
-                                    </option>
+                                    <option value="royal_wedding_floral">💍 Royal Wedding Floral & Gold (Emas & Bunga Mewah)</option>
+                                    <option value="minimalist_wedding_vow">🕊️ Minimalist Rose Gold Wedding (Anggun & Bersih)</option>
+                                    <option value="emerald_islamic_walimah">🌙 Emerald Walimatul Ursy (Nuansa Kubah Zamrud)</option>
+                                    <option value="rustic_botanical">🌿 Rustic Botanical Garden (Garden Party Hangat)</option>
+                                    <option value="gold_luxury">👑 Gold Luxury Runway (Klasik Eksklusif Hitam Emas)</option>
+                                    <option value="neon_party">⚡ Neon Cyber Glow (Birthday & Afterparty Modern)</option>
+                                    <option value="polaroid_classic">📸 Polaroid Classic Frame (Cetak Instan Putih)</option>
                                     <option value="custom_png">🎨 Custom Overlay PNG Transparan + Teks Kustom</option>
                                 </select>
                             </div>
 
-                            <!-- Menu Pilihan Default / Custom / Kosong Polos Tanpa Teks -->
+                            <!-- Pilihan Mode Teks: Harmoni / Kustom / Polos Tanpa Teks -->
                             <div class="form-group" style="grid-column:1/-1;">
-                                <label class="form-label">Mode Tampilan Teks & Untaian Kata pada Bingkai Foto</label>
+                                <label class="form-label">Mode Tampilan Teks pada Bingkai</label>
                                 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                                     <select id="adminFrameTextModeSelect" class="form-input"
                                         style="flex:1; min-width:240px;" onchange="onFrameTextModeChange()">
-                                        <option value="default">✨ Harmoni Otomatis Acara (Tampilkan Nama Pengantin,
-                                            Tanggal & Branding WO Bawaan)</option>
-                                        <option value="custom">🖋️ Kustomisasi Eksklusif (Rangkai Sendiri Nama Pasangan,
-                                            Untaian Doa & Watermark)</option>
-                                        <option value="none">🖼️ Kanvas Murni Tanpa Teks (Tampilan Polos Elegan — Bebas
-                                            Tulisan Sama Sekali)</option>
+                                        <option value="default">✨ Harmoni Otomatis (Nama Pengantin & Tanggal Acara Bawaan)</option>
+                                        <option value="custom">🖋️ Kustomisasi Bebas (Rangkai Sendiri Nama, Doa & Watermark)</option>
+                                        <option value="none">🖼️ Kanvas Murni Polos (Tanpa Tulisan Sama Sekali)</option>
                                     </select>
                                     <button type="button" class="btn btn-secondary btn-sm"
                                         onclick="resetFrameTextsToDefault()"
-                                        title="Kembalikan seluruh tulisan bingkai ke pengaturan bawaan">
-                                        <i class="fa-solid fa-rotate-left" style="color:var(--accent-gold);"></i> Reset
-                                        Default
+                                        title="Kembalikan tulisan bingkai ke bawaan event">
+                                        <i class="fa-solid fa-rotate-left" style="color:var(--accent-gold);"></i> Reset Bawaan
                                     </button>
                                 </div>
                                 <div id="adminFrameTextModeHelperNote"
                                     style="font-size:0.72rem; color:var(--accent-neon); margin-top:5px;">
-                                    ✨ Mode Harmoni Otomatis: Teks mengikuti Nama Acara & WO secara otomatis. Ketik
-                                    langsung pada kolom di bawah atau pilih "Kustomisasi Eksklusif" untuk mengubah
-                                    tulisan.
+                                    ✨ Mode Harmoni: Tulisan mengikuti Nama Acara secara otomatis.
                                 </div>
                             </div>
 
-                            <!-- Kontainer Input Teks Kustom Bingkai -->
+                            <!-- Input Teks Kustom Bingkai -->
                             <div id="adminFrameCustomTextInputsWrap"
                                 style="grid-column:1/-1; display:grid; grid-template-columns:1fr 1fr; gap:14px;">
                                 <div class="form-group" style="margin-bottom:0;">
-                                    <label class="form-label">Custom Tulisan Judul / Nama Pasangan di Bingkai &
-                                        Warna</label>
+                                    <label class="form-label">Tulisan Judul / Nama Pasangan & Warna</label>
                                     <div style="display:flex; gap:8px; align-items:center;">
                                         <input type="text" id="adminFrameHeaderTitle" class="form-input" style="flex:1;"
-                                            placeholder="Ketik Judul / Nama Pasangan (Contoh: Romeo & Juliet)..."
+                                            placeholder="Nama Pasangan (Contoh: Romeo & Juliet)..."
                                             onfocus="autoSwitchToCustomTextMode()"
                                             oninput="autoSwitchToCustomTextMode(); renderAdminFrameLivePreview()" />
                                         <input type="color" id="adminFrameTitleColor" class="form-input"
                                             style="width:50px; height:42px; padding:3px; flex-shrink:0; cursor:pointer;"
                                             value="#f5c542" onchange="renderAdminFrameLivePreview()"
-                                            title="Warna Tulisan Judul / Nama Pasangan" />
+                                            title="Warna Tulisan Judul" />
                                     </div>
                                 </div>
 
                                 <div class="form-group" style="margin-bottom:0;">
-                                    <label class="form-label">Custom Ucapan / Quotes / Doa pada Bingkai Foto</label>
+                                    <label class="form-label">Untaian Doa / Quotes / Ucapan</label>
                                     <input type="text" id="adminFrameGreetingText" class="form-input"
-                                        placeholder="Ketik ucapan doa / quotes pernikahan..."
+                                        placeholder="Ketik quotes / doa pernikahan..."
                                         onfocus="autoSwitchToCustomTextMode()"
                                         oninput="autoSwitchToCustomTextMode(); renderAdminFrameLivePreview()" />
                                 </div>
 
                                 <div class="form-group" style="grid-column:1/-1; margin-bottom:0;">
-                                    <label class="form-label">Teks Sub-Label / Watermark Bawah Bingkai</label>
+                                    <label class="form-label">Watermark Bawah Bingkai</label>
                                     <input type="text" id="adminFrameFooterText" class="form-input"
-                                        placeholder="Ketik sub-label bawah (Contoh: Runway Wedding Organizer)..."
+                                        placeholder="Sub-label bawah (Contoh: Runway Wedding Organizer)..."
                                         onfocus="autoSwitchToCustomTextMode()"
                                         oninput="autoSwitchToCustomTextMode(); renderAdminFrameLivePreview()" />
                                 </div>
                             </div>
 
-                            <!-- Warna Utama & Warna Aksen Bingkai dengan Menu None (Tidak Ada Warna) -->
+                            <!-- Warna Utama & Warna Aksen Bingkai -->
                             <div class="form-group" style="grid-column:1/-1;">
-                                <label class="form-label">Warna Utama & Warna Aksen Bingkai (Pilih Warna / None)</label>
+                                <label class="form-label">Warna Utama & Aksen Ornamen Bingkai</label>
                                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                                     <div style="display:flex; gap:6px; align-items:center;">
                                         <select id="adminFramePrimaryColorMode" class="form-input"
@@ -1119,13 +849,13 @@
                                 </div>
                             </div>
 
-                            <!-- Upload PNG Bingkai Transparan Langsung ke Google Drive Event -->
+                            <!-- Upload PNG Bingkai Transparan ke Google Drive Event -->
                             <div class="form-group" style="grid-column:1/-1;">
-                                <label class="form-label">Bingkai Kustom PNG Transparan (Tersimpan di Google Drive Event)</label>
+                                <label class="form-label">Upload Bingkai Kustom PNG Transparan (Tersimpan di Google Drive Event)</label>
                                 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                                     <input type="text" id="adminFrameOverlayUrl" class="form-input"
                                         style="flex:1; min-width:200px;"
-                                        placeholder="URL PNG transparan atau klik Upload PNG ke Drive Event di kanan..."
+                                        placeholder="URL PNG transparan atau klik tombol upload di samping..."
                                         oninput="onFrameOverlayUrlManualInput(this.value)" />
                                     <label class="btn btn-neon btn-sm"
                                         style="cursor:pointer; margin:0; padding:10px 14px;">
@@ -1143,18 +873,16 @@
                                 </div>
                             </div>
 
-                            <!-- Live Preview Canvas Bingkai (Rasio 16:9 1920x1080) -->
-                            <div
-                                style="grid-column:1/-1; text-align:center; background:rgba(0,0,0,0.35); padding:12px; border-radius:12px; border:1px solid var(--border-subtle);">
-                                <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Pratinjau
-                                    Langsung Bingkai Foto & Ucapan (Output Asli FHD 1920 × 1080 px):</div>
+                            <!-- Live Preview Canvas FHD 1920x1080 -->
+                            <div style="grid-column:1/-1; text-align:center; background:rgba(0,0,0,0.35); padding:12px; border-radius:12px; border:1px solid var(--border-subtle);">
+                                <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Pratinjau Langsung Bingkai (Output FHD 1920 × 1080 px):</div>
                                 <canvas id="adminFramePreviewCanvas" width="960" height="540"
                                     style="width:100%; max-width:480px; aspect-ratio:16/9; border-radius:10px; border:1px solid var(--border-glass);"></canvas>
                             </div>
 
-                            <div style="grid-column:1/-1; display:flex; justify-content:flex-end;">
-                                <button type="submit" class="btn btn-gold">
-                                    <i class="fa-solid fa-floppy-disk"></i> Simpan & Aktifkan Bingkai Foto
+                            <div style="grid-column:1/-1; margin-top:6px;">
+                                <button type="submit" class="btn btn-gold" style="width:100%; padding:13px; font-weight:800; font-size:0.95rem; box-shadow:0 6px 20px rgba(245,197,66,0.25);">
+                                    <i class="fa-solid fa-floppy-disk"></i> Simpan & Terapkan Bingkai Foto
                                 </button>
                             </div>
                         </form>
@@ -1162,39 +890,183 @@
                 </div>
 
                 <!-- =============================================================== -->
-                <!-- KELOMPOK 4: MODERASI FOTO GALERI, GELAR JURI & BUKU TAMU        -->
+                <!-- MENU 3: BATAS PARTISIPAN, KUOTA UPLOAD & MANAJEMEN DEVICE      -->
                 <!-- =============================================================== -->
-                <div id="adminSub-mod" class="admin-panel-box" style="display:none;">
-                    <!-- Banner Konteks Menu 4 -->
-                    <div class="admin-section-context-bar">
-                        <div>
-                            <div style="font-weight:800; font-size:0.92rem; color:var(--accent-neon);">
-                                <i class="fa-solid fa-list-check"></i> Menu 4: Moderasi Foto & Tamu
-                            </div>
-                            <div style="font-size:0.73rem; color:var(--text-muted);">
-                                Moderasi foto, penetapan gelar juara voting, dan ucapan buku tamu event aktif.
-                            </div>
+                <div id="adminSub-quotaDevices" class="admin-panel-box" style="display:none;">
+                    <!-- Card 3A: Pengaturan Batas Partisipan & Sesi Login -->
+                    <div class="glass-card" style="margin-bottom:16px; border-color:rgba(245,197,66,0.35);">
+                        <div style="font-weight:700; color:var(--accent-gold); font-size:1rem; margin-bottom:4px;">
+                            <i class="fa-solid fa-sliders"></i> Pengaturan Batas Partisipan & Sesi Login
                         </div>
-                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                            <span class="event-target-pill"><i class="fa-solid fa-images"></i> Event Aktif: <span
-                                    class="active-event-title"
-                                    style="font-size:0.74rem; color:#fff; margin:0;">-</span></span>
-                            <button type="button" class="btn btn-neon btn-sm"
-                                onclick="reloadGalleryFeed(true); reloadGuestbookFeed(true);">
-                                <i class="fa-solid fa-arrows-rotate"></i> Refresh Data Event
+                        <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">
+                            Atur batas user live photo per event, batas foto per perangkat tamu, dan durasi auto-logout admin.
+                        </p>
+                        <form onsubmit="event.preventDefault(); saveUploadLimitsConfigForm();" class="admin-form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Batas Maksimal User Live Photo (Per Acara)</label>
+                                <div style="display:flex; gap:8px;">
+                                    <select id="adminMaxUsersPreset" class="form-input"
+                                        onchange="onLimitPresetChange('users', this.value)">
+                                        <option value="0">♾️ Unlimited (Tanpa Batas)</option>
+                                        <option value="10">👥 Maksimal 10 User</option>
+                                        <option value="50">👥 Maksimal 50 User</option>
+                                        <option value="100">👥 Maksimal 100 User</option>
+                                        <option value="custom">✏️ Custom Jumlah User...</option>
+                                    </select>
+                                    <input type="number" id="adminMaxUsersCustomInput" class="form-input" min="0"
+                                        style="max-width:105px;" placeholder="Angka"
+                                        oninput="onLimitCustomNumberInput('users', this.value)" />
+                                </div>
+                                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Partisipan saat ini: <strong id="adminCurrentUniqueUsersCount" style="color:var(--accent-neon);">0</strong> User (0 = Unlimited)</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Batas Upload Foto per Perangkat Tamu</label>
+                                <div style="display:flex; gap:8px;">
+                                    <select id="adminMaxUploadsPerUserPreset" class="form-input"
+                                        onchange="onLimitPresetChange('uploads', this.value)">
+                                        <option value="0">♾️ Unlimited (Bebas Upload)</option>
+                                        <option value="3">📸 Maksimal 3x Upload</option>
+                                        <option value="5">📸 Maksimal 5x Upload</option>
+                                        <option value="10">📸 Maksimal 10x Upload</option>
+                                        <option value="custom">✏️ Custom Batas Upload...</option>
+                                    </select>
+                                    <input type="number" id="adminMaxUploadsPerUserCustomInput" class="form-input"
+                                        min="0" style="max-width:105px;" placeholder="Angka"
+                                        oninput="onLimitCustomNumberInput('uploads', this.value)" />
+                                </div>
+                                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">0 = Bebas upload tanpa batas per perangkat (Unlimited).</div>
+                            </div>
+
+                            <div class="form-group" style="grid-column:1/-1;">
+                                <label class="form-label">Durasi Waktu Idle Login Admin (Auto-Logout Sesi)</label>
+                                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                    <select id="adminIdleTimeoutPreset" class="form-input"
+                                        style="flex:1; min-width:210px;"
+                                        onchange="onLimitPresetChange('idle', this.value)">
+                                        <option value="1">⏱️ 1 Menit (Keamanan Cepat / Tes)</option>
+                                        <option value="15">⏱️ 15 Menit</option>
+                                        <option value="60">⏱️ 60 Menit (1 Jam)</option>
+                                        <option value="0">♾️ Unlimited (Tidak Pernah Logout)</option>
+                                        <option value="custom">✏️ Custom Menit Idle...</option>
+                                    </select>
+                                    <input type="number" id="adminIdleTimeoutCustomInput" class="form-input" min="0"
+                                        style="max-width:130px;" placeholder="Menit (0=Unl)"
+                                        oninput="onLimitCustomNumberInput('idle', this.value)" />
+                                </div>
+                                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Pilih durasi idle sebelum admin diminta login ulang.</div>
+                            </div>
+
+                            <div style="grid-column:1/-1; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:6px;">
+                                <button type="button" class="btn btn-secondary btn-sm"
+                                    onclick="resetDeviceUploadQuotaCounter()"
+                                    title="Reset hitungan upload perangkat admin ini">
+                                    <i class="fa-solid fa-rotate-left" style="color:var(--accent-neon);"></i> Reset Kuota Perangkat Ini
+                                </button>
+                                <button type="submit" class="btn btn-gold btn-sm">
+                                    <i class="fa-solid fa-floppy-disk"></i> Simpan Pengaturan Kuota
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Card 3B: Manajemen Device & Kuota Tamu -->
+                    <div class="glass-card" style="border-color:rgba(0,255,170,0.35); margin-bottom:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+                            <div>
+                                <div style="font-weight:700; color:var(--accent-neon); font-size:1rem;">
+                                    <i class="fa-solid fa-mobile-screen-button"></i> Manajemen Perangkat Tamu
+                                </div>
+                                <div style="font-size:0.75rem; color:var(--text-muted);">
+                                    Pantau perangkat tamu yang terdaftar dan atur bonus kuota secara manual.
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-sm"
+                                onclick="resetAllDevicesQuotaAdmin()">
+                                <i class="fa-solid fa-arrows-rotate" style="color:var(--accent-neon);"></i> Reset Kuota Semua Device
                             </button>
+                        </div>
+
+                        <!-- Form Tambah / Atur Kuota Manual -->
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; background:rgba(255,255,255,0.03); padding:10px; border-radius:10px; border:1px solid var(--border-subtle);">
+                            <input type="text" id="adminManualDeviceIdInput" class="form-input"
+                                style="flex:1; min-width:170px;"
+                                placeholder="ID Device / Nama Tamu (Pilih dari tabel atau ketik)..." />
+                            <input type="number" id="adminManualBonusQuotaInput" class="form-input"
+                                style="max-width:135px;" value="3" min="1" placeholder="+ Kuota" />
+                            <button type="button" class="btn btn-neon btn-sm"
+                                onclick="addCustomQuotaToDeviceFromInput()">
+                                <i class="fa-solid fa-plus"></i> Tambah Kuota
+                            </button>
+                            <button type="button" class="btn btn-gold btn-sm"
+                                onclick="resetSpecificDeviceQuotaFromInput()">
+                                <i class="fa-solid fa-rotate-left"></i> Reset Device Ini
+                            </button>
+                        </div>
+
+                        <div class="table-responsive" style="margin-bottom:14px;">
+                            <table class="zett-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID Device</th>
+                                        <th>Nama Pengguna / Tamu</th>
+                                        <th>Foto Terupload</th>
+                                        <th>Status Kuota</th>
+                                        <th>Bonus Kuota</th>
+                                        <th>Aksi Kuota Device</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminDeviceManagerTableBody"></tbody>
+                            </table>
                         </div>
                     </div>
 
-                    <div class="glass-card" style="margin-bottom:16px;">
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
-                            <div style="font-weight:700; color:var(--accent-neon); font-size:0.95rem;">
-                                <i class="fa-solid fa-images"></i> Moderasi Foto, Suara Masuk & Gelar Juri
+                    <!-- Card 3C: Log Aktivitas Tamu Real-time -->
+                    <div class="glass-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+                            <div style="font-weight:700; font-size:0.85rem; color:var(--accent-neon);">
+                                <i class="fa-solid fa-clock-rotate-left"></i> Log Aktivitas Device (Real-Time):
                             </div>
-                            <span class="event-target-pill"><i class="fa-solid fa-images"></i> Galeri Event: <span
-                                    class="active-event-title"
-                                    style="font-size:0.74rem; color:#fff; margin:0;">-</span></span>
+                            <button type="button" class="btn btn-danger btn-sm"
+                                style="padding:4px 10px; font-size:0.7rem;" onclick="clearDeviceActivityLogsAdmin()">
+                                <i class="fa-solid fa-trash"></i> Bersihkan Log
+                            </button>
+                        </div>
+                        <div class="table-responsive" style="max-height:240px; overflow-y:auto;">
+                            <table class="zett-table">
+                                <thead>
+                                    <tr>
+                                        <th>Waktu</th>
+                                        <th>ID Device</th>
+                                        <th>Nama Tamu</th>
+                                        <th>Aktivitas</th>
+                                        <th>Keterangan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminDeviceLogsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- =============================================================== -->
+                <!-- MENU 4: MODERASI FOTO GALERI, GELAR JURI & BUKU TAMU            -->
+                <!-- =============================================================== -->
+                <div id="adminSub-mod" class="admin-panel-box" style="display:none;">
+                    <div class="glass-card" style="margin-bottom:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                            <div>
+                                <div style="font-weight:700; color:var(--accent-neon); font-size:1rem;">
+                                    <i class="fa-solid fa-images"></i> Moderasi Foto Galeri & Penetapan Gelar Juara
+                                </div>
+                                <div style="font-size:0.75rem; color:var(--text-muted);">
+                                    Tinjau foto yang masuk, tetapkan pemenang voting juri, atau sembunyikan foto tidak pantas.
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-neon btn-sm"
+                                onclick="reloadGalleryFeed(true); reloadGuestbookFeed(true);">
+                                <i class="fa-solid fa-arrows-rotate"></i> Refresh Data Galeri
+                            </button>
                         </div>
                         <div class="table-responsive">
                             <table class="zett-table">
@@ -1213,8 +1085,11 @@
                     </div>
 
                     <div class="glass-card">
-                        <div style="font-weight:700; color:var(--accent-neon); font-size:0.95rem; margin-bottom:10px;">
+                        <div style="font-weight:700; color:var(--accent-neon); font-size:1rem; margin-bottom:4px;">
                             <i class="fa-solid fa-book-open"></i> Moderasi Ucapan Buku Tamu
+                        </div>
+                        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">
+                            Kelola pesan ucapan dan konfirmasi kehadiran dari para tamu undangan.
                         </div>
                         <div class="table-responsive">
                             <table class="zett-table">
@@ -1234,30 +1109,16 @@
                 </div>
 
                 <!-- =============================================================== -->
-                <!-- KELOMPOK 5: SISTEM, BRANDING WO & USER CREW                     -->
+                <!-- MENU 5: SISTEM, BRANDING WO & USER CREW                         -->
                 <!-- =============================================================== -->
                 <div id="adminSub-systemConfig" class="admin-panel-box" style="display:none;">
-                    <!-- Banner Konteks Menu 5 -->
-                    <div class="admin-section-context-bar">
-                        <div>
-                            <div style="font-weight:800; font-size:0.92rem; color:var(--accent-neon);">
-                                <i class="fa-solid fa-sliders"></i> Menu 5: Sistem & Branding
-                            </div>
-                            <div style="font-size:0.73rem; color:var(--text-muted);">
-                                Identitas aplikasi, branding Wedding Organizer, akun user kru, dan database.
-                            </div>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                            <button type="button" class="btn btn-gold btn-sm" onclick="syncVotesWithDatabase(true)">
-                                <i class="fa-solid fa-database"></i> Sync Penuh Database
-                            </button>
-                        </div>
-                    </div>
-
                     <!-- IDENTITAS APLIKASI & BRANDING WO GLOBAL -->
                     <div class="glass-card" style="margin-bottom:16px;">
-                        <div style="font-weight:700; color:var(--accent-neon); font-size:1rem; margin-bottom:14px;">
-                            <i class="fa-solid fa-palette"></i> Identitas Nama Aplikasi & Kustomisasi Branding WO (Global)
+                        <div style="font-weight:700; color:var(--accent-neon); font-size:1rem; margin-bottom:4px;">
+                            <i class="fa-solid fa-palette"></i> Identitas Aplikasi & Branding WO (Global)
+                        </div>
+                        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">
+                            Atur nama aplikasi, nama Wedding Organizer, tagline, kontak, dan logo resmi.
                         </div>
                         <form onsubmit="event.preventDefault(); saveGeneralConfigForm();" class="admin-form-grid">
                             <div class="form-group">
@@ -1273,31 +1134,26 @@
                                 <input type="text" id="adminAppTagline" class="form-input" />
                             </div>
                             <div class="form-group" style="grid-column:1/-1;">
-                                <label class="form-label">Logo Aplikasi & Halaman Login Admin (Default Logo Runway WO /
-                                    Custom URL / Upload File Logo)</label>
+                                <label class="form-label">Logo Aplikasi & Login Admin (Default Logo Runway WO / Custom URL / Upload)</label>
                                 <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                                     <input type="text" id="adminWoLogoUrl" class="form-input"
                                         style="flex:1; min-width:200px;"
-                                        placeholder="Kosongkan untuk Logo Runway WO bawaan, paste URL, atau Upload Logo..."
+                                        placeholder="Kosongkan untuk Logo Runway WO, atau paste URL, atau Upload..."
                                         oninput="onAdminLogoUrlInput(this.value)" />
                                     <label class="btn btn-secondary btn-sm"
                                         style="cursor:pointer; margin:0; padding:10px 14px;">
-                                        <i class="fa-solid fa-upload" style="color:var(--accent-neon);"></i> Upload
-                                        Custom Logo
+                                        <i class="fa-solid fa-upload" style="color:var(--accent-neon);"></i> Upload Logo
                                         <input type="file" id="adminCustomLogoFileInput"
                                             accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display:none;"
                                             onchange="handleCustomWoLogoUpload(this)" />
                                     </label>
                                     <button type="button" class="btn btn-secondary btn-sm" onclick="resetToRunwayLogo()"
                                         style="padding:10px 12px;">
-                                        <i class="fa-solid fa-rotate-left" style="color:var(--accent-gold);"></i>
-                                        Gunakan Logo Runway WO
+                                        <i class="fa-solid fa-rotate-left" style="color:var(--accent-gold);"></i> Logo Bawaan
                                     </button>
                                 </div>
                                 <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px;">
-                                    Logo ini otomatis ditampilkan pada <strong>Header Navigasi Atas</strong> dan
-                                    <strong>Halaman Login Admin</strong> (ideal rasio 320×220 px atau persegi, format
-                                    PNG/SVG/JPG).
+                                    Logo ini ditampilkan di header atas dan halaman login admin (Rasio 320×220 px atau kotak).
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1308,7 +1164,7 @@
                                 <label class="form-label">Teks Footer Aplikasi</label>
                                 <input type="text" id="adminCustomFooter" class="form-input" />
                             </div>
-                            <div style="grid-column:1/-1; display:flex; justify-content:flex-end;">
+                            <div style="grid-column:1/-1; display:flex; justify-content:flex-end; margin-top:6px;">
                                 <button type="submit" class="btn btn-neon">
                                     <i class="fa-solid fa-floppy-disk"></i> Simpan & Terapkan Branding WO
                                 </button>
@@ -1318,15 +1174,13 @@
 
                     <!-- MANAJEMEN USER CREW -->
                     <div class="glass-card" style="margin-bottom:16px;">
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
                             <div>
                                 <div style="font-weight:700; color:var(--accent-neon); font-size:1rem;">
                                     <i class="fa-solid fa-users-gear"></i> Manajemen User & Level Akses (Role)
                                 </div>
                                 <div style="font-size:0.75rem; color:var(--text-muted);">
-                                    Kelola akun Super Admin, Admin Event, dan Operator lapangan yang tersinkronisasi
-                                    dengan Sheet USERS.
+                                    Kelola akun Super Admin, Admin Event, dan Operator lapangan.
                                 </div>
                             </div>
                             <button type="button" class="btn btn-neon btn-sm" onclick="openUserModal()">
@@ -1353,22 +1207,18 @@
 
                     <!-- KONEKSI ENDPOINT DATABASE -->
                     <div class="glass-card">
-                        <div style="font-weight:700; color:var(--accent-neon); font-size:0.95rem; margin-bottom:6px;">
+                        <div style="font-weight:700; color:var(--accent-neon); font-size:0.95rem; margin-bottom:4px;">
                             <i class="fa-solid fa-plug-circle-check"></i> Endpoint Koneksi Database Google Apps Script
                         </div>
                         <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">
-                            URL Web App Google Apps Script untuk sinkronisasi penuh ketika file <code>index.html</code>
-                            di-host di GitHub Pages:
+                            URL Web App Google Apps Script untuk sinkronisasi penuh database Google Sheets & Drive:
                         </p>
                         <div style="display:flex; gap:8px; flex-wrap:wrap;">
                             <input type="text" id="adminRemoteEndpointUrl" class="form-input"
                                 style="flex:1; min-width:230px;"
                                 placeholder="https://script.google.com/macros/s/.../exec" />
                             <button type="button" class="btn btn-neon btn-sm" onclick="saveRemoteEndpointEndpoint()">
-                                <i class="fa-solid fa-arrows-rotate"></i> Simpan & Sync Ulang
-                            </button>
-                            <button type="button" class="btn btn-gold btn-sm" onclick="syncVotesWithDatabase(true)">
-                                <i class="fa-solid fa-database"></i> Sync Database Voting
+                                <i class="fa-solid fa-arrows-rotate"></i> Simpan & Sinkronkan Database
                             </button>
                         </div>
                     </div>
