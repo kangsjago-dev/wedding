@@ -1,0 +1,191 @@
+<script>
+        // =====================================================================
+        // MODUL 2: GALERI PUBLIK, UNDUH FOTO & TOMBOL VOTE LANGSUNG
+        // =====================================================================
+        function reloadGalleryFeed(reset) {
+            if (reset) {
+                APP_STATE.galleryOffset = 0;
+            }
+            var payload = {
+                dataType: 'photos',
+                eventId: APP_STATE.activeEventId,
+                category: 'ALL',
+                search: '',
+                offset: 0,
+                limit: 200
+            };
+            callBackendApi('getPaginatedData', payload, function (res) {
+                if (res && res.status === 'success') {
+                    var serverItems = res.items || [];
+                    // Pertahankan foto yang sedang dalam antrean background upload agar tidak hilang saat refresh
+                    var pendingMap = {};
+                    for (var q = 0; q < APP_STATE.backgroundUploadQueue.length; q++) {
+                        pendingMap[APP_STATE.backgroundUploadQueue[q].tempPhotoId] = true;
+                    }
+                    var pendingPhotos = (APP_STATE.allEventPhotos || []).filter(function (item) {
+                        return Boolean(pendingMap[item.photoId]);
+                    });
+
+                    var combined = pendingPhotos.concat(serverItems);
+                    var fetched = mergePhotosWithLocalVoteCache(combined);
+                    APP_STATE.allEventPhotos = fetched;
+                    APP_STATE.photos = fetched.slice();
+                    APP_STATE.galleryHasMore = false;
+                    renderGalleryGrid();
+                    renderVoteSection();
+                    renderLiveLeaderboard();
+                    renderAdminModerationTable();
+                    updateHeroCounters();
+                } else {
+                    APP_STATE.allEventPhotos = mergePhotosWithLocalVoteCache(APP_STATE.allEventPhotos || APP_STATE.photos || []);
+                    APP_STATE.photos = APP_STATE.allEventPhotos.slice();
+                    renderGalleryGrid();
+                    updateHeroCounters();
+                }
+            }, function () {
+                APP_STATE.allEventPhotos = mergePhotosWithLocalVoteCache(APP_STATE.allEventPhotos || APP_STATE.photos || []);
+                APP_STATE.photos = APP_STATE.allEventPhotos.slice();
+                renderGalleryGrid();
+                renderVoteSection();
+                renderLiveLeaderboard();
+                renderAdminModerationTable();
+                updateHeroCounters();
+            });
+        }
+
+        function filterGalleryCategory(catName, btnEl) {
+            APP_STATE.galleryCategory = catName;
+            var chips = document.querySelectorAll('#galleryCategoryPills .filter-chip');
+            for (var i = 0; i < chips.length; i++) chips[i].classList.remove('active');
+            if (btnEl) btnEl.classList.add('active');
+            renderGalleryGrid();
+        }
+
+        function onGallerySearchInput(inputEl) {
+            APP_STATE.gallerySearch = (inputEl.value || '').toLowerCase().trim();
+            renderGalleryGrid();
+        }
+
+        function loadMoreGalleryPhotos() {
+            APP_STATE.galleryOffset += APP_STATE.galleryLimit;
+            renderGalleryGrid();
+        }
+
+        function buildVoteBreakdownBadgesHtml(photoObj) {
+            var map = photoObj.votesByCategory || {};
+            var chips = '';
+            for (var k in map) {
+                if (map.hasOwnProperty(k) && map[k] > 0) {
+                    chips += '<span style="font-size:0.66rem; background:rgba(245,197,66,0.14); color:var(--accent-gold); border:1px solid rgba(245,197,66,0.35); padding:2px 7px; border-radius:12px; font-weight:600;">' + escapeHtml(k) + ': ' + map[k] + '</span>';
+                }
+            }
+            return chips;
+        }
+
+        function renderGalleryGrid() {
+            var gridEl = document.getElementById('publicGalleryGrid');
+            var loadMoreBtn = document.getElementById('galleryLoadMoreBtn');
+            if (!gridEl) return;
+            var html = '';
+            var sourceList = APP_STATE.allEventPhotos || APP_STATE.photos || [];
+            var list = [];
+            for (var s = 0; s < sourceList.length; s++) {
+                var item = sourceList[s];
+                if (item.eventId && item.eventId !== APP_STATE.activeEventId) {
+                    continue;
+                }
+                if (APP_STATE.galleryCategory && APP_STATE.galleryCategory !== 'ALL' && item.category !== APP_STATE.galleryCategory) {
+                    continue;
+                }
+                if (APP_STATE.gallerySearch) {
+                    var hay = ((item.uploadedBy || '') + ' ' + (item.category || '') + ' ' + (item.awardTitle || '')).toLowerCase();
+                    if (hay.indexOf(APP_STATE.gallerySearch) === -1) continue;
+                }
+                list.push(item);
+            }
+
+            if (list.length === 0) {
+                html = '<div style="grid-column:1/-1; text-align:center; padding:40px 20px; color:var(--text-muted);">Belum ada foto untuk kategori ini. Yuk ambil foto pertama lewat menu Live Kamera!</div>';
+            } else {
+                for (var i = 0; i < list.length; i++) {
+                    var p = list[i];
+                    var totalV = parseInt(p.votes, 10) || 0;
+                    var badgeAward = p.awardTitle ? '<span style="position:absolute; top:8px; left:8px; font-size:0.68rem; font-weight:800; padding:4px 9px; border-radius:8px; background:var(--accent-gold); color:#0b0f19; box-shadow:0 4px 10px rgba(0,0,0,0.4);"><i class="fa-solid fa-crown"></i> ' + escapeHtml(p.awardTitle) + '</span>' : '';
+                    var breakdownHtml = buildVoteBreakdownBadgesHtml(p);
+
+                    html += '<div class="glass-card photo-card">';
+                    html += '<div>';
+                    html += '<div class="photo-img-box">';
+                    html += '<img src="' + escapeHtml(p.directImageUrl) + '" onclick="openImageLightBox(\'' + escapeHtml(p.directImageUrl) + '\', \'' + escapeHtml(p.uploadedBy) + '\')" onerror="this.src=\'https://placehold.co/640x360/151b26/00ffaa?text=Foto+Acara\'" />';
+                    html += badgeAward;
+                    html += '<span style="position:absolute; bottom:8px; right:8px; font-size:0.68rem; font-weight:600; padding:3px 8px; border-radius:6px; background:rgba(11,15,25,0.82); color:var(--accent-neon); border:1px solid var(--border-glass);">' + escapeHtml(p.category) + '</span>';
+                    html += '</div>';
+                    html += '<div style="font-size:0.86rem; font-weight:700; margin-bottom:2px;"><i class="fa-solid fa-user-check" style="color:var(--accent-neon); margin-right:4px;"></i> ' + escapeHtml(p.uploadedBy) + '</div>';
+                    html += '<div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:8px;">' + escapeHtml(p.uploadedAt || '') + '</div>';
+                    if (breakdownHtml) {
+                        html += '<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px;">' + breakdownHtml + '</div>';
+                    }
+                    html += '</div>';
+                    html += '<div style="display:flex; justify-content:space-between; align-items:center; gap:6px; padding-top:8px; border-top:1px solid var(--border-subtle);">';
+                    html += '<span style="font-size:0.75rem; font-weight:700; color:var(--accent-gold);"><i class="fa-solid fa-fire"></i> ' + totalV + ' Suara</span>';
+                    html += '<div style="display:flex; gap:6px;">';
+                    html += '<button type="button" class="btn btn-secondary btn-sm" onclick="downloadPhotoById(\'' + escapeHtml(p.photoId) + '\')" title="Download Foto FHD"><i class="fa-solid fa-download"></i></button>';
+                    html += '<button type="button" class="btn btn-neon btn-sm" onclick="openVoteCategoryModal(\'' + escapeHtml(p.photoId) + '\')"><i class="fa-solid fa-check-to-slot"></i> Vote</button>';
+                    html += '</div>';
+                    html += '</div>';
+                    html += '</div>';
+                }
+            }
+            gridEl.innerHTML = html;
+            if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+        }
+
+        function downloadPhotoById(photoId) {
+            var list = APP_STATE.allEventPhotos || APP_STATE.photos || [];
+            var target = null;
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].photoId === photoId) {
+                    target = list[i];
+                    break;
+                }
+            }
+            if (!target) return;
+            triggerImageDownload(target.directImageUrl, target.fileName || ('SatuAlbum_' + photoId + '.jpg'));
+        }
+
+        function downloadCurrentLightboxPhoto() {
+            var imgEl = document.getElementById('lightboxImgEl');
+            if (!imgEl || !imgEl.src) return;
+            triggerImageDownload(imgEl.src, 'SatuAlbum_Photo_' + Date.now() + '.jpg');
+        }
+
+        function triggerImageDownload(imgUrl, fileName) {
+            if (!imgUrl) return;
+            if (imgUrl.indexOf('data:image') === 0) {
+                var a = document.createElement('a');
+                a.href = imgUrl;
+                a.download = fileName || 'SatuAlbum_Foto.jpg';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showToast('Mengunduh foto ke perangkat Anda...');
+                return;
+            }
+            var matchId = imgUrl.match(/[?&]id=([a-zA-Z0-9_-]{10,})/) || imgUrl.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
+            if (matchId && matchId[1]) {
+                var dlUrl = 'https://drive.google.com/uc?export=download&id=' + matchId[1];
+                window.open(dlUrl, '_blank');
+                showToast('Membuka unduhan foto resolusi penuh...');
+                return;
+            }
+            var link = document.createElement('a');
+            link.href = imgUrl;
+            link.target = '_blank';
+            link.download = fileName || 'SatuAlbum_Foto.jpg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Mengunduh foto...');
+        }
+
+</script>

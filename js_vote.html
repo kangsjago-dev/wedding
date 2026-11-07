@@ -1,0 +1,553 @@
+<script>
+        // =====================================================================
+        // MODUL 3: SISTEM VOTING KATEGORI & SINKRONISASI PENUH DATABASE
+        // =====================================================================
+        function getNormalizedVoteCategories() {
+            var raw = (APP_STATE.config && APP_STATE.config.voteCategories) || [];
+            var result = [];
+            for (var i = 0; i < raw.length; i++) {
+                if (typeof raw[i] === 'string') {
+                    result.push({ name: raw[i], desc: 'Pilih foto terbaik untuk kategori ' + raw[i] });
+                } else if (raw[i] && raw[i].name) {
+                    result.push({ name: raw[i].name, desc: raw[i].desc || ('Pilih foto terbaik untuk kategori ' + raw[i].name) });
+                }
+            }
+            if (result.length === 0) {
+                result = [
+                    { name: 'Terfavorit ❤️', desc: 'Foto paling disukai oleh seluruh tamu undangan' },
+                    { name: 'Terkeren 🔥', desc: 'Gaya, pose, dan komposisi foto paling keren' },
+                    { name: 'Terlucu & Heboh 😂', desc: 'Ekspresi paling seru, kocak, dan menghibur' },
+                    { name: 'Kostum Terbaik 👗', desc: 'Busana dan penampilan paling serasi & menawan' }
+                ];
+            }
+            return result;
+        }
+
+        function renderDeviceVoteStatusBanner() {
+            var banner = document.getElementById('deviceVoteStatusBanner');
+            if (!banner) return;
+            var cats = getNormalizedVoteCategories();
+            var votedMap = getDeviceVotedMapForActiveEvent();
+            var usedCount = 0;
+            var badgesHtml = '';
+
+            for (var i = 0; i < cats.length; i++) {
+                var cName = cats[i].name;
+                var hasVoted = Boolean(votedMap[cName]);
+                if (hasVoted) usedCount++;
+                var styleStr = hasVoted
+                    ? 'background:rgba(0,255,170,0.15); color:var(--accent-neon); border:1px solid var(--accent-neon);'
+                    : 'background:rgba(255,255,255,0.05); color:var(--text-muted); border:1px solid rgba(255,255,255,0.12);';
+                badgesHtml += '<span style="padding:3px 9px; border-radius:14px; font-size:0.7rem; font-weight:600; ' + styleStr + '">' +
+                    (hasVoted ? '✅ ' : '⭕ ') + escapeHtml(cName) + (hasVoted ? ' (Sudah Vote)' : ' (Tersedia)') + '</span>';
+            }
+
+            banner.innerHTML = '<div style="font-weight:700; color:#fff; margin-bottom:6px;"><i class="fa-solid fa-mobile-screen-button" style="color:var(--accent-neon);"></i> Status Kuota Vote Perangkat Anda: ' + usedCount + ' dari ' + cats.length + ' Kategori Terpakai</div>' +
+                '<div style="display:flex; flex-wrap:wrap; gap:6px;">' + badgesHtml + '</div>';
+        }
+
+        function renderVoteCategoryPills() {
+            var pillsContainer = document.getElementById('voteCategoryPills');
+            if (!pillsContainer) return;
+            var cats = getNormalizedVoteCategories();
+            var html = '<button type="button" class="filter-chip' + (APP_STATE.activeVoteFilterCat === 'ALL' ? ' active' : '') + '" onclick="filterVoteSectionByCatIndex(-1, this)">🔥 Semua Nominasi Foto</button>';
+            for (var i = 0; i < cats.length; i++) {
+                var cName = cats[i].name;
+                var isAct = (APP_STATE.activeVoteFilterCat === cName) ? ' active' : '';
+                html += '<button type="button" class="filter-chip' + isAct + '" onclick="filterVoteSectionByCatIndex(' + i + ', this)">🏆 ' + escapeHtml(cName) + '</button>';
+            }
+            pillsContainer.innerHTML = html;
+        }
+
+        function filterVoteSectionByCatIndex(catIndex, btnEl) {
+            var cats = getNormalizedVoteCategories();
+            if (catIndex < 0 || !cats[catIndex]) {
+                APP_STATE.activeVoteFilterCat = 'ALL';
+            } else {
+                APP_STATE.activeVoteFilterCat = cats[catIndex].name;
+            }
+            var pills = document.querySelectorAll('#voteCategoryPills .filter-chip');
+            for (var i = 0; i < pills.length; i++) pills[i].classList.remove('active');
+            if (btnEl) btnEl.classList.add('active');
+            renderVoteSection();
+        }
+
+        function switchVoteTab(subKey) {
+            localStorage.setItem('SATUALBUM_LAST_VOTE_SUBTAB', subKey);
+            var galleryBox = document.getElementById('voteSectionGallery');
+            var leaderBox = document.getElementById('voteSectionLeaderboard');
+            var btnGal = document.getElementById('voteTabBtnGallery');
+            var btnLead = document.getElementById('voteTabBtnLeaderboard');
+
+            // Tampilkan kedua bagian agar Hasil Voting dan Daftar Foto Nominasi selalu terlihat jelas
+            if (leaderBox) leaderBox.style.display = 'block';
+            if (galleryBox) galleryBox.style.display = 'block';
+
+            if (subKey === 'gallery') {
+                if (btnGal) btnGal.className = 'btn btn-neon btn-sm';
+                if (btnLead) btnLead.className = 'btn btn-secondary btn-sm';
+                renderVoteSection();
+                renderLiveLeaderboard();
+            } else {
+                if (btnGal) btnGal.className = 'btn btn-secondary btn-sm';
+                if (btnLead) btnLead.className = 'btn btn-neon btn-sm';
+                renderLiveLeaderboard();
+                renderVoteSection();
+            }
+        }
+
+        function renderVoteSection() {
+            var grid = document.getElementById('votePhotoGrid');
+            if (!grid) return;
+            var allSource = APP_STATE.allEventPhotos || APP_STATE.photos || [];
+            var sourcePhotos = allSource.filter(function (item) {
+                return !item.eventId || item.eventId === APP_STATE.activeEventId;
+            });
+            var list = mergePhotosWithLocalVoteCache(sourcePhotos).slice();
+            var filterCat = APP_STATE.activeVoteFilterCat;
+
+            if (filterCat && filterCat !== 'ALL') {
+                list.sort(function (a, b) {
+                    var va = (a.votesByCategory && a.votesByCategory[filterCat]) || 0;
+                    var vb = (b.votesByCategory && b.votesByCategory[filterCat]) || 0;
+                    if (vb !== va) return vb - va;
+                    return (b.votes || 0) - (a.votes || 0);
+                });
+            } else {
+                list.sort(function (a, b) { return (b.votes || 0) - (a.votes || 0); });
+            }
+
+            var html = '';
+            if (list.length === 0) {
+                html = '<div style="grid-column:1/-1; text-align:center; padding:30px; color:var(--text-muted);">Belum ada foto untuk di-vote.</div>';
+            } else {
+                for (var i = 0; i < list.length; i++) {
+                    var p = list[i];
+                    var totalVotes = parseInt(p.votes, 10) || 0;
+                    var catSpecificVotes = (filterCat !== 'ALL' && p.votesByCategory && p.votesByCategory[filterCat]) ? p.votesByCategory[filterCat] : null;
+                    var breakdownBadges = buildVoteBreakdownBadgesHtml(p);
+
+                    html += '<div class="glass-card photo-card">';
+                    html += '<div>';
+                    html += '<div class="photo-img-box">';
+                    html += '<img src="' + escapeHtml(p.directImageUrl) + '" onclick="openImageLightBox(\'' + escapeHtml(p.directImageUrl) + '\', \'' + escapeHtml(p.uploadedBy) + '\')" onerror="this.src=\'https://placehold.co/640x360/151b26/00ffaa?text=Foto\'" />';
+                    if (p.awardTitle) {
+                        html += '<span style="position:absolute; top:8px; left:8px; font-size:0.68rem; font-weight:800; padding:3px 8px; border-radius:6px; background:var(--accent-gold); color:#0b0f19;"><i class="fa-solid fa-crown"></i> ' + escapeHtml(p.awardTitle) + '</span>';
+                    }
+                    html += '<span style="position:absolute; top:8px; right:8px; font-size:0.66rem; font-weight:700; padding:3px 8px; border-radius:6px; background:rgba(11,15,25,0.82); color:var(--accent-neon);">' + escapeHtml(p.category) + '</span>';
+                    html += '<span style="position:absolute; bottom:8px; left:8px; font-size:0.72rem; font-weight:800; padding:3px 9px; border-radius:6px; background:rgba(11,15,25,0.88); color:var(--accent-gold); border:1px solid rgba(245,197,66,0.4);"><i class="fa-solid fa-fire"></i> ' + totalVotes + ' Total Vote</span>';
+                    html += '</div>';
+                    html += '<div style="font-weight:700; font-size:0.86rem; margin-bottom:4px;">' + escapeHtml(p.uploadedBy) + '</div>';
+                    if (catSpecificVotes !== null) {
+                        html += '<div style="font-size:0.74rem; color:var(--accent-neon); margin-bottom:6px;">Suara di <strong>' + escapeHtml(filterCat) + '</strong>: <strong>' + catSpecificVotes + ' Vote</strong></div>';
+                    }
+                    if (breakdownBadges) {
+                        html += '<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px;">' + breakdownBadges + '</div>';
+                    } else {
+                        html += '<div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:10px;">Belum ada suara masuk. Jadilah pemberi vote pertama!</div>';
+                    }
+                    html += '</div>';
+                    html += '<button type="button" class="btn btn-neon btn-sm" style="width:100%;" onclick="openVoteCategoryModal(\'' + escapeHtml(p.photoId) + '\')">';
+                    html += '<i class="fa-solid fa-check-to-slot"></i> Pilih Kategori & Vote';
+                    html += '</button>';
+                    html += '</div>';
+                }
+            }
+            grid.innerHTML = html;
+        }
+
+        function openVoteCategoryModal(photoId) {
+            var allPhotos = mergePhotosWithLocalVoteCache(APP_STATE.allEventPhotos || APP_STATE.photos || []);
+            var photo = null;
+            for (var i = 0; i < allPhotos.length; i++) {
+                if (allPhotos[i].photoId === photoId) {
+                    photo = allPhotos[i];
+                    break;
+                }
+            }
+            if (!photo) return;
+
+            APP_STATE.selectedVotePhotoId = photoId;
+            APP_STATE.selectedVoteCategoryChoice = '';
+
+            document.getElementById('voteModalPhotoPreview').src = photo.directImageUrl;
+            document.getElementById('voteModalUploaderName').textContent = photo.uploadedBy;
+            document.getElementById('voteModalPhotoCat').textContent = 'Momen: ' + photo.category + ' • Total Suara Saat Ini: ' + (photo.votes || 0);
+
+            var cats = getNormalizedVoteCategories();
+            var votedMap = getDeviceVotedMapForActiveEvent();
+            var container = document.getElementById('voteModalCategoriesContainer');
+            var html = '';
+            var firstAvailableCat = '';
+
+            for (var j = 0; j < cats.length; j++) {
+                var cName = cats[j].name;
+                var cDesc = cats[j].desc;
+                var currentCatVotes = (photo.votesByCategory && parseInt(photo.votesByCategory[cName], 10)) || 0;
+                var alreadyVotedInfo = votedMap[cName];
+
+                if (alreadyVotedInfo) {
+                    var votedTargetName = 'Foto di Acara Ini';
+                    for (var k = 0; k < allPhotos.length; k++) {
+                        if (allPhotos[k].photoId === alreadyVotedInfo.photoId) {
+                            votedTargetName = allPhotos[k].uploadedBy;
+                            break;
+                        }
+                    }
+                    html += '<div class="vote-option-item locked">';
+                    html += '<div>';
+                    html += '<div style="font-weight:700; font-size:0.86rem; color:var(--text-muted);">' + escapeHtml(cName) + ' <span style="font-size:0.7rem; color:var(--accent-neon);">(✅ Sudah Vote: ' + escapeHtml(votedTargetName) + ')</span></div>';
+                    html += '<div style="font-size:0.73rem; color:var(--text-muted);">' + escapeHtml(cDesc) + '</div>';
+                    html += '</div>';
+                    html += '<span class="mono-badge" style="color:var(--accent-gold);">' + currentCatVotes + ' Suara</span>';
+                    html += '</div>';
+                } else {
+                    if (!firstAvailableCat) firstAvailableCat = cName;
+                    var isSelected = (firstAvailableCat === cName);
+                    if (isSelected) APP_STATE.selectedVoteCategoryChoice = cName;
+
+                    html += '<div class="vote-option-item' + (isSelected ? ' selected' : '') + '" onclick="selectVoteOptionByIndex(' + j + ', this)">';
+                    html += '<div>';
+                    html += '<div style="font-weight:700; font-size:0.88rem; color:#fff;">' + escapeHtml(cName) + '</div>';
+                    html += '<div style="font-size:0.74rem; color:var(--text-muted);">' + escapeHtml(cDesc) + '</div>';
+                    html += '</div>';
+                    html += '<span class="mono-badge" style="color:var(--accent-neon);">' + currentCatVotes + ' Suara</span>';
+                    html += '</div>';
+                }
+            }
+
+            container.innerHTML = html;
+            var btnSubmit = document.getElementById('btnConfirmCastVote');
+            if (btnSubmit) {
+                btnSubmit.disabled = !firstAvailableCat;
+                btnSubmit.style.opacity = firstAvailableCat ? '1' : '0.5';
+            }
+
+            document.getElementById('voteSelectModal').style.display = 'flex';
+        }
+
+        function selectVoteOptionByIndex(catIdx, el) {
+            var cats = getNormalizedVoteCategories();
+            if (!cats[catIdx]) return;
+            APP_STATE.selectedVoteCategoryChoice = cats[catIdx].name;
+            var items = document.querySelectorAll('#voteModalCategoriesContainer .vote-option-item');
+            for (var i = 0; i < items.length; i++) items[i].classList.remove('selected');
+            if (el) el.classList.add('selected');
+        }
+
+        function closeVoteModal() {
+            document.getElementById('voteSelectModal').style.display = 'none';
+        }
+
+        // PROSES SUBMIT VOTE DENGAN PEREKAMAN GANDA KE DATABASE SPREADSHEET (PHOTOS + ADMIN_CONFIG LEDGER)
+        function confirmSubmitPhotoVote() {
+            var photoId = APP_STATE.selectedVotePhotoId;
+            var chosenCat = APP_STATE.selectedVoteCategoryChoice;
+            if (!photoId || !chosenCat) {
+                showToast('Anda sudah menggunakan seluruh kuota kategori vote pada perangkat ini, atau belum memilih kategori.', true);
+                return;
+            }
+
+            var votedMap = getDeviceVotedMapForActiveEvent();
+            if (votedMap[chosenCat]) {
+                showToast('Perangkat Anda sudah pernah memberikan vote untuk kategori "' + chosenCat + '"!', true);
+                return;
+            }
+
+            var list = APP_STATE.allEventPhotos || APP_STATE.photos || [];
+            var updatedTotal = 1;
+            var updatedBreakdown = {};
+            var targetUploaderName = '';
+            var targetCleanAward = '';
+
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].photoId === photoId) {
+                    var p = list[i];
+                    if (!p.votesByCategory || typeof p.votesByCategory !== 'object') p.votesByCategory = {};
+                    p.votesByCategory[chosenCat] = (parseInt(p.votesByCategory[chosenCat], 10) || 0) + 1;
+                    var sum = 0;
+                    for (var k in p.votesByCategory) {
+                        if (p.votesByCategory.hasOwnProperty(k)) {
+                            sum += (parseInt(p.votesByCategory[k], 10) || 0);
+                        }
+                    }
+                    p.votes = Math.max((parseInt(p.votes, 10) || 0) + 1, sum);
+                    updatedTotal = p.votes;
+                    updatedBreakdown = p.votesByCategory;
+                    targetUploaderName = p.uploadedBy || '';
+                    targetCleanAward = p.awardTitle || '';
+                    break;
+                }
+            }
+
+            APP_STATE.photos = list.slice();
+            saveDeviceVoteForCategory(chosenCat, photoId);
+            saveLocalPhotoVoteCache(photoId, updatedTotal, updatedBreakdown, targetUploaderName);
+            appendDeviceActivityLog(getOrCreateDeviceId(), localStorage.getItem('SATUALBUM_LAST_UPLOADER_NAME') || 'Voter Tamu', 'Vote Kategori: ' + chosenCat, 'Memilih foto ' + (targetUploaderName || photoId) + ' (Total: ' + updatedTotal + ' Suara)');
+
+            closeVoteModal();
+            renderDeviceVoteStatusBanner();
+            renderGalleryGrid();
+            renderVoteSection();
+            renderLiveLeaderboard();
+            renderAdminModerationTable();
+            updateHeroCounters();
+            showToast('Vote Anda untuk kategori "' + chosenCat + '" berhasil tercatat! (' + updatedTotal + ' Suara)');
+
+            setVoteDbSyncIndicator('Menyimpan suara ke Database...', true);
+
+            // 1. Kirim ke Sheet PHOTOS melalui castPhotoVote
+            callBackendApi('castPhotoVote', {
+                photoId: photoId,
+                eventId: APP_STATE.activeEventId,
+                voteCategory: chosenCat,
+                votes: updatedTotal,
+                votesByCategory: updatedBreakdown,
+                deviceId: getOrCreateDeviceId()
+            }, function (res) {
+                if (res && res.status === 'success') {
+                    var allP = APP_STATE.allEventPhotos || APP_STATE.photos || [];
+                    for (var j = 0; j < allP.length; j++) {
+                        if (allP[j].photoId === photoId) {
+                            var serverVotes = parseInt(res.votes, 10) || updatedTotal;
+                            allP[j].votes = Math.max(serverVotes, updatedTotal);
+                            if (res.votesByCategory) {
+                                for (var ck in res.votesByCategory) {
+                                    if (res.votesByCategory.hasOwnProperty(ck)) {
+                                        allP[j].votesByCategory[ck] = Math.max(
+                                            parseInt(allP[j].votesByCategory[ck], 10) || 0,
+                                            parseInt(res.votesByCategory[ck], 10) || 0
+                                        );
+                                    }
+                                }
+                            }
+                            saveLocalPhotoVoteCache(photoId, allP[j].votes, allP[j].votesByCategory, allP[j].uploadedBy);
+                            break;
+                        }
+                    }
+                    APP_STATE.photos = allP.slice();
+                }
+                // 2. Pastikan tersimpan ke ADMIN_CONFIG, EVENTS & PHOTOS (Multi-Channel Database Sync)
+                pushAllVotesToDatabase(false);
+                renderGalleryGrid();
+                renderVoteSection();
+                renderLiveLeaderboard();
+                renderAdminModerationTable();
+                updateHeroCounters();
+            }, function () {
+                pushAllVotesToDatabase(false);
+            });
+        }
+
+        // RENDER HASIL VOTING & PEMENANG PER KATEGORI (KLASEMEN UTAMA + KATEGORI)
+        function normalizeCatKeyForMatch(str) {
+            if (!str) return '';
+            return String(str).replace(/[^\w\s]/gi, '').replace(/\s+/g, ' ').trim().toLowerCase();
+        }
+
+        function getPhotoVotesForCategorySmart(photoObj, targetCatName) {
+            if (!photoObj || !photoObj.votesByCategory) return 0;
+            var map = photoObj.votesByCategory;
+            if (map[targetCatName] !== undefined) {
+                return parseInt(map[targetCatName], 10) || 0;
+            }
+            var normTarget = normalizeCatKeyForMatch(targetCatName);
+            if (!normTarget) return 0;
+            var totalMatched = 0;
+            for (var k in map) {
+                if (map.hasOwnProperty(k)) {
+                    if (normalizeCatKeyForMatch(k) === normTarget) {
+                        totalMatched += (parseInt(map[k], 10) || 0);
+                    }
+                }
+            }
+            return totalMatched;
+        }
+
+        function renderLiveLeaderboard() {
+            var container = document.getElementById('leaderboardContainer');
+            if (!container) return;
+            var cats = getNormalizedVoteCategories();
+            var allPhotos = APP_STATE.allEventPhotos || APP_STATE.photos || [];
+            var eventPhotos = allPhotos.filter(function (p) {
+                return !p.eventId || p.eventId === APP_STATE.activeEventId;
+            });
+            var photos = mergePhotosWithLocalVoteCache(eventPhotos).slice();
+            var html = '';
+
+            // 0. KLASEMEN UTAMA PERINGKAT TOTAL SUARA TERBANYAK (OVERALL LEADERBOARD)
+            var overallRanked = photos.filter(function (p) { return (parseInt(p.votes, 10) || 0) > 0; });
+            overallRanked.sort(function (a, b) { return (parseInt(b.votes, 10) || 0) - (parseInt(a.votes, 10) || 0); });
+
+            var grandTotalVotes = 0;
+            for (var g = 0; g < overallRanked.length; g++) {
+                grandTotalVotes += (parseInt(overallRanked[g].votes, 10) || 0);
+            }
+
+            html += '<div class="glass-card" style="border-color:rgba(0,255,170,0.45); background:linear-gradient(145deg, rgba(16,26,40,0.95), rgba(11,15,25,0.95)); padding:16px;">';
+            html += '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">';
+            html += '<div>';
+            html += '<div style="font-weight:800; color:var(--accent-gold); font-size:1.02rem;"><i class="fa-solid fa-ranking-star"></i> Klasemen Umum Perolehan Suara Terbanyak</div>';
+            html += '<div style="font-size:0.74rem; color:var(--text-muted);">Peringkat foto berdasarkan akumulasi seluruh kategori voting di database</div>';
+            html += '</div>';
+            html += '<span class="mono-badge" style="color:var(--accent-neon); border:1px solid var(--accent-neon); font-weight:700;">Total Akumulasi: ' + grandTotalVotes + ' Suara</span>';
+            html += '</div>';
+
+            if (overallRanked.length === 0) {
+                html += '<div style="font-size:0.82rem; color:var(--text-muted); padding:14px; text-align:center; background:rgba(255,255,255,0.02); border-radius:10px;">Belum ada foto yang memperoleh suara. Silakan pilih tab <strong>"Pilih & Vote Foto"</strong> untuk memberikan suara pertama!</div>';
+            } else {
+                html += '<div style="display:flex; flex-direction:column; gap:10px;">';
+                for (var rIdx = 0; rIdx < Math.min(overallRanked.length, 10); rIdx++) {
+                    var rp = overallRanked[rIdx];
+                    var rVotes = parseInt(rp.votes, 10) || 0;
+                    var rPct = grandTotalVotes > 0 ? Math.round((rVotes / grandTotalVotes) * 100) : 0;
+                    var rMedal = (rIdx === 0) ? '🥇 Peringkat 1' : (rIdx === 1 ? '🥈 Peringkat 2' : (rIdx === 2 ? '🥉 Peringkat 3' : ('#' + (rIdx + 1))));
+                    var rBreakdown = buildVoteBreakdownBadgesHtml(rp);
+
+                    html += '<div style="display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.04); padding:10px 12px; border-radius:12px; border:1px solid ' + (rIdx === 0 ? 'rgba(245,197,66,0.5)' : 'var(--border-subtle)') + ';">';
+                    html += '<img src="' + escapeHtml(rp.directImageUrl) + '" style="width:64px; height:64px; border-radius:10px; object-fit:cover; flex-shrink:0; cursor:pointer;" onclick="openImageLightBox(\'' + escapeHtml(rp.directImageUrl) + '\', \'' + escapeHtml(rp.uploadedBy) + '\')" onerror="this.src=\'https://placehold.co/640x360/151b26/00ffaa?text=Foto\'" />';
+                    html += '<div style="flex:1; min-width:0;">';
+                    html += '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">';
+                    html += '<div style="font-weight:700; font-size:0.88rem; color:#fff;"><span style="color:var(--accent-gold); margin-right:6px;">' + rMedal + '</span>' + escapeHtml(rp.uploadedBy) + ' <span style="font-size:0.7rem; color:var(--text-muted); font-weight:500;">(' + escapeHtml(rp.category) + ')</span></div>';
+                    html += '<div style="font-size:0.82rem; font-weight:800; color:var(--accent-neon);">' + rVotes + ' Suara (' + rPct + '%)</div>';
+                    html += '</div>';
+                    if (rBreakdown) {
+                        html += '<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:6px;">' + rBreakdown + '</div>';
+                    }
+                    html += '<div style="width:100%; height:7px; background:rgba(255,255,255,0.08); border-radius:10px; overflow:hidden;">';
+                    html += '<div style="width:' + rPct + '%; height:100%; background:linear-gradient(90deg, var(--accent-gold), var(--accent-neon)); border-radius:10px;"></div>';
+                    html += '</div>';
+                    html += '</div></div>';
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+
+            // 1. Tampilkan Pemenang Pilihan Juri / Award Khusus jika ada
+            var judgeWinners = photos.filter(function (p) { return Boolean(p.awardTitle); });
+            if (judgeWinners.length > 0) {
+                html += '<div class="glass-card" style="border-color:var(--accent-gold); background:rgba(245,197,66,0.06); padding:16px;">';
+                html += '<div style="font-weight:800; color:var(--accent-gold); margin-bottom:12px; font-size:1rem;"><i class="fa-solid fa-crown"></i> Penghargaan Resmi & Pilihan Juri</div>';
+                html += '<div class="judge-awards-grid">';
+                for (var w = 0; w < judgeWinners.length; w++) {
+                    var jw = judgeWinners[w];
+                    html += '<div class="judge-award-card">';
+                    html += '<img src="' + escapeHtml(jw.directImageUrl) + '" class="judge-award-thumb" onclick="openImageLightBox(\'' + escapeHtml(jw.directImageUrl) + '\', \'' + escapeHtml(jw.uploadedBy) + '\')" onerror="this.src=\'https://placehold.co/640x360/151b26/00ffaa?text=Foto\'" />';
+                    html += '<div class="judge-award-info">';
+                    html += '<div style="font-size:0.75rem; font-weight:800; color:var(--accent-gold); line-height:1.3;">🏆 ' + escapeHtml(jw.awardTitle) + '</div>';
+                    html += '<div style="font-weight:700; font-size:0.9rem; color:#fff; line-height:1.3;">' + escapeHtml(jw.uploadedBy) + '</div>';
+                    html += '<div style="font-size:0.72rem; color:var(--text-muted);">Kategori: ' + escapeHtml(jw.category || '-') + ' • <strong style="color:var(--accent-neon);">' + (jw.votes || 0) + ' Suara</strong></div>';
+                    html += '</div></div>';
+                }
+                html += '</div></div>';
+            }
+
+            // 2. Hasil Perolehan Suara untuk Setiap Kategori Voting
+            for (var c = 0; c < cats.length; c++) {
+                var catName = cats[c].name;
+                var catDesc = cats[c].desc;
+
+                var totalCatVotes = 0;
+                var contenders = [];
+                for (var i = 0; i < photos.length; i++) {
+                    var vCount = getPhotoVotesForCategorySmart(photos[i], catName);
+                    if (vCount > 0) {
+                        totalCatVotes += vCount;
+                        contenders.push({ photo: photos[i], count: vCount });
+                    }
+                }
+                contenders.sort(function (a, b) { return b.count - a.count; });
+
+                html += '<div class="glass-card" style="padding:16px;">';
+                html += '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">';
+                html += '<div>';
+                html += '<div style="font-weight:800; color:var(--accent-neon); font-size:0.98rem;"><i class="fa-solid fa-medal" style="color:var(--accent-gold);"></i> Kategori: ' + escapeHtml(catName) + '</div>';
+                html += '<div style="font-size:0.73rem; color:var(--text-muted);">' + escapeHtml(catDesc) + '</div>';
+                html += '</div>';
+                html += '<span class="mono-badge" style="color:var(--accent-gold); font-weight:700;">Total Masuk: ' + totalCatVotes + ' Suara</span>';
+                html += '</div>';
+
+                if (contenders.length === 0) {
+                    html += '<div style="font-size:0.8rem; color:var(--text-muted); padding:10px 0;">Belum ada suara masuk di kategori ini.</div>';
+                } else {
+                    html += '<div style="display:flex; flex-direction:column; gap:10px;">';
+                    for (var p = 0; p < Math.min(contenders.length, 5); p++) {
+                        var item = contenders[p];
+                        var pct = totalCatVotes > 0 ? Math.round((item.count / totalCatVotes) * 100) : 0;
+                        var rankMedal = (p === 0) ? '🥇 Juara 1' : (p === 1 ? '🥈 Juara 2' : (p === 2 ? '🥉 Juara 3' : ('#' + (p + 1))));
+
+                        html += '<div style="display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.03); padding:10px; border-radius:12px; border:1px solid var(--border-subtle);">';
+                        html += '<img src="' + escapeHtml(item.photo.directImageUrl) + '" style="width:58px; height:58px; border-radius:8px; object-fit:cover; flex-shrink:0; cursor:pointer;" onclick="openImageLightBox(\'' + escapeHtml(item.photo.directImageUrl) + '\', \'' + escapeHtml(item.photo.uploadedBy) + '\')" onerror="this.src=\'https://placehold.co/640x360/151b26/00ffaa?text=Foto\'" />';
+                        html += '<div style="flex:1; min-width:0;">';
+                        html += '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:4px;">';
+                        html += '<div style="font-weight:700; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><span style="color:var(--accent-gold); margin-right:6px;">' + rankMedal + '</span>' + escapeHtml(item.photo.uploadedBy) + '</div>';
+                        html += '<div style="font-size:0.78rem; font-weight:800; color:var(--accent-neon); flex-shrink:0;">' + item.count + ' Vote (' + pct + '%)</div>';
+                        html += '</div>';
+                        html += '<div style="width:100%; height:7px; background:rgba(255,255,255,0.08); border-radius:10px; overflow:hidden;">';
+                        html += '<div style="width:' + pct + '%; height:100%; background:linear-gradient(90deg, var(--accent-neon), var(--accent-gold)); border-radius:10px;"></div>';
+                        html += '</div>';
+                        html += '</div></div>';
+                    }
+                    html += '</div>';
+                }
+                html += '</div>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        function renderCustomVoteCategoriesAdmin() {
+            var container = document.getElementById('customVoteCategoriesList');
+            if (!container) return;
+            var cats = getNormalizedVoteCategories();
+            var html = '';
+            for (var i = 0; i < cats.length; i++) {
+                html += '<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.04); padding:8px 12px; border-radius:10px; border:1px solid var(--border-subtle);">';
+                html += '<div><span style="font-weight:700; font-size:0.84rem; color:var(--accent-neon);">' + escapeHtml(cats[i].name) + '</span> <span style="font-size:0.75rem; color:var(--text-muted);">— ' + escapeHtml(cats[i].desc) + '</span></div>';
+                html += '<button type="button" class="btn btn-danger btn-sm" onclick="removeVoteCategory(' + i + ')"><i class="fa-solid fa-trash"></i></button>';
+                html += '</div>';
+            }
+            container.innerHTML = html;
+        }
+
+        function addNewVoteCategory() {
+            var nameInput = document.getElementById('newVoteCatNameInput');
+            var descInput = document.getElementById('newVoteCatDescInput');
+            var nameVal = nameInput ? nameInput.value.trim() : '';
+            var descVal = descInput ? descInput.value.trim() : '';
+            if (!nameVal) {
+                showToast('Masukkan nama kategori voting terlebih dahulu.', true);
+                return;
+            }
+            var cats = getNormalizedVoteCategories();
+            cats.push({
+                name: nameVal,
+                desc: descVal || ('Pilih foto terbaik untuk kategori ' + nameVal)
+            });
+            APP_STATE.config.voteCategories = cats;
+            saveActiveEventScopedSettings(true);
+            if (nameInput) nameInput.value = '';
+            if (descInput) descInput.value = '';
+
+            renderCustomVoteCategoriesAdmin();
+            renderVoteCategoryPills();
+            renderAdminEventScopeSummary();
+            syncConfigToBackend('Kategori voting baru ditambahkan pada event ini & disinkronkan!');
+        }
+
+        function removeVoteCategory(idx) {
+            var cats = getNormalizedVoteCategories();
+            if (cats.length <= 1) {
+                showToast('Minimal harus ada 1 kategori voting aktif.', true);
+                return;
+            }
+            cats.splice(idx, 1);
+            APP_STATE.config.voteCategories = cats;
+            saveActiveEventScopedSettings(true);
+            renderCustomVoteCategoriesAdmin();
+            renderVoteCategoryPills();
+            renderAdminEventScopeSummary();
+            syncConfigToBackend('Kategori voting event ini diperbarui!');
+        }
+
+</script>

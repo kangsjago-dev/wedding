@@ -1,0 +1,287 @@
+    <!-- MODAL 1: PILIH KATEGORI VOTING (1 DEVICE 1X VOTE PER KATEGORI) -->
+    <div id="voteSelectModal" class="modal-overlay">
+        <div class="modal-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="font-weight:800; color:var(--accent-gold); font-size:1.05rem;">
+                    <i class="fa-solid fa-trophy"></i> Pilih Kategori Voting Foto
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeVoteModal()">✕</button>
+            </div>
+
+            <div
+                style="display:flex; gap:12px; align-items:center; background:rgba(255,255,255,0.04); padding:10px; border-radius:12px; margin-bottom:14px;">
+                <img id="voteModalPhotoPreview" src=""
+                    style="width:68px; height:68px; object-fit:cover; border-radius:8px; flex-shrink:0;" />
+                <div style="min-width:0;">
+                    <div id="voteModalUploaderName" style="font-weight:700; font-size:0.9rem; color:#fff;">-</div>
+                    <div id="voteModalPhotoCat" style="font-size:0.75rem; color:var(--accent-neon);">-</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">1 perangkat hanya bisa 1x
+                        vote di tiap kategori.</div>
+                </div>
+            </div>
+
+            <div style="font-size:0.78rem; font-weight:600; color:var(--text-muted); margin-bottom:8px;">
+                Tentukan foto ini masuk ke nominasi kategori mana:
+            </div>
+            <div id="voteModalCategoriesContainer"
+                style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;"></div>
+
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeVoteModal()">Batal</button>
+                <button type="button" id="btnConfirmCastVote" class="btn btn-neon btn-sm"
+                    onclick="confirmSubmitPhotoVote()">
+                    <i class="fa-solid fa-check-to-slot"></i> Kirim Vote Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: FORM EVENT (TAMBAH / EDIT DENGAN MASTER GOOGLE DRIVE & SUBFOLDER PER-EVENT) -->
+    <div id="eventModal" class="modal-overlay">
+        <div class="modal-card" style="max-width:520px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="font-weight:800; color:var(--accent-neon); font-size:1.05rem;" id="eventModalTitle">Buat
+                    Event Baru</div>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeEventModal()">✕</button>
+            </div>
+            <form onsubmit="event.preventDefault(); saveEventFormSubmit();"
+                style="display:flex; flex-direction:column; gap:12px;">
+                <input type="hidden" id="modalOriginalEventId" />
+                <div>
+                    <label class="form-label">ID Event (Bisa Custom atau Random)</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="modalEventId" class="form-input"
+                            style="flex:1; font-family:monospace; font-weight:700; color:var(--accent-gold);" required
+                            placeholder="Contoh: EVT-8K92M1 atau WED-KARYN-DIMAS" />
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="generateRandomEventIdInModal()"
+                            title="Buat ID Event Acak (Random)">
+                            <i class="fa-solid fa-dice" style="color:var(--accent-neon);"></i> Random ID
+                        </button>
+                    </div>
+                    <div style="font-size:0.69rem; color:var(--text-muted); margin-top:3px;">
+                        Anda dapat mengetik ID Event sendiri (Custom) atau klik <strong>Random ID</strong> untuk
+                        menghasilkan kode unik otomatis.
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Nama Acara / Nama Pengantin</label>
+                    <input type="text" id="modalEventName" class="form-input" required
+                        placeholder="Contoh: The Wedding of Karyn & Dimas"
+                        oninput="updateEventModalSubfolderPreview()" />
+                </div>
+                <div>
+                    <label class="form-label">Tanggal Acara</label>
+                    <div style="cursor:pointer;"
+                        onclick="try{document.getElementById('modalEventDate').showPicker()}catch(e){}">
+                        <input type="date" id="modalEventDate" class="form-input" required
+                            onchange="updateEventModalSubfolderPreview()" />
+                    </div>
+                </div>
+
+                <!-- Pengaturan Master Google Drive & Subfolder Spesifik Event Ini -->
+                <div
+                    style="background:rgba(0,255,170,0.04); border:1px solid var(--border-glass); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:10px;">
+                    <div
+                        style="font-weight:700; font-size:0.84rem; color:var(--accent-gold); display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+                        <span><i class="fa-brands fa-google-drive"></i> Pengaturan Google Drive Khusus Event Ini</span>
+                        <button type="button" class="btn btn-secondary btn-sm"
+                            style="padding:4px 9px; font-size:0.7rem;" onclick="openModalPreviewDriveFolder('master')">
+                            <i class="fa-solid fa-arrow-up-right-from-square" style="color:var(--accent-neon);"></i>
+                            Buka Master Drive
+                        </button>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Target Google Drive Master (Link / ID Folder Induk Event)</label>
+                        <input type="text" id="modalEventMasterDriveUrl" class="form-input"
+                            placeholder="Paste link folder Google Drive Master untuk acara ini..."
+                            oninput="updateEventModalSubfolderPreview()" />
+                        <div style="font-size:0.69rem; color:var(--text-muted); margin-top:3px;">
+                            Setiap event memiliki folder Master Google Drive sendiri sebagai tempat membuat subfolder
+                            penyimpanan foto acara.
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Pengaturan Subfolder Penyimpanan Foto Acara</label>
+                        <select id="modalEventSubfolderMode" class="form-input"
+                            onchange="onModalEventSubfolderModeChange()">
+                            <option value="auto">📁 Otomatis Buat Subfolder (Sesuai Nama Pengantin & Tanggal Acara)
+                            </option>
+                            <option value="custom_name">✏️ Buat Subfolder dengan Nama Kustom di dalam Master Drive
+                            </option>
+                            <option value="direct_link">🔗 Gunakan Link Subfolder Google Drive yang Sudah Ada</option>
+                        </select>
+                    </div>
+
+                    <!-- Box Preview Subfolder Otomatis -->
+                    <div id="modalSubfolderAutoPreviewBox"
+                        style="background:rgba(255,255,255,0.04); padding:8px 10px; border-radius:8px; border:1px solid var(--border-subtle); font-size:0.73rem;">
+                        <div style="color:var(--text-muted); margin-bottom:2px;">Nama Subfolder Otomatis di Master
+                            Drive:</div>
+                        <div id="modalSubfolderAutoNameText"
+                            style="font-weight:700; color:var(--accent-neon); word-break:break-word;">📁 -</div>
+                    </div>
+
+                    <!-- Input Nama Subfolder Kustom -->
+                    <div id="modalSubfolderCustomNameBox" style="display:none;">
+                        <label class="form-label">Nama Subfolder yang Diinginkan</label>
+                        <input type="text" id="modalEventSubfolderName" class="form-input"
+                            placeholder="Contoh: Album Resepsi Karyn & Dimas 2026"
+                            oninput="updateEventModalSubfolderPreview()" />
+                    </div>
+
+                    <!-- Input Link Subfolder Langsung / Hasil Subfolder Tercatat -->
+                    <div id="modalSubfolderDirectLinkBox" style="display:none;">
+                        <label class="form-label">Link / ID Subfolder Google Drive Spesifik</label>
+                        <div style="display:flex; gap:6px;">
+                            <input type="text" id="modalEventDriveUrl" class="form-input" style="flex:1;"
+                                placeholder="https://drive.google.com/drive/folders/..." />
+                            <button type="button" class="btn btn-secondary btn-sm"
+                                onclick="openModalPreviewDriveFolder('subfolder')" title="Buka Subfolder">
+                                <i class="fa-solid fa-folder-open" style="color:var(--accent-gold);"></i> Buka
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">Status Acara</label>
+                    <select id="modalEventStatus" class="form-input">
+                        <option value="Active">Active (Aktif)</option>
+                        <option value="Archived">Archived (Selesai)</option>
+                    </select>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:6px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeEventModal()">Batal</button>
+                    <button type="submit" class="btn btn-neon btn-sm"><i class="fa-solid fa-floppy-disk"></i> Simpan &
+                        Sync Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: FORM USER & LEVEL ROLE -->
+    <div id="userModal" class="modal-overlay">
+        <div class="modal-card">
+            <div style="font-weight:700; color:var(--accent-neon); margin-bottom:14px; font-size:1.05rem;"
+                id="userModalTitle">Tambah User Baru</div>
+            <form onsubmit="event.preventDefault(); saveUserFormSubmit();"
+                style="display:flex; flex-direction:column; gap:12px;">
+                <input type="hidden" id="modalUserId" />
+                <div>
+                    <label class="form-label">Username Login</label>
+                    <input type="text" id="modalUsername" class="form-input" required
+                        placeholder="Contoh: crew_kamera1" />
+                </div>
+                <div>
+                    <label class="form-label">Nama Lengkap / Jabatan</label>
+                    <input type="text" id="modalUserFullName" class="form-input" required
+                        placeholder="Contoh: Ilham Pratama (Tim WO)" />
+                </div>
+                <div>
+                    <label class="form-label">PIN Login (Angka/Huruf)</label>
+                    <input type="text" id="modalUserPin" class="form-input" required placeholder="Contoh: 123456" />
+                </div>
+                <div>
+                    <label class="form-label">Level User (Role Access)</label>
+                    <select id="modalUserRole" class="form-input">
+                        <option value="Super Admin">Super Admin (Akses Penuh)</option>
+                        <option value="Admin Event">Admin Event (Kelola Event & Moderasi)</option>
+                        <option value="Operator">Operator (Crew Lapangan & Moderasi)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Status Akun</label>
+                    <select id="modalUserStatus" class="form-input">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:6px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeUserModal()">Batal</button>
+                    <button type="submit" class="btn btn-neon btn-sm"><i class="fa-solid fa-floppy-disk"></i> Simpan
+                        User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: TETAPKAN GELAR PENGHARGAAN / AWARD JURI -->
+    <div id="awardJudgeModal" class="modal-overlay">
+        <div class="modal-card">
+            <div style="font-weight:800; color:var(--accent-gold); margin-bottom:10px; font-size:1.05rem;">
+                <i class="fa-solid fa-crown"></i> Tetapkan Gelar Pemenang / Award Foto
+            </div>
+            <p style="font-size:0.76rem; color:var(--text-muted); margin-bottom:12px;">
+                Pilih dari kategori yang tersedia atau ketik gelar khusus untuk ditampilkan pada foto pemenang:
+            </p>
+            <input type="hidden" id="awardModalPhotoId" />
+            <div id="awardQuickPills" class="category-pills" style="margin-bottom:12px; flex-wrap:wrap;"></div>
+            <div class="form-group">
+                <label class="form-label">Nama Gelar / Award (Kosongkan untuk menghapus gelar)</label>
+                <input type="text" id="awardModalInput" class="form-input"
+                    placeholder="Contoh: Juara 1 Foto Terfavorit 🏆" />
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeAwardJudgeModal()">Batal</button>
+                <button type="button" class="btn btn-gold btn-sm" onclick="submitAwardJudgeModal()">
+                    <i class="fa-solid fa-check"></i> Simpan Gelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: BARCODE UNDANGAN & AKSES ACARA (FUNGSI SHARE LANGSUNG SEPERTI SEBELUMNYA) -->
+    <div id="qrModal" class="modal-overlay">
+        <div class="modal-card" style="text-align:center;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="font-weight:800; color:var(--accent-neon); font-size:1.02rem;">
+                    <i class="fa-solid fa-qrcode"></i> Barcode Undangan & Akses Acara
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeQrModal()">✕</button>
+            </div>
+            <p style="font-size:0.76rem; color:var(--text-muted); margin-bottom:12px;">
+                Scan barcode di bawah ini atau bagikan tautan undangan agar tamu dapat langsung mengakses kamera live,
+                galeri foto, dan voting pada acara ini.
+            </p>
+            <div id="qrModalContent"
+                style="background:#fff; padding:14px; border-radius:14px; display:inline-block; margin-bottom:10px;">
+            </div>
+            <div id="qrModalEventName"
+                style="font-weight:800; font-size:1rem; color:var(--accent-gold); margin-bottom:8px;"></div>
+
+            <div style="display:flex; gap:6px; margin-bottom:14px;">
+                <input type="text" id="qrModalUrlInput" class="form-input" readonly
+                    style="font-size:0.74rem; text-align:center; background:rgba(255,255,255,0.06);" />
+            </div>
+
+            <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+                <button type="button" class="btn btn-neon btn-sm" onclick="copyEventQrLink()">
+                    <i class="fa-solid fa-copy"></i> Copy Link
+                </button>
+                <button type="button" class="btn btn-gold btn-sm" onclick="shareEventQrLink()">
+                    <i class="fa-solid fa-share-nodes"></i> Share Undangan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 6: LIGHTBOX PREVIEW FOTO BESAR + TOMBOL DOWNLOAD -->
+    <div id="lightboxModal" class="modal-overlay" onclick="closeImageLightBox()">
+        <div class="modal-card" style="max-width:720px; padding:12px; text-align:center;"
+            onclick="event.stopPropagation()">
+            <img id="lightboxImgEl" src=""
+                style="width:100%; max-height:72vh; object-fit:contain; border-radius:12px; background:#000;" />
+            <div
+                style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; gap:10px; flex-wrap:wrap;">
+                <div id="lightboxCaptionEl" style="font-size:0.84rem; font-weight:600; text-align:left;"></div>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" class="btn btn-neon btn-sm" onclick="downloadCurrentLightboxPhoto()">
+                        <i class="fa-solid fa-download"></i> Download Foto
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeImageLightBox()">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
