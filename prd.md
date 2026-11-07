@@ -2,7 +2,7 @@
 ================================================================================
 ENGINE: ZettBOT Core v4.1 (by Zettbos)
 STATUS DOKUMEN: LIVING SPECIFICATION & ARCHITECTURAL BLUEPRINT
-REVISI: v1.3 (Production-Ready Release & Performance Optimization)
+REVISI: v1.4 (Pure Headless GAS Backend & Decoupled GitHub Pages Architecture)
 ================================================================================
 
 <!-- ======================================================================= -->
@@ -153,7 +153,7 @@ Terdiri dari 5 sheet utama dengan mekanisme **Safe Migrate** (tidak menghapus da
 
 ### SKEMA KOLOM AKTIF DATABASE
 - Sheet `ADMIN_CONFIG`: 13 Kolom (A - M)
-- Sheet `USERS`: 9 Kolom (A - I):
+- Sheet `USERS`: 11 Kolom (A - K):
   - A: User_ID
   - B: Username
   - C: Password_PIN
@@ -163,6 +163,8 @@ Terdiri dari 5 sheet utama dengan mekanisme **Safe Migrate** (tidak menghapus da
   - G: Created_At
   - H: Active_Session_Token (UUID token sesi tunggal aktif)
   - I: Last_Login_At (Timestamp login terakhir)
+  - J: Is_Logged_In (TRUE / FALSE status kunci sesi eksklusif)
+  - K: Last_Active_At (Timestamp detak jantung / aktivitas terakhir)
 - Sheet `EVENTS`: 13 Kolom (A - M):
   - A: Event_ID
   - B: Event_Name
@@ -193,4 +195,5 @@ Terdiri dari 5 sheet utama dengan mekanisme **Safe Migrate** (tidak menghapus da
 - **v1.1 (Applied):** Berhasil memecah berkas monolitik `index.html` (464 KB / 8.643 baris) menjadi 9 berkas modular berukuran ringan (10 KB – 128 KB). Loading editor Google Apps Script menjadi instan, parsing browser lebih cepat, dan pemeliharaan kode jauh lebih mudah.
 - **v1.2 (Applied):** Penataan ulang menu Admin bebas redundansi (5 Tab Terfokus), penambahan 4 kolom dedicated pada Sheet `EVENTS` (J, K, L, M) untuk sinkronisasi cloud real-time, upload bingkai foto PNG langsung ke folder Google Drive event, serta isolasi total feed galeri dan voting per event aktif.
 - **v1.3 (Applied):** Penyempurnaan 12 poin performa dan stabilitas: Stale-While-Revalidate startup (<50ms), background polling galeri 12s tanpa reload, pembersihan target Master Drive saat buat event baru, Server Single Source of Truth untuk limitasi user, pencegahan multiple login admin via session token, penguncian frame kustom anti-reset, interactive lightbox pinch & mouse wheel zoom, peringkasan menu admin, sinkronisasi URL aktif via `history.replaceState`, restorasi tab & lock zoom 100%, serta eliminasi auto-mock dummy fallback.
+- **v1.4 (In Progress):** Transformasi arsitektur Headless Backend & Decoupled Frontend: Pemisahan `index.html` menjadi struktur web statis modern dan ringan di GitHub Pages (`index.html`, `css/style.css`, `js/*.js`), penguncian akses web hanya via GitHub Pages (Apps Script khusus API murni), dan sistem penguncian sesi login ketat (pengguna berikutnya ditolak login hingga pengguna sebelumnya logout atau sesi berakhir).
 

@@ -1,5 +1,4 @@
-<script>
-        // =====================================================================
+// =====================================================================
         // MODUL 5: ADMIN PANEL (LOGIN ELEGAN, KUOTA, WARNA NONE & UPLOAD PNG)
         // =====================================================================
         function toggleAdminPinVisibility() {
@@ -72,23 +71,16 @@
                     applyRoleBasedAdminView();
                     loadAdminUsersList();
                 } else {
-                    if ((uName === 'superadmin' || !uName) && uPin === '123456') {
-                        saveAdminSessionToStorage({ userId: 'USR-0001', username: 'superadmin', fullName: 'Super Admin', roleLevel: 'Super Admin', accountStatus: 'Active' });
-                        showToast('Autentikasi berhasil (Super Admin)!');
-                        applyRoleBasedAdminView();
-                    } else {
-                        showToast((res && res.message) || 'ID Pengguna atau Kode Akses tidak sesuai.', true);
+                    if (res && res.code === 'ALREADY_LOGGED_IN') {
+                        alert('PERINGATAN LOGIN:\n\n' + res.message);
+                        showToast(res.message, true);
+                        return;
                     }
+                    showToast((res && res.message) || 'Username atau PIN tidak sesuai.', true);
                 }
             }, function () {
                 showLoadingOverlay(false);
-                if ((uName === 'superadmin' || !uName) && uPin === '123456') {
-                    saveAdminSessionToStorage({ userId: 'USR-0001', username: 'superadmin', fullName: 'Super Admin', roleLevel: 'Super Admin', accountStatus: 'Active' });
-                    showToast('Autentikasi Mode Lokal Berhasil!');
-                    applyRoleBasedAdminView();
-                } else {
-                    showToast('Kredensial tidak dikenali. Pastikan ID Pengguna dan Kode Akses benar.', true);
-                }
+                showToast('Gagal terhubung ke server backend Google Apps Script. Pastikan jaringan internet aktif.', true);
             });
         }
 
@@ -102,10 +94,12 @@
                     username: APP_STATE.currentUser.username,
                     sessionToken: APP_STATE.currentUser.sessionToken
                 }, function (res) {
-                    if (res && res.status === 'expired') {
+                    if (res && (res.status === 'expired' || res.status === 'session_expired')) {
                         stopAdminSessionHeartbeat();
-                        adminLogout();
-                        alert('PERINGATAN KEAMANAN:\n' + (res.message || 'Akun Anda sedang aktif di browser / perangkat lain. Sesi di perangkat ini telah diakhiri.'));
+                        localStorage.removeItem('SATUALBUM_ADMIN_SESSION');
+                        APP_STATE.currentUser = null;
+                        applyRoleBasedAdminView();
+                        alert('PERINGATAN KEAMANAN:\n' + (res.message || 'Sesi akun Anda telah diakhiri.'));
                     }
                 });
             }, 25000);
@@ -128,11 +122,21 @@
         }
 
         function adminLogout() {
+            var curUser = APP_STATE.currentUser;
             stopAdminSessionHeartbeat();
             localStorage.removeItem('SATUALBUM_ADMIN_SESSION');
             APP_STATE.currentUser = null;
             applyRoleBasedAdminView();
-            showToast('Anda telah keluar dari Panel Manajemen Admin.');
+
+            if (curUser && curUser.sessionToken) {
+                callBackendApi('logoutAdminUser', { userId: curUser.userId, sessionToken: curUser.sessionToken }, function () {
+                    showToast('Anda telah keluar. Akun ini sekarang dapat digunakan kembali oleh pengguna berikutnya.');
+                }, function () {
+                    showToast('Anda telah keluar dari Panel Manajemen Admin.');
+                });
+            } else {
+                showToast('Anda telah keluar dari Panel Manajemen Admin.');
+            }
         }
 
         // PENGATURAN LIMITASI USER LIVE PHOTO, UPLOAD PER USER & IDLE LOGIN ADMIN
@@ -1512,4 +1516,3 @@
         } else {
             initLightboxInteractiveControls();
         }
-</script>

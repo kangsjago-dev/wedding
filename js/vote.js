@@ -1,5 +1,4 @@
-<script>
-        // =====================================================================
+// =====================================================================
         // MODUL 3: SISTEM VOTING KATEGORI & SINKRONISASI PENUH DATABASE
         // =====================================================================
         function getNormalizedVoteCategories() {
@@ -549,5 +548,3 @@
             renderAdminEventScopeSummary();
             syncConfigToBackend('Kategori voting event ini diperbarui!');
         }
-
-</script>

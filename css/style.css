@@ -1,5 +1,4 @@
-    <style>
-        :root {
+:root {
             --bg-main: #0b0f19;
             --bg-secondary: #111726;
             --bg-card: rgba(21, 27, 38, 0.88);
@@ -1255,4 +1254,3 @@
                 font-size: 0.9rem;
             }
         }
-    </style>

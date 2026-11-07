@@ -1,5 +1,4 @@
-<script>
-    var RUNWAY_DEFAULT_LOGO_SVG = window.RUNWAY_DEFAULT_LOGO_SVG;
+var RUNWAY_DEFAULT_LOGO_SVG = window.RUNWAY_DEFAULT_LOGO_SVG;
 
     // STATE APLIKASI UTAMA
     var APP_STATE = {
@@ -2657,5 +2656,3 @@
             updateHeroCounters();
         }
     }
-
-</script>

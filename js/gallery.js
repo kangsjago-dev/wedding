@@ -1,5 +1,4 @@
-<script>
-        // =====================================================================
+// =====================================================================
         // MODUL 2: GALERI PUBLIK, UNDUH FOTO & TOMBOL VOTE LANGSUNG
         // =====================================================================
         var _galleryPollTimer = null;
@@ -262,5 +261,3 @@
             document.body.removeChild(link);
             showToast('Mengunduh foto...');
         }
-
-</script>

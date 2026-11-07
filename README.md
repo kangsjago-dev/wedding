@@ -10,31 +10,29 @@ Aplikasi SatuAlbum menggunakan arsitektur **Hybrid Serverless**:
 - **Google Apps Script & Google Sheets** bertindak sebagai REST API Backend gratis untuk penyimpanan foto (Google Drive) dan database transaksi (Google Sheets).
 
 ### A. File yang Disimpan di GOOGLE APPS SCRIPT (`script.google.com`)
-Hanya berkas backend yang perlu dimasukkan ke dalam Google Apps Script Editor:
+Di dalam Google Apps Script Editor, Anda **HANYA BUTUH 2 BERKAS INI SAJA**:
 | Nama Berkas | Tipe | Fungsi Utama |
 | :--- | :--- | :--- |
-| **`code.gs`** | Script (`.gs`) | Router API (`doGet` & `doPost`), upload foto & bingkai ke Google Drive, CRUD Google Sheets |
-| **`setup.gs`** | Script (`.gs`) | Skema tabel database Google Sheets, inisialisasi & *Safe Migration* |
+| **`code.gs`** | Script (`.gs`) | REST API murni (`doGet` & `doPost`), upload foto & bingkai ke Google Drive, CRUD Google Sheets, dan penguncian sesi login |
+| **`setup.gs`** | Script (`.gs`) | Skema tabel database Google Sheets, inisialisasi & *Safe Migration* (kolom `Is_Logged_In` & `Last_Active_At`) |
 
-> 💡 **Catatan:** Anda **TIDAK PERLU** lagi memasukkan berkas HTML yang panjang ke Google Apps Script karena frontend sudah di-hosting dengan rapi dan cepat di **GitHub Pages**! (Kecuali jika Anda juga ingin memiliki cadangan Web App internal langsung di Apps Script, Anda bisa menggunakan `gas_index.html` dan modul `*.html`).
+> 🔒 **Keamanan & Performa:** Antarmuka web sengaja dialihkan sepenuhnya ke **GitHub Pages**. Jika link Web App Apps Script dibuka langsung dari browser, sistem akan menolak dan mengarahkan ke GitHub Pages. Anda **SAMA SEKALI TIDAK PERLU** membuat file HTML di Google Apps Script!
 
 ---
 
-### B. File yang Disimpan di GITHUB REPOSITORY
-Seluruh berkas frontend dan source code modular disimpan di repository GitHub Anda:
-| Nama Berkas | Fungsi Utama |
+### B. File yang Disimpan di GITHUB REPOSITORY (Hosting Utama)
+Seluruh berkas frontend disajikan langsung melalui GitHub Pages dengan pemisahan aset statis yang ringan:
+| Nama Berkas / Folder | Fungsi Utama |
 | :--- | :--- |
-| **`index.html`** | **Berkas utama GitHub Pages.** Sudah terkompilasi mandiri (self-contained) berisi seluruh CSS, Modal, dan Script sehingga langsung terbuka cepat di browser HP/PC. |
-| **`gas_index.html`** | Berkas template modular Google Apps Script (menggunakan `include()`). |
-| **`build.bat` / `build.ps1`** | Script 1-klik untuk mengompilasi modul source code menjadi `index.html` setiap kali Anda melakukan perubahan kode. |
-| **`css.html`** | Stylesheet tema Dark Glassmorphism, animasi kamera, dan responsivitas mobile. |
-| **`modals.html`** | Komponen modal dialog (Event, User, Barcode QR, Award, Lightbox). |
-| **`js_core.html`** | Core engine state management, API client fetch, cache lokal, dan query parameter routing. |
-| **`js_camera.html`** | Kamera WebRTC FHD, filter live, hitung mundur, dan canvas frame rendering. |
-| **`js_gallery.html`** | Galeri publik per-event, filter kategori momen, dan pengunduhan foto resolusi tinggi. |
-| **`js_vote.html`** | Sistem voting 1 perangkat 1 suara per kategori dan live leaderboard klasemen. |
-| **`js_guestbook.html`**| Buku tamu digital dan konfirmasi kehadiran RSVP. |
-| **`js_admin.html`** | 5 Tab Panel Admin (Event & Drive, Bingkai, Kuota, Moderasi, Branding WO). |
+| **`index.html`** | **Berkas utama GitHub Pages.** Hanya berisi kerangka HTML semantik & modal dialog (~116 KB), sangat ringan dan instan dimuat di HP. |
+| **`css/style.css`** | Berkas CSS murni Dark Glassmorphism, animasi kamera, dan responsivitas mobile (~35 KB, di-cache permanen oleh browser). |
+| **`js/core.js`** | Core engine state management, API client fetch, cache lokal, dan query parameter routing. |
+| **`js/camera.js`** | Kamera WebRTC FHD, filter live, hitung mundur, dan canvas frame rendering anti-reset. |
+| **`js/gallery.js`** | Galeri publik per-event, filter kategori momen, auto-polling foto baru 12 detik, dan download. |
+| **`js/vote.js`** | Sistem voting 1 perangkat 1 suara per kategori dan live leaderboard klasemen. |
+| **`js/guestbook.js`**| Buku tamu digital dan konfirmasi kehadiran RSVP. |
+| **`js/admin.js`** | 5 Tab Panel Admin (Event & Drive, Bingkai, Kuota, Moderasi, Strict Exclusive Login Lock). |
+| **`build.bat` / `build.ps1`** | Script 1-klik untuk mengompilasi dan mengekstrak modul setiap kali ada pembaruan kode. |
 
 ---
 

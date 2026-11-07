@@ -1,5 +1,4 @@
-<script>
-        // =====================================================================
+// =====================================================================
         // MODUL 4: BUKU TAMU & RSVP
         // =====================================================================
         function reloadGuestbookFeed(reset) {
@@ -92,5 +91,3 @@
             APP_STATE.gbOffset += APP_STATE.gbLimit;
             reloadGuestbookFeed(false);
         }
-
-</script>
