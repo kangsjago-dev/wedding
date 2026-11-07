@@ -1,4 +1,4 @@
-var RUNWAY_DEFAULT_LOGO_SVG = window.RUNWAY_DEFAULT_LOGO_SVG;
+﻿var RUNWAY_DEFAULT_LOGO_SVG = window.RUNWAY_DEFAULT_LOGO_SVG;
 
     // STATE APLIKASI UTAMA
     var APP_STATE = {
@@ -1460,21 +1460,23 @@ var RUNWAY_DEFAULT_LOGO_SVG = window.RUNWAY_DEFAULT_LOGO_SVG;
 
     function executeUiUpdates() {
         loadActiveEventScopedSettings(APP_STATE.activeEventId);
-        applyBrandingToDom();
-        populateUploadLimitsFormAdmin();
-        populateFrameConfigFormAdmin();
-        renderEventSelectorDropdown();
-        updateActiveEventHeroBanner();
-        renderPhotoMomentCategoriesUI();
-        updateAutoRenamePreview();
-        renderAdminEventsTable();
-        renderVoteCategoryPills();
-        renderCustomVoteCategoriesAdmin();
-        renderAdminDeviceManagementAndLogs();
-        renderAdminEventScopeSummary();
-        reloadGalleryFeed(true);
-        reloadGuestbookFeed(true);
-        if (APP_STATE.currentUser) {
+        if (typeof applyBrandingToDom === 'function') applyBrandingToDom();
+        if (typeof populateUploadLimitsFormAdmin === 'function') populateUploadLimitsFormAdmin();
+        if (typeof populateFrameConfigFormAdmin === 'function') populateFrameConfigFormAdmin();
+        if (typeof renderEventSelectorDropdown === 'function') renderEventSelectorDropdown();
+        if (typeof updateActiveEventHeroBanner === 'function') updateActiveEventHeroBanner();
+        if (typeof renderPhotoMomentCategoriesUI === 'function') renderPhotoMomentCategoriesUI();
+        if (typeof updateAutoRenamePreview === 'function') updateAutoRenamePreview();
+        if (typeof renderAdminEventsTable === 'function') renderAdminEventsTable();
+        if (typeof renderVoteCategoryPills === 'function') renderVoteCategoryPills();
+        if (typeof renderCustomVoteCategoriesAdmin === 'function') renderCustomVoteCategoriesAdmin();
+        if (typeof renderAdminDeviceManagementAndLogs === 'function') renderAdminDeviceManagementAndLogs();
+        if (typeof renderAdminEventScopeSummary === 'function') renderAdminEventScopeSummary();
+        if (typeof reloadGalleryFeed === 'function') reloadGalleryFeed(true);
+        if (typeof reloadGuestbookFeed === 'function') reloadGuestbookFeed(true);
+        if (typeof renderVoteSection === 'function') renderVoteSection();
+        if (typeof renderLiveLeaderboard === 'function') renderLiveLeaderboard();
+        if (APP_STATE.currentUser && typeof loadAdminUsersList === 'function') {
             loadAdminUsersList();
         }
     }
@@ -1509,12 +1511,6 @@ var RUNWAY_DEFAULT_LOGO_SVG = window.RUNWAY_DEFAULT_LOGO_SVG;
             badge.style.borderColor = 'var(--accent-gold)';
         }
     }
-    badge.textContent = 'MODE LOKAL';
-    badge.style.background = 'rgba(245,197,66,0.15)';
-    badge.style.color = 'var(--accent-gold)';
-    badge.style.borderColor = 'var(--accent-gold)';
-            }
-        }
 
     function applyBrandingToDom() {
         var cfg = APP_STATE.config;
@@ -1917,21 +1913,21 @@ var RUNWAY_DEFAULT_LOGO_SVG = window.RUNWAY_DEFAULT_LOGO_SVG;
         var selects = document.querySelectorAll('.event-selector-dropdown');
         for (var i = 0; i < selects.length; i++) selects[i].value = eventId;
 
-        updateActiveEventHeroBanner();
-        populateUploadLimitsFormAdmin();
-        populateFrameConfigFormAdmin();
-        renderPhotoMomentCategoriesUI();
-        renderVoteCategoryPills();
-        renderCustomVoteCategoriesAdmin();
-        renderAdminDeviceManagementAndLogs();
-        renderAdminEventScopeSummary();
-        updateAutoRenamePreview();
-        renderAdminEventsTable();
+        if (typeof updateActiveEventHeroBanner === 'function') updateActiveEventHeroBanner();
+        if (typeof populateUploadLimitsFormAdmin === 'function') populateUploadLimitsFormAdmin();
+        if (typeof populateFrameConfigFormAdmin === 'function') populateFrameConfigFormAdmin();
+        if (typeof renderPhotoMomentCategoriesUI === 'function') renderPhotoMomentCategoriesUI();
+        if (typeof renderVoteCategoryPills === 'function') renderVoteCategoryPills();
+        if (typeof renderCustomVoteCategoriesAdmin === 'function') renderCustomVoteCategoriesAdmin();
+        if (typeof renderAdminDeviceManagementAndLogs === 'function') renderAdminDeviceManagementAndLogs();
+        if (typeof renderAdminEventScopeSummary === 'function') renderAdminEventScopeSummary();
+        if (typeof updateAutoRenamePreview === 'function') updateAutoRenamePreview();
+        if (typeof renderAdminEventsTable === 'function') renderAdminEventsTable();
         if (typeof renderAdminFrameLivePreview === 'function') renderAdminFrameLivePreview();
         if (typeof renderVoteSection === 'function') renderVoteSection();
         if (typeof renderLiveLeaderboard === 'function') renderLiveLeaderboard();
-        reloadGalleryFeed(true);
-        reloadGuestbookFeed(true);
+        if (typeof reloadGalleryFeed === 'function') reloadGalleryFeed(true);
+        if (typeof reloadGuestbookFeed === 'function') reloadGuestbookFeed(true);
 
         var evObj = getActiveEventObject();
         showToast('Berpindah ke Event: ' + (evObj ? evObj.eventName : eventId));
@@ -2632,12 +2628,12 @@ var RUNWAY_DEFAULT_LOGO_SVG = window.RUNWAY_DEFAULT_LOGO_SVG;
         if (activeNavBtn) activeNavBtn.classList.add('active');
 
         if (viewKey === 'camera') {
-            updateHeroCounters();
+            if (typeof updateHeroCounters === 'function') updateHeroCounters();
             if (!APP_STATE.cameraStream && !APP_STATE.capturedDataUrl) {
-                startCameraStream(true);
+                if (typeof startCameraStream === 'function') startCameraStream(true);
             }
         } else {
-            stopCameraStream();
+            if (typeof stopCameraStream === 'function') stopCameraStream();
         }
 
         if (viewKey === 'gallery') {
@@ -2647,12 +2643,18 @@ var RUNWAY_DEFAULT_LOGO_SVG = window.RUNWAY_DEFAULT_LOGO_SVG;
         }
 
         if (viewKey === 'awards') {
-            renderDeviceVoteStatusBanner();
-            renderVoteCategoryPills();
-            APP_STATE.allEventPhotos = mergePhotosWithLocalVoteCache(APP_STATE.allEventPhotos || APP_STATE.photos || []);
-            APP_STATE.photos = APP_STATE.allEventPhotos.slice();
-            renderVoteSection();
-            renderLiveLeaderboard();
-            updateHeroCounters();
+            if (typeof renderDeviceVoteStatusBanner === 'function') renderDeviceVoteStatusBanner();
+            if (typeof renderVoteCategoryPills === 'function') renderVoteCategoryPills();
+            if (typeof mergePhotosWithLocalVoteCache === 'function') {
+                APP_STATE.allEventPhotos = mergePhotosWithLocalVoteCache(APP_STATE.allEventPhotos || APP_STATE.photos || []);
+            }
+            APP_STATE.photos = (APP_STATE.allEventPhotos || []).slice();
+            if (typeof renderVoteSection === 'function') renderVoteSection();
+            if (typeof renderLiveLeaderboard === 'function') renderLiveLeaderboard();
+            if (typeof updateHeroCounters === 'function') updateHeroCounters();
+        }
+
+        if (viewKey === 'admin') {
+            if (typeof applyRoleBasedAdminView === 'function') applyRoleBasedAdminView();
         }
     }

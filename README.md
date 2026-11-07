@@ -32,7 +32,7 @@ Seluruh berkas frontend disajikan langsung melalui GitHub Pages dengan pemisahan
 | **`js/vote.js`** | Sistem voting 1 perangkat 1 suara per kategori dan live leaderboard klasemen. |
 | **`js/guestbook.js`**| Buku tamu digital dan konfirmasi kehadiran RSVP. |
 | **`js/admin.js`** | 5 Tab Panel Admin (Event & Drive, Bingkai, Kuota, Moderasi, Strict Exclusive Login Lock). |
-| **`build.bat` / `build.ps1`** | Script 1-klik untuk mengompilasi dan mengekstrak modul setiap kali ada pembaruan kode. |
+| **`build.bat` / `build.ps1`** | Script 1-klik untuk memeriksa dan memverifikasi integritas seluruh aset produksi sebelum di-push ke GitHub. |
 
 ---
 

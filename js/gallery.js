@@ -1,4 +1,4 @@
-// =====================================================================
+﻿// =====================================================================
         // MODUL 2: GALERI PUBLIK, UNDUH FOTO & TOMBOL VOTE LANGSUNG
         // =====================================================================
         var _galleryPollTimer = null;
@@ -260,4 +260,149 @@
             link.click();
             document.body.removeChild(link);
             showToast('Mengunduh foto...');
+        }
+
+        // =====================================================================
+        // LIGHTBOX PREVIEW, ZOOM (100% - 400%), PAN & SENTUHAN PINCH
+        // =====================================================================
+        var _lightboxScale = 1.0;
+        var _lightboxPanX = 0;
+        var _lightboxPanY = 0;
+        var _isLightboxPanning = false;
+        var _panStartX = 0;
+        var _panStartY = 0;
+        var _initialPinchDistance = 0;
+        var _initialPinchScale = 1.0;
+
+        function updateLightboxTransform() {
+            var imgEl = document.getElementById('lightboxImgEl');
+            var badge = document.getElementById('lightboxZoomBadge');
+            var hint = document.getElementById('lightboxZoomHint');
+            if (!imgEl) return;
+            imgEl.style.transform = 'translate(' + _lightboxPanX + 'px, ' + _lightboxPanY + 'px) scale(' + _lightboxScale + ')';
+            if (badge) badge.textContent = Math.round(_lightboxScale * 100) + '%';
+            if (hint) hint.style.display = (_lightboxScale > 1.0) ? 'none' : 'block';
+        }
+
+        function zoomLightbox(delta) {
+            var newScale = _lightboxScale + delta;
+            if (newScale < 1.0) newScale = 1.0;
+            if (newScale > 4.0) newScale = 4.0;
+            _lightboxScale = Math.round(newScale * 100) / 100;
+            if (_lightboxScale === 1.0) {
+                _lightboxPanX = 0;
+                _lightboxPanY = 0;
+            }
+            updateLightboxTransform();
+        }
+
+        function resetLightboxZoom() {
+            _lightboxScale = 1.0;
+            _lightboxPanX = 0;
+            _lightboxPanY = 0;
+            updateLightboxTransform();
+        }
+
+        function openImageLightBox(imgUrl, uploaderName) {
+            resetLightboxZoom();
+            var imgEl = document.getElementById('lightboxImgEl');
+            var capEl = document.getElementById('lightboxCaptionEl');
+            if (imgEl) imgEl.src = imgUrl;
+            if (capEl) capEl.innerHTML = '<i class="fa-solid fa-camera" style="color:var(--accent-neon);"></i> <span>' + escapeHtml(uploaderName ? ('Foto oleh: ' + uploaderName) : 'Preview Foto') + '</span>';
+            var modal = document.getElementById('lightboxModal');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function closeImageLightBox() {
+            resetLightboxZoom();
+            var modal = document.getElementById('lightboxModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function initLightboxInteractiveControls() {
+            var vp = document.getElementById('lightboxViewport');
+            if (!vp || vp._hasZoomInit) return;
+            vp._hasZoomInit = true;
+
+            // Mouse wheel zoom
+            vp.addEventListener('wheel', function (e) {
+                e.preventDefault();
+                var delta = e.deltaY < 0 ? 0.25 : -0.25;
+                zoomLightbox(delta);
+            }, { passive: false });
+
+            // Mouse drag pan
+            vp.addEventListener('mousedown', function (e) {
+                if (_lightboxScale <= 1.0) return;
+                _isLightboxPanning = true;
+                _panStartX = e.clientX - _lightboxPanX;
+                _panStartY = e.clientY - _lightboxPanY;
+                vp.style.cursor = 'grabbing';
+            });
+
+            window.addEventListener('mousemove', function (e) {
+                if (!_isLightboxPanning) return;
+                _lightboxPanX = e.clientX - _panStartX;
+                _lightboxPanY = e.clientY - _panStartY;
+                updateLightboxTransform();
+            });
+
+            window.addEventListener('mouseup', function () {
+                if (_isLightboxPanning) {
+                    _isLightboxPanning = false;
+                    if (vp) vp.style.cursor = (_lightboxScale > 1.0) ? 'grab' : 'default';
+                }
+            });
+
+            // Touch pinch & pan
+            vp.addEventListener('touchstart', function (e) {
+                if (e.touches.length === 1) {
+                    if (_lightboxScale > 1.0) {
+                        _isLightboxPanning = true;
+                        _panStartX = e.touches[0].clientX - _lightboxPanX;
+                        _panStartY = e.touches[0].clientY - _lightboxPanY;
+                    }
+                } else if (e.touches.length === 2) {
+                    _isLightboxPanning = false;
+                    var dx = e.touches[0].clientX - e.touches[1].clientX;
+                    var dy = e.touches[0].clientY - e.touches[1].clientY;
+                    _initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
+                    _initialPinchScale = _lightboxScale;
+                }
+            }, { passive: true });
+
+            vp.addEventListener('touchmove', function (e) {
+                if (e.touches.length === 1 && _isLightboxPanning) {
+                    e.preventDefault();
+                    _lightboxPanX = e.touches[0].clientX - _panStartX;
+                    _lightboxPanY = e.touches[0].clientY - _panStartY;
+                    updateLightboxTransform();
+                } else if (e.touches.length === 2 && _initialPinchDistance > 0) {
+                    e.preventDefault();
+                    var dx = e.touches[0].clientX - e.touches[1].clientX;
+                    var dy = e.touches[0].clientY - e.touches[1].clientY;
+                    var dist = Math.sqrt(dx * dx + dy * dy);
+                    var factor = dist / _initialPinchDistance;
+                    var newScale = Math.min(4.0, Math.max(1.0, _initialPinchScale * factor));
+                    _lightboxScale = Math.round(newScale * 100) / 100;
+                    if (_lightboxScale === 1.0) {
+                        _lightboxPanX = 0;
+                        _lightboxPanY = 0;
+                    }
+                    updateLightboxTransform();
+                }
+            }, { passive: false });
+
+            vp.addEventListener('touchend', function (e) {
+                if (e.touches.length === 0) {
+                    _isLightboxPanning = false;
+                    _initialPinchDistance = 0;
+                }
+            }, { passive: true });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initLightboxInteractiveControls);
+        } else {
+            initLightboxInteractiveControls();
         }
