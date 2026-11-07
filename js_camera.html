@@ -3,6 +3,18 @@
         // MODUL 1: LIVE CAMERA WEBRTC FHD (1920 × 1080) & BINGKAI OTOMATIS
         // =====================================================================
         function startCameraStream(isSilentAuto) {
+            // KUNCI BINGKAI KUSTOM (ANTI-RESET SAAT LIVE CAM)
+            try {
+                var activeEv = getActiveEventObject();
+                var evId = (activeEv && activeEv.eventId) || APP_STATE.activeEventId || 'EVT-0001';
+                var overlaySource = (activeEv && activeEv.frameConfig && activeEv.frameConfig.customOverlayUrl) || (APP_STATE.config && APP_STATE.config.frameConfig && APP_STATE.config.frameConfig.customOverlayUrl) || APP_STATE.uploadedFrameOverlayDataUrl || localStorage.getItem('SATUALBUM_CUSTOM_FRAME_PNG_' + evId) || '';
+                if (overlaySource && (!APP_STATE.customFrameOverlayImg || !APP_STATE.customFrameOverlayImg.complete)) {
+                    if (typeof loadCustomFrameOverlayImage === 'function') {
+                        loadCustomFrameOverlayImage(overlaySource);
+                    }
+                }
+            } catch (ignoreCamPreload) { }
+
             var videoEl = document.getElementById('cameraVideoFeed');
             var placeholderEl = document.getElementById('cameraPlaceholder');
             var btnStart = document.getElementById('btnStartCam');
@@ -378,7 +390,9 @@
 
         // STUDIO GAMBAR BINGKAI FOTO ELEGAN (MENDUKUNG MODE DEFAULT, CUSTOM MANUAL & KANVAS MURNI TANPA TEKS)
         function drawPhotoFrameOnCanvas(ctx, w, h, customConfigOverride) {
-            var fCfg = customConfigOverride || (APP_STATE.config && APP_STATE.config.frameConfig) || {
+            var ev = getActiveEventObject();
+            var evId = (ev && ev.eventId) || APP_STATE.activeEventId || 'EVT-0001';
+            var fCfg = customConfigOverride || (ev && ev.frameConfig) || (APP_STATE.config && APP_STATE.config.frameConfig) || {
                 style: 'royal_wedding_floral',
                 textMode: 'default',
                 primaryColor: '#f5c542',
@@ -389,7 +403,21 @@
                 customFooterText: 'Runway Wedding Organizer',
                 customOverlayUrl: ''
             };
-            var ev = getActiveEventObject();
+
+            // Kunci Sumber PNG Overlay Kustom & Sinkronkan
+            var cachedLocalPng = localStorage.getItem('SATUALBUM_CUSTOM_FRAME_PNG_' + evId) || '';
+            var activeOverlaySource = fCfg.customOverlayUrl || APP_STATE.uploadedFrameOverlayDataUrl || cachedLocalPng;
+            if (activeOverlaySource) {
+                if (!fCfg.customOverlayUrl) fCfg.customOverlayUrl = activeOverlaySource;
+                if (!APP_STATE.uploadedFrameOverlayDataUrl && activeOverlaySource.indexOf('data:image') === 0) {
+                    APP_STATE.uploadedFrameOverlayDataUrl = activeOverlaySource;
+                }
+                if (!APP_STATE.customFrameOverlayImg || !APP_STATE.customFrameOverlayImg.complete) {
+                    if (typeof loadCustomFrameOverlayImage === 'function') {
+                        loadCustomFrameOverlayImage(activeOverlaySource);
+                    }
+                }
+            }
             var textMode = fCfg.textMode || 'default';
             var isNoTextMode = (textMode === 'none');
             var isCustomTextMode = (textMode === 'custom');

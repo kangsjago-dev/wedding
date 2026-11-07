@@ -2,6 +2,81 @@
         // =====================================================================
         // MODUL 2: GALERI PUBLIK, UNDUH FOTO & TOMBOL VOTE LANGSUNG
         // =====================================================================
+        var _galleryPollTimer = null;
+        var _isGalleryPolling = false;
+
+        function startGalleryAutoPolling() {
+            if (_galleryPollTimer) return;
+            _galleryPollTimer = setInterval(function () {
+                if (document.hidden || !APP_STATE.activeEventId) return;
+                if (_isGalleryPolling) return;
+                _isGalleryPolling = true;
+
+                var payload = {
+                    dataType: 'photos',
+                    eventId: APP_STATE.activeEventId,
+                    category: 'ALL',
+                    search: '',
+                    offset: 0,
+                    limit: 200
+                };
+
+                callBackendApi('getPaginatedData', payload, function (res) {
+                    _isGalleryPolling = false;
+                    if (res && res.status === 'success' && Array.isArray(res.items)) {
+                        var serverItems = res.items;
+                        var currentItems = APP_STATE.allEventPhotos || [];
+                        var existingMap = {};
+                        for (var i = 0; i < currentItems.length; i++) {
+                            existingMap[currentItems[i].photoId] = true;
+                        }
+
+                        var newFound = 0;
+                        for (var j = 0; j < serverItems.length; j++) {
+                            if (!existingMap[serverItems[j].photoId]) {
+                                newFound++;
+                            }
+                        }
+
+                        if (newFound > 0) {
+                            var pendingMap = {};
+                            for (var q = 0; q < APP_STATE.backgroundUploadQueue.length; q++) {
+                                pendingMap[APP_STATE.backgroundUploadQueue[q].tempPhotoId] = true;
+                            }
+                            var pendingPhotos = currentItems.filter(function (item) {
+                                return Boolean(pendingMap[item.photoId]);
+                            });
+
+                            var combined = pendingPhotos.concat(serverItems);
+                            var fetched = mergePhotosWithLocalVoteCache(combined);
+                            APP_STATE.allEventPhotos = fetched;
+                            APP_STATE.photos = fetched.slice();
+                            renderGalleryGrid();
+                            renderVoteSection();
+                            renderLiveLeaderboard();
+                            renderAdminModerationTable();
+                            updateHeroCounters();
+                            showToast(newFound + ' foto baru masuk ke galeri!');
+                        }
+                    }
+                }, function () {
+                    _isGalleryPolling = false;
+                });
+            }, 12000);
+        }
+
+        function stopGalleryAutoPolling() {
+            if (_galleryPollTimer) {
+                clearInterval(_galleryPollTimer);
+                _galleryPollTimer = null;
+            }
+        }
+
+        // Jalankan auto polling otomatis saat modul galeri dimuat
+        try {
+            startGalleryAutoPolling();
+        } catch (e) {}
+
         function reloadGalleryFeed(reset) {
             if (reset) {
                 APP_STATE.galleryOffset = 0;

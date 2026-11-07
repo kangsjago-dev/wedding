@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>SatuAlbum • Runway Wedding Organizer</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,600&display=swap"
@@ -590,7 +590,7 @@
                     <button type="button" id="adminTabBtn-driveEvents"
                         class="btn btn-secondary btn-sm admin-tab-btn active"
                         onclick="switchAdminSubTab('driveEvents', this)">
-                        <i class="fa-solid fa-calendar-check"></i> 1. Event & Drive Acara
+                        <i class="fa-solid fa-calendar-check"></i> 1. Event & Drive
                     </button>
                     <button type="button" id="adminTabBtn-frameStudio" class="btn btn-secondary btn-sm admin-tab-btn"
                         onclick="switchAdminSubTab('frameStudio', this)">
@@ -602,11 +602,11 @@
                     </button>
                     <button type="button" id="adminTabBtn-mod" class="btn btn-secondary btn-sm admin-tab-btn"
                         onclick="switchAdminSubTab('mod', this)">
-                        <i class="fa-solid fa-list-check"></i> 4. Moderasi & Galeri
+                        <i class="fa-solid fa-list-check"></i> 4. Moderasi
                     </button>
                     <button type="button" id="adminTabBtn-systemConfig" class="btn btn-secondary btn-sm admin-tab-btn"
                         onclick="switchAdminSubTab('systemConfig', this)">
-                        <i class="fa-solid fa-sliders"></i> 5. Sistem & Branding WO
+                        <i class="fa-solid fa-sliders"></i> 5. Sistem & Branding
                     </button>
                 </div>
 
@@ -618,12 +618,10 @@
                     <div class="admin-section-context-bar">
                         <div>
                             <div style="font-weight:800; font-size:0.92rem; color:var(--accent-neon);">
-                                <i class="fa-solid fa-calendar-check"></i> Menu 1: Pengaturan Event, Google Drive &
-                                Kategori Acara
+                                <i class="fa-solid fa-calendar-check"></i> Menu 1: Event, Google Drive & Kategori
                             </div>
                             <div style="font-size:0.73rem; color:var(--text-muted);">
-                                Mengatur daftar acara, folder Google Drive, serta <strong>Kategori Momen & Kategori
-                                    Voting</strong> khusus untuk event aktif.
+                                Kelola daftar acara, folder Google Drive, serta kategori foto & voting untuk event terpilih.
                             </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -737,19 +735,17 @@
                 </div>
 
                 <!-- =============================================================== -->
-                <!-- KELOMPOK 2: KUOTA UPLOAD, LIMITASI USER & MANAJEMEN DEVICE      -->
+                <!-- KELOMPOK 3: KUOTA UPLOAD, LIMITASI USER & MANAJEMEN DEVICE      -->
                 <!-- =============================================================== -->
                 <div id="adminSub-quotaDevices" class="admin-panel-box" style="display:none;">
-                    <!-- Banner Konteks Menu 2 -->
+                    <!-- Banner Konteks Menu 3 -->
                     <div class="admin-section-context-bar">
                         <div>
                             <div style="font-weight:800; font-size:0.92rem; color:var(--accent-gold);">
-                                <i class="fa-solid fa-mobile-screen-button"></i> Menu 3: Pengaturan Kuota Live Photo &
-                                Manajemen Device Per-Event
+                                <i class="fa-solid fa-mobile-screen-button"></i> Menu 3: Kuota Live Photo & Device
                             </div>
                             <div style="font-size:0.73rem; color:var(--text-muted);">
-                                Batas partisipan Live Photo, batas upload per HP, dan bonus/reset kuota device di bawah
-                                ini berlaku khusus untuk event aktif.
+                                Atur batas partisipan live photo, kuota upload per HP, dan kontrol perangkat event aktif.
                             </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -951,10 +947,10 @@
                     <div class="admin-section-context-bar">
                         <div>
                             <div style="font-weight:800; font-size:0.92rem; color:var(--accent-gold);">
-                                <i class="fa-solid fa-crop-simple"></i> Menu 2: Studio Kustomisasi Bingkai Foto Per-Event
+                                <i class="fa-solid fa-crop-simple"></i> Menu 2: Studio Bingkai Foto
                             </div>
                             <div style="font-size:0.73rem; color:var(--text-muted);">
-                                Desain bingkai, warna, tulisan nama pengantin, dan upload PNG transparan otomatis tersimpan di Google Drive event aktif.
+                                Desain bingkai, warna, ucapan, dan upload file PNG transparan untuk event aktif.
                             </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -1173,12 +1169,10 @@
                     <div class="admin-section-context-bar">
                         <div>
                             <div style="font-weight:800; font-size:0.92rem; color:var(--accent-neon);">
-                                <i class="fa-solid fa-list-check"></i> Menu 4: Moderasi Galeri Foto, Gelar Juri & Buku
-                                Tamu Per-Event
+                                <i class="fa-solid fa-list-check"></i> Menu 4: Moderasi Foto & Tamu
                             </div>
                             <div style="font-size:0.73rem; color:var(--text-muted);">
-                                Menampilkan dan memoderasi foto serta ucapan buku tamu khusus untuk event yang sedang
-                                dipilih.
+                                Moderasi foto, penetapan gelar juara voting, dan ucapan buku tamu event aktif.
                             </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -1247,10 +1241,10 @@
                     <div class="admin-section-context-bar">
                         <div>
                             <div style="font-weight:800; font-size:0.92rem; color:var(--accent-neon);">
-                                <i class="fa-solid fa-sliders"></i> Menu 5: Sistem, Branding WO & Akun Crew
+                                <i class="fa-solid fa-sliders"></i> Menu 5: Sistem & Branding
                             </div>
                             <div style="font-size:0.73rem; color:var(--text-muted);">
-                                Mengatur identitas global Wedding Organizer, akun kru (Super Admin, Admin Event, Operator), dan database.
+                                Identitas aplikasi, branding Wedding Organizer, akun user kru, dan database.
                             </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
