@@ -2,7 +2,7 @@
 ================================================================================
 ENGINE: ZettBOT Core v4.1 (by Zettbos)
 STATUS DOKUMEN: LIVING SPECIFICATION & ARCHITECTURAL BLUEPRINT
-REVISI: v1.4.8 (Robust Session Persistence & Restored Event Management)
+REVISI: v1.4.9 (Live Sync Resilient, Upload Limit Persistence, Bonus & Reset Quota Camera Gate, and Crew Quota Bypass)
 ================================================================================
 
 <!-- ======================================================================= -->
@@ -211,6 +211,12 @@ Terdiri dari 5 sheet utama dengan mekanisme **Safe Migrate** (tidak menghapus da
   1. Perbaikan total masalah auto-logout saat refresh: Urutan pemulihan sesi di `core.js` dipindahkan ke awal `DOMContentLoaded` sebelum `executeUiUpdates()` atau rendering lainnya, dukungan sinkronisasi ganda penyimpanan sesi (`localStorage` + `sessionStorage`), penanganan fallback objek sesi fleksibel (`sess.user` maupun `sess.userId`), timestamp anti-timeout instan saat refresh, dan pembatasan penghentian sesi oleh heartbeat hanya bila server secara tegas merespons `session_expired`.
   2. Pemulihan fitur penambahan dan editing acara secara terpadu: Penambahan tombol "Edit Event Ini" dan "+ Tambah Event" pada panel event aktif (`event-scope-panel`), serta penyediaan Card 1B ("Daftar Acara & Manajemen Event") di Tab 1 (`adminSub-driveEvents`) dengan tabel data `#adminEventsTableBody` yang lengkap dengan tombol "Pilih Aktif", "Edit", "Hapus", dan tautan langsung ke folder Google Drive event.
   3. Verifikasi menyeluruh: Bebas ID duplikat (0 duplikat dari 210 elemen unik), antarmuka terfokus dan bebas redundansi, serta seluruh 10 aset frontend lulus uji build dan runtime Chrome Headless (0 error).
+- **v1.4.9 (Applied):** Live Sync Resilient, Upload Limit Persistence, Bonus & Reset Quota Camera Gate, and Crew Quota Bypass:
+  1. **Website Selalu LIVE SYNC & Toleran Cold Start:** Default timeout di `callBackendApi` ditingkatkan dari 12s menjadi 25s (25.000 ms) untuk mengakomodasi cold start Google Apps Script. Auto-polling interval galeri dioptimalkan menjadi 18s. Status indikator sync mempertahankan badge hijau "LIVE SYNC" selama terhubung internet (`navigator.onLine !== false`) dengan dukungan event listener `online`/`offline`.
+  2. **Persistensi Batas & Kuota (Tab 3):** Memperbaiki bug di `loadActiveEventScopedSettings` dengan komparasi timestamp `_updatedAt`. Pengaturan kuota lokal admin (misalnya diubah ke 0 / Unlimited atau custom) tersimpan permanen dan tidak lagi tertimpa oleh nilai default server (10).
+  3. **Perhitungan Bonus Kuota & Reset Kuota di Kamera:** Validasi kuota kamera di `js/camera.js` kini secara akurat memperhitungkan bonus kuota (`effectiveMaxPerUser = maxPerUser + bonusQuota`). Fitur reset kuota (`resetQuotaForSpecificDevice` dan `resetDeviceUploadQuotaCounter`) seketika mengevaluasi sisa kuota ke 0 dan membuka kembali akses jepret foto.
+  4. **Kru / Admin Bypass:** Kru, Admin, atau Operator yang terautentikasi (`APP_STATE.currentUser`) secara otomatis dibebaskan dari batas kuota upload tamu undangan.
+  5. **Verifikasi Integritas:** Semua 10 aset frontend lulus uji integritas `build.ps1`, dan pengujian simulasi fitur via Chrome Headless mengonfirmasi 0 syntax error dan seluruh 7 skenario fitur lulus 100%.
 
 
 

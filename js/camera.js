@@ -874,16 +874,22 @@
             var quotaStats = getEventUploadQuotaStats(uploaderName);
             var uniqueCount = quotaStats.uniqueParticipantsCount;
             var myCount = quotaStats.myUploadCount;
+            var myBonusQuota = quotaStats.bonusQuota || 0;
+
+            // Kru / Admin / Operator tidak dibatasi kuota upload tamu
+            var isCrew = Boolean(APP_STATE.currentUser);
 
             // Validasi Batas Maksimal User Live Photo (Per Acara)
-            if (maxUsers > 0 && !quotaStats.isAlreadyParticipant && uniqueCount >= maxUsers) {
+            if (!isCrew && maxUsers > 0 && !quotaStats.isAlreadyParticipant && uniqueCount >= maxUsers) {
                 showToast('Maaf, kuota maksimal partisipan Live Photo (' + maxUsers + ' user) untuk acara ini telah penuh.', true);
                 return;
             }
 
-            // Validasi Batas Upload Foto per 1 User / Device
-            if (maxPerUser > 0 && myCount >= maxPerUser) {
-                showToast('Batas maksimal upload foto Anda (' + maxPerUser + 'x upload) pada acara ini telah tercapai.', true);
+            // Validasi Batas Upload Foto per 1 User / Device (Mendukung Kuota + Bonus Kuota)
+            var effectiveMaxPerUser = maxPerUser > 0 ? (maxPerUser + myBonusQuota) : 0;
+            if (!isCrew && effectiveMaxPerUser > 0 && myCount >= effectiveMaxPerUser) {
+                var bonusNotice = myBonusQuota > 0 ? (' (termasuk +' + myBonusQuota + ' bonus)') : '';
+                showToast('Batas maksimal upload foto Anda (' + effectiveMaxPerUser + 'x upload' + bonusNotice + ') pada acara ini telah tercapai.', true);
                 return;
             }
 

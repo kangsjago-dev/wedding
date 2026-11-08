@@ -700,49 +700,61 @@ function saveUploadLimitsConfigForm() {
     var iCustom = document.getElementById('adminIdleTimeoutCustomInput');
 
     var maxLiveUsersVal = 0;
-    if (uCustom && uCustom.value !== '') {
-        maxLiveUsersVal = Math.max(0, parseInt(uCustom.value, 10) || 0);
-    } else if (uPreset && uPreset.value !== 'custom') {
+    if (uPreset && uPreset.value !== 'custom') {
         maxLiveUsersVal = Math.max(0, parseInt(uPreset.value, 10) || 0);
+    } else if (uCustom && uCustom.value !== '') {
+        maxLiveUsersVal = Math.max(0, parseInt(uCustom.value, 10) || 0);
     }
 
     var maxUploadsVal = 0;
-    if (pCustom && pCustom.value !== '') {
-        maxUploadsVal = Math.max(0, parseInt(pCustom.value, 10) || 0);
-    } else if (pPreset && pPreset.value !== 'custom') {
+    if (pPreset && pPreset.value !== 'custom') {
         maxUploadsVal = Math.max(0, parseInt(pPreset.value, 10) || 0);
+    } else if (pCustom && pCustom.value !== '') {
+        maxUploadsVal = Math.max(0, parseInt(pCustom.value, 10) || 0);
     }
 
     var idleMinutesVal = 60;
-    if (iCustom && iCustom.value !== '') {
-        idleMinutesVal = Math.max(0, parseInt(iCustom.value, 10));
-        if (isNaN(idleMinutesVal)) idleMinutesVal = 60;
-    } else if (iPreset && iPreset.value !== 'custom') {
+    if (iPreset && iPreset.value !== 'custom') {
         idleMinutesVal = Math.max(0, parseInt(iPreset.value, 10));
+        if (isNaN(idleMinutesVal)) idleMinutesVal = 60;
+    } else if (iCustom && iCustom.value !== '') {
+        idleMinutesVal = Math.max(0, parseInt(iCustom.value, 10));
         if (isNaN(idleMinutesVal)) idleMinutesVal = 60;
     }
 
-    APP_STATE.config.uploadLimits = {
+    var nowTs = Date.now();
+    var newLimits = {
         maxLiveUsers: maxLiveUsersVal,
         maxUploadsPerUser: maxUploadsVal,
         idleTimeoutMinutes: idleMinutesVal,
-        _updatedAt: Date.now()
+        _updatedAt: nowTs
     };
+
+    APP_STATE.config.uploadLimits = newLimits;
     var activeEv = getActiveEventObject();
     if (activeEv) {
-        activeEv.uploadLimits = APP_STATE.config.uploadLimits;
+        activeEv.uploadLimits = JSON.parse(JSON.stringify(newLimits));
+        activeEv._updatedAt = nowTs;
     }
-    callBackendApi('saveEventSettings', {
-        eventId: APP_STATE.activeEventId,
-        uploadLimits: APP_STATE.config.uploadLimits
-    });
-    localStorage.setItem('SATUALBUM_IDLE_TIMEOUT_MIN', String(idleMinutesVal));
+
+    if (!APP_STATE.eventSettingsMap) APP_STATE.eventSettingsMap = {};
+    if (!APP_STATE.eventSettingsMap[APP_STATE.activeEventId]) APP_STATE.eventSettingsMap[APP_STATE.activeEventId] = {};
+    APP_STATE.eventSettingsMap[APP_STATE.activeEventId].uploadLimits = JSON.parse(JSON.stringify(newLimits));
+    APP_STATE.eventSettingsMap[APP_STATE.activeEventId]._updatedAt = nowTs;
+
+    saveActiveEventScopedSettings(true);
     saveExtendedConfigCache(true);
     refreshAdminActivityTimestamp();
     populateUploadLimitsFormAdmin();
     applyRoleBasedAdminView();
     updateHeroCounters();
     renderAdminEventScopeSummary();
+
+    callBackendApi('saveEventSettings', {
+        eventId: APP_STATE.activeEventId,
+        uploadLimits: newLimits
+    });
+    localStorage.setItem('SATUALBUM_IDLE_TIMEOUT_MIN', String(idleMinutesVal));
     syncConfigToBackend('Limitasi Kuota Event (Max User: ' + (maxLiveUsersVal === 0 ? 'Unlimited' : maxLiveUsersVal) + ', Max Upload/Device: ' + (maxUploadsVal === 0 ? 'Unlimited' : maxUploadsVal) + ') berhasil disimpan!');
 }
 

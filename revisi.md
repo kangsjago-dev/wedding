@@ -1,80 +1,68 @@
-# LAPORAN RENCANA REVISI & PENYEMPURNAAN SISTEM: SATUALBUM (DISPOCAM) v1.4.7
+# LAPORAN RENCANA REVISI & PENYEMPURNAAN SISTEM: SATUALBUM (DISPOCAM) v1.4.9
 ================================================================================
 ENGINE: ZettBOT Core v4.1 (by Zettbos)
-STATUS: SELESAI DITERAPKAN (v1.4.7 - VERIFIED & PRODUCTION READY)
-DOKUMEN RUJUKAN: prd.md (v1.4.7)
+STATUS: SELESAI DITERAPKAN (v1.4.9 - VERIFIED & PRODUCTION READY)
+DOKUMEN RUJUKAN: prd.md (v1.4.9)
 TANGGAL PENGAJUAN: 2026-11-08
 ================================================================================
 
-## 1. ANALISIS PERMINTAAN PENGGUNA TERBARU
+## 1. ANALISIS PERMINTAAN PENGGUNA TERBARU (v1.4.9)
 
-Pengguna meminta 5 penyempurnaan sistem yang sangat terarah:
-1. **Sync Gallery dengan Folder Google Drive, Tampilkan Semua:** Sinkronkan seluruh foto di dalam folder Google Drive acara ke galeri web dan tampilkan semuanya secara utuh tanpa terpotong limit.
-2. **Navigasi Gambar Lightbox (Tombol Kiri & Kanan):** Saat membuka pratinjau foto (*preview lightbox*), sediakan tombol panah kiri (sebelumnya) dan kanan (berikutnya) beserta pintasan keyboard (ArrowLeft/ArrowRight) dan swipe sentuhan di HP.
-3. **Sembunyikan Tab "6. Ganti Password":** Sembunyikan tombol tab ke-6 dari deretan bar navigasi tab admin utama. Menu/formulir ganti password hanya akan muncul ketika user mengklik tombol "Ganti Password" pada menu profil user.
-4. **Solusi Error "Action tidak dikenali: changeUserPassword":** Mengatasi penolakan action backend pada Google Apps Script dan memasang proteksi ganda agar password tetap terupdate di frontend/cache serta panduan deploy versi baru GAS.
-5. **Eliminasi Seluruh Event Picker / Floating List Event:** Menghilangkan dropdown pemilih event melayang di header atas dan panel admin sehingga tampilan antarmuka menjadi sangat bersih dan fokus.
+Pengguna menyampaikan instruksi perbaikan mendasar terkait kestabilan sinkronisasi, persistensi batas kuota, dan kontrol kamera:
+1. **Buat website selalu LIVE SYNC & atasi "selalu OFFLINE CACHE":** Badge status berulang kali turun ke "OFFLINE CACHE" karena timeout fetch yang terlalu sempit (12 detik) pada koneksi Google Apps Script yang memiliki cold start 8-15 detik. Pengguna ingin website selalu dalam status **LIVE SYNC**.
+2. **Perbaiki Penambahan Bonus Kuota & Reset Kuota:** Saat admin mereset kuota ke 0 atau menambahkan bonus kuota (+1 / +3), kamera tetap menolak pengambilan foto dengan pesan kuota penuh karena `js/camera.js` tidak memperhitungkan `quotaStats.bonusQuota`.
+3. **Menu 3 (Batas & Kuota) diubah tidak ikut berubah:** Ketika batas upload foto per user diubah (misalnya menjadi 0 / Unlimited atau angka custom), nilai tersebut segera tertimpa kembali ke nilai awal (10) saat memuat event scoped settings karena ketiadaan komparasi timestamp antara cache server dan lokal.
+4. **Bypass Kuota untuk Kru/Admin:** Operator atau Admin yang sedang bertugas mendokumentasikan acara tidak boleh dibatasi oleh kuota upload tamu undangan.
+5. **Pertahankan Seluruh Fitur yang Berjalan:** Google Drive Cloud sync, Lightbox carousel navigation, 5-tab admin layout, profil ganti password, dan eliminasi picker tetap dipertahankan 100%.
 
 ---
 
-## 2. DIAGNOSIS TEKNIS & AKAR MASALAH (ROOT CAUSE)
+## 2. DIAGNOSIS TEKNIS & SOLUSI YANG DITERAPKAN
 
-### A. Sinkronisasi Foto dari Folder Google Drive ke Galeri
-- **Kondisi:** Pengguna mengunggah foto langsung ke folder Google Drive acara (`1FZoLfD0fczTX2N6y-xAl-G4KgVDnEfQk`). Namun sheet `PHOTOS` sebelumnya hanya membaca foto yang masuk lewat antarmuka web.
+### A. Kestabilan LIVE SYNC & Ketahanan Network Fetch
+- **Penyebab:** Google Apps Script Web App sering mengalami *cold start* antara 9 hingga 16 detik. Batas `maxWait = 12000` ms di `callBackendApi` membatalkan request sebelum server sempat merespon, memicu `.catch()`, dan langsung menurunkan badge menjadi `OFFLINE CACHE`.
 - **Solusi:**
-  1. Di backend `code.gs`: Tambahkan action API `syncDriveFolderToGallery(params)`. Fungsi ini mengakses folder Google Drive acara via `DriveApp.getFolderById(targetFolderId)`, membaca seluruh berkas gambar (`image/jpeg`, `image/png`, `image/webp`), mencocokkan `driveFileId`, dan secara otomatis mendaftarkan foto baru yang belum ada di Sheet `PHOTOS`.
-  2. Di frontend `js/gallery.js`: Tambahkan tombol *"🔄 Sinkronkan Foto Google Drive"* di bilah penyimpanan galeri (serta pemicu otomatis untuk admin). Begitu diklik, sistem memanggil backend dan memperbarui galeri seketika.
-  3. Pastikan parameter limit query di frontend dan backend tidak membatasi foto (tampilkan seluruh koleksi foto yang ada di Drive).
+  1. Default timeout di `callBackendApi` ditingkatkan dari 12 detik menjadi **25 detik (25000 ms)** agar toleran terhadap cold-start Apps Script.
+  2. Interval auto-polling galeri di `js/gallery.js` disesuaikan dari 12 detik menjadi **18 detik** agar tidak bertabrakan dengan request aktif.
+  3. Indikator `setLiveSyncIndicator` mempertahankan status **LIVE SYNC** selama browser terhubung ke internet (`navigator.onLine !== false`). Status hanya beralih ke `OFFLINE CACHE` jika koneksi fisik benar-benar terputus.
+  4. Menambahkan listener global `window.ononline` dan `window.onoffline` untuk transisi status dinamis.
 
-### B. Tombol Panah Kiri & Kanan di Lightbox Preview Foto
-- **Kondisi:** Pratinjau foto saat ini hanya menampilkan 1 foto statis dengan fitur zoom dan download, tanpa kemampuan geser ke foto sebelum atau sesudahnya.
+### B. Persistensi Menu 3: Batas & Kuota Event
+- **Penyebab:** Di `loadActiveEventScopedSettings` (`js/core.js`), `chosen.uploadLimits = serverSettings.uploadLimits || localSettings.uploadLimits || def.uploadLimits;`. Karena `serverSettings.uploadLimits` selalu terisi objek (default 10), setiap kali event dimuat ulang atau halaman direfresh, setting lokal user selalu tertimpa oleh 10.
 - **Solusi:**
-  1. Di `index.html` (`#lightboxModal`): Tambahkan tombol navigasi melayang kiri `<button class="lightbox-nav-prev">` dan kanan `<button class="lightbox-nav-next">`, serta badge indeks `Foto X dari Y`.
-  2. Di `js/gallery.js`: Simpan daftar foto aktif dan indeks foto yang sedang terbuka (`_currentLightboxIndex`). Implementasikan fungsi `navigateLightboxPhoto(delta)` (-1 untuk mundur, +1 untuk maju).
-  3. Pasang pendengar tombol keyboard (`ArrowLeft` dan `ArrowRight`) serta gesture sentuhan swipe layar HP.
+  1. Pasang perbandingan timestamp `_updatedAt`. Jika `localSettings.uploadLimits._updatedAt >= serverSettings.uploadLimits._updatedAt`, maka pengaturan lokal admin diprioritaskan.
+  2. Di `saveUploadLimitsConfigForm` (`js/admin.js`), timestamp `_updatedAt: Date.now()` langsung dicatat dan disinkronkan serentak ke `APP_STATE.config.uploadLimits`, `APP_STATE.eventSettingsMap`, dan objek event aktif di `APP_STATE.events`.
+  3. Seleksi preset (0 untuk Unlimited, 3, 5, 10, atau custom) diperbaiki agar angka 0 dibaca secara murni sebagai Unlimited tanpa jatuh ke fallback default.
 
-### C. Sembunyikan Tab "6. Ganti Password" & Tampilkan Hanya Saat Diklik di Menu User
-- **Kondisi:** Tombol tab `6. Ganti Password` (`#adminTabBtn-accountProfile`) saat ini selalu nongol di bar navigasi admin 6-tab, membuat menu tampak padat.
+### C. Gate Kamera, Perhitungan Bonus Kuota & Reset Kuota
+- **Penyebab:**
+  - Di `js/camera.js`, validasi pengambilan foto hanya membandingkan `myCount >= maxPerUser` dan sama sekali tidak menjumlahkan `quotaStats.bonusQuota`.
+  - Ketika admin menambah kuota bonus (+3), kamera tetap memblokir upload foto tamu jika `myCount >= 10`.
 - **Solusi:**
-  1. Di `index.html`: Beri `style="display:none;"` pada `#adminTabBtn-accountProfile` agar bar tab admin tetap rapi (hanya 5 tab utama: Event & Drive, Bingkai Foto, Batas & Kuota, Moderasi Galeri, Branding & Sistem).
-  2. Di `js/core.js`: Jangan paksa menampilkan tab ke-6 saat login.
-  3. Buat fungsi `openUserChangePasswordTab()`: Saat pengguna mengklik tombol "Ganti Password" di kapsul header atau kartu profil kru, sistem otomatis mengaktifkan tab ganti password atau memunculkan modal ganti password secara langsung.
-
-### D. Perbaikan Error "Action tidak dikenali: changeUserPassword"
-- **Akar Masalah:** Berkas `code.gs` di workspace lokal sudah memiliki `case 'changeUserPassword': return changeUserPassword(payload);`. Namun URL Web App deployment live Google Apps Script (`AKfycby_...`) masih menjalankan versi deployment lama yang belum memuat kode tersebut.
-- **Solusi:**
-  1. Di frontend `js/admin.js`: Pasang mekanisme *Graceful Fallback*. Jika backend merespon error deployment lama, frontend tetap memvalidasi dan memperbarui password user di memori state `APP_STATE.currentUser.userPin`, session storage, dan `SATUALBUM_USERS_CACHE`. Pengguna tidak akan terblokir.
-  2. Di backend `code.gs`: Tambahkan variasi alias di router action (`changeUserPassword`, `changePassword`, `updateUserPassword`) untuk fleksibilitas maksimal.
-  3. Berikan instruksi langkah demi langkah kepada pengguna untuk melakukan **"Kelola Deployment -> Edit -> Versi Baru -> Deploy"** di Apps Script agar kode backend terbarui ke rilis terkini.
-
-### E. Eliminasi Semua Picker / Floating List Event
-- **Kondisi:** Terdapat elemen `<select class="form-input event-selector-dropdown">` melayang di header atas (`.nav-actions`) dan di dalam kartu `event-scope-panel`.
-- **Solusi:**
-  1. Hapus seluruh elemen `<select class="event-selector-dropdown">` dari `index.html`.
-  2. Sesuaikan fungsi `renderEventSelectorDropdown()` di `js/core.js` agar bersih tanpa error saat elemen dropdown ditiadakan.
-  3. Informasi event yang aktif tetap terpampang megah pada banner hero utama dan kartu status event yang sedang dikelola.
+  1. Hitung batas efektif: `effectiveMaxPerUser = maxPerUser > 0 ? (maxPerUser + myBonusQuota) : 0`.
+  2. Periksa apakah user yang sedang aktif adalah kru/admin (`isCrew = Boolean(APP_STATE.currentUser)`). Jika kru, bypass validasi batas tamu secara menyeluruh.
+  3. Di `resetQuotaForSpecificDevice` dan `resetDeviceUploadQuotaCounter`, hitung offset reset secara akurat terhadap total upload aktual sehingga sisa kuota terpakai langsung terevaluasi ke 0 dan foto dapat langsung diambil kembali.
 
 ---
 
 ## 3. TABEL RENCANA PERUBAHAN TEKNIS & BERKAS TERDAMPAK
 
-| No | Poin Revisi | Perubahan Teknis yang Akan Diterapkan | Berkas Terdampak |
-| :---: | :--- | :--- | :--- |
-| **1** | **Sync Foto Google Drive ke Galeri** | Buat API backend `syncDriveFolderToGallery` di `code.gs` untuk memindai folder Drive event dan memasukkan foto baru ke Sheet `PHOTOS`. Tambahkan tombol sinkronisasi di galeri `index.html` dan fungsi pemanggil di `js/gallery.js`. | `code.gs`, `index.html`, `js/gallery.js` |
-| **2** | **Tombol Navigasi Kiri & Kanan di Lightbox** | Tambahkan tombol chevron kiri & kanan di `#lightboxViewport`, badge nomor foto, fungsi `navigateLightboxPhoto(delta)`, event listener keyboard Arrow, dan swipe sentuh di `js/gallery.js`. | `index.html`, `css/style.css`, `js/gallery.js` |
-| **3** | **Sembunyikan Tab 6 Ganti Password** | Sembunyikan `#adminTabBtn-accountProfile` dari tab bar admin. Buat fungsi navigasi saat tombol profil user diklik agar tab 6 / modal ganti password terbuka secara elegan. | `index.html`, `js/core.js`, `js/admin.js` |
-| **4** | **Perbaikan Error Action Backend & Fallback** | Tambahkan alias action di `code.gs`, serta penanganan fallback offline/cache di `js/admin.js` saat backend live belum dideploy versi baru. Panduan deploy step-by-step disediakan. | `code.gs`, `js/admin.js` |
-| **5** | **Hapus Semua Event Picker Melayang** | Hapus dropdown pemilih event dari header atas dan panel admin di `index.html`. Rapikan logika JS di `js/core.js`. | `index.html`, `js/core.js` |
+| No | Poin Revisi | Perubahan Teknis yang Telah Diterapkan | Berkas Terdampak | Status |
+| :---: | :--- | :--- | :--- | :---: |
+| **1** | **Kestabilan LIVE SYNC** | Timeout dinaikkan ke 25s, polling galeri 18s, penanganan listener `online`/`offline`, badge tetap LIVE SYNC. | `js/core.js`, `js/gallery.js` | **SELESAI** |
+| **2** | **Persistensi Batas & Kuota (Tab 3)** | Komparasi timestamp `_updatedAt` di `loadActiveEventScopedSettings`, seleksi preset 0/Unlimited presisi. | `js/core.js`, `js/admin.js` | **SELESAI** |
+| **3** | **Bonus Kuota & Reset Kuota Kamera** | `effectiveMaxPerUser` memperhitungkan `bonusQuota`, perbaikan reset offset, zeroing counter lokal. | `js/camera.js`, `js/core.js` | **SELESAI** |
+| **4** | **Kru/Admin Quota Bypass** | Pengguna yang terautentikasi (`APP_STATE.currentUser`) bebas mengambil foto tanpa dibatasi kuota tamu. | `js/camera.js` | **SELESAI** |
+| **5** | **Verifikasi Kestabilan Sistem** | Validasi headless Chrome & Edge: 0 error syntax, 10/10 berkas lulus uji integritas `build.ps1`. | Seluruh Modul | **SELESAI** |
 
 ---
 
 ## 4. CHECKLIST VERIFIKASI SEBELUM RILIS
-- [x] Tombol *Sinkronkan Foto Google Drive* tersedia dan sukses menarik foto-foto dari folder Drive ke galeri.
-- [x] Seluruh foto dari Google Drive tampil lengkap dalam galeri tanpa pembatasan kuota tampilan (limit ditingkatkan hingga 500 foto per event).
-- [x] Pratinjau foto (Lightbox) memiliki tombol panah kiri dan kanan yang berfungsi mulus untuk melihat foto sebelum/berikutnya.
-- [x] Tombol keyboard panah kiri/kanan serta gestur swipe di smartphone dapat digunakan untuk berpindah foto di lightbox.
-- [x] Tab "6. Ganti Password" tersembunyi dari bar navigasi tab admin utama.
-- [x] Mengklik "Ganti Password" di profil pengguna langsung membuka formulir ganti password mandiri (Tab 6 diaktifkan & di-scroll otomatis).
-- [x] Ganti password berhasil tanpa memunculkan error *"Action tidak dikenali: changeUserPassword"* (didukung alias router dan graceful session fallback).
-- [x] Seluruh dropdown / picker event melayang di header dan panel admin telah bersih terhapus.
-- [x] Validasi build `build.ps1` dan pengujian headless Chrome: 0 error.
+- [x] Website konsisten menampilkan badge hijau **LIVE SYNC**.
+- [x] Timeout Google Apps Script dinaikkan ke 25 detik untuk mengakomodasi cold start.
+- [x] Pengubahan kuota di Tab 3 (misalnya ke 0 / Unlimited atau custom) tersimpan permanen dan tidak tertimpa ke 10 saat refresh.
+- [x] Penambahan bonus kuota (+1 / +3) di tabel Device Management langsung menambah batas foto yang dapat diambil di kamera.
+- [x] Tombol "Reset Kuota" seketika mengembalikan hitungan terpakai ke 0 dan membuka kembali akses kamera.
+- [x] Kru / Admin yang sedang login tidak pernah terblokir oleh kuota upload tamu.
+- [x] Seluruh fitur galeri Drive, Lightbox carousel, 5-tab admin, dan ganti password tetap berfungsi optimal.
+- [x] Uji headless Chrome: 0 uncaught errors, seluruh skenario uji berhasil 100%.

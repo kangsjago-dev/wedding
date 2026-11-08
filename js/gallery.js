@@ -71,7 +71,7 @@ function startGalleryAutoPolling() {
         }, function () {
             _isGalleryPolling = false;
         });
-    }, 12000);
+    }, 18000);
 }
 
 function stopGalleryAutoPolling() {

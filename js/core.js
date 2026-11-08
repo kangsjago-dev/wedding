@@ -408,22 +408,39 @@ function loadActiveEventScopedSettings(eventId) {
 
     var chosen = def;
     if (serverSettings && localSettings) {
-        // SERVER ADALAH SINGLE SOURCE OF TRUTH UNTUK LIMITASI & PENGATURAN EVENT
+        var srvTs = serverSettings._updatedAt || 0;
+        var locTs = localSettings._updatedAt || 0;
+        var srvLimTs = (serverSettings.uploadLimits && serverSettings.uploadLimits._updatedAt) || srvTs;
+        var locLimTs = (localSettings.uploadLimits && localSettings.uploadLimits._updatedAt) || locTs;
+        var chosenUploadLimits = (locLimTs >= srvLimTs && localSettings.uploadLimits) ? localSettings.uploadLimits : (serverSettings.uploadLimits || localSettings.uploadLimits || def.uploadLimits);
+
+        var srvFrmTs = (serverSettings.frameConfig && serverSettings.frameConfig._updatedAt) || srvTs;
+        var locFrmTs = (localSettings.frameConfig && localSettings.frameConfig._updatedAt) || locTs;
+        var chosenFrameConfig = (locFrmTs >= srvFrmTs && localSettings.frameConfig) ? localSettings.frameConfig : (serverSettings.frameConfig || localSettings.frameConfig || def.frameConfig);
+
         chosen = {
-            frameConfig: serverSettings.frameConfig || localSettings.frameConfig || def.frameConfig,
-            uploadLimits: serverSettings.uploadLimits || localSettings.uploadLimits || def.uploadLimits,
+            frameConfig: chosenFrameConfig,
+            uploadLimits: chosenUploadLimits,
             photoCategories: (serverSettings.photoCategories && serverSettings.photoCategories.length > 0) ? serverSettings.photoCategories : (localSettings.photoCategories || def.photoCategories),
             voteCategories: (serverSettings.voteCategories && serverSettings.voteCategories.length > 0) ? serverSettings.voteCategories : (localSettings.voteCategories || def.voteCategories),
-            deviceQuotaMap: localSettings.deviceQuotaMap || {},
-            deviceLogs: localSettings.deviceLogs || [],
-            _updatedAt: Math.max(serverSettings._updatedAt || 0, localSettings._updatedAt || 0)
+            deviceQuotaMap: (locTs >= srvTs ? localSettings.deviceQuotaMap : (serverSettings.deviceQuotaMap || localSettings.deviceQuotaMap)) || {},
+            deviceLogs: (locTs >= srvTs ? localSettings.deviceLogs : (serverSettings.deviceLogs || localSettings.deviceLogs)) || [],
+            _updatedAt: Math.max(srvTs, locTs)
         };
+    } else if (localSettings && (!serverSettings || (localSettings._updatedAt || 0) >= (serverSettings._updatedAt || 0))) {
+        chosen = localSettings;
     } else if (serverSettings) {
         chosen = serverSettings;
     } else if (localSettings) {
         chosen = localSettings;
     } else if (APP_STATE.eventSettingsMap[evId]) {
         chosen = APP_STATE.eventSettingsMap[evId];
+    }
+
+    if (evObj) {
+        evObj.uploadLimits = JSON.parse(JSON.stringify(chosen.uploadLimits || def.uploadLimits));
+        evObj.frameConfig = JSON.parse(JSON.stringify(chosen.frameConfig || def.frameConfig));
+        evObj._updatedAt = chosen._updatedAt;
     }
 
     APP_STATE.eventSettingsMap[evId] = chosen;
@@ -1543,7 +1560,7 @@ function setLiveSyncIndicator(isLive) {
         badge.style.background = 'rgba(0,217,255,0.15)';
         badge.style.color = '#00d9ff';
         badge.style.borderColor = '#00d9ff';
-    } else if (isLive) {
+    } else if (isLive === true || (isLive !== false && navigator && navigator.onLine !== false)) {
         badge.textContent = 'LIVE SYNC';
         badge.style.background = 'rgba(0,255,170,0.15)';
         badge.style.color = 'var(--accent-neon)';
@@ -1554,6 +1571,18 @@ function setLiveSyncIndicator(isLive) {
         badge.style.color = 'var(--accent-gold)';
         badge.style.borderColor = 'var(--accent-gold)';
     }
+}
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('online', function () {
+        setLiveSyncIndicator('SYNCING...');
+        if (typeof loadInitialApplicationData === 'function') {
+            loadInitialApplicationData();
+        }
+    });
+    window.addEventListener('offline', function () {
+        setLiveSyncIndicator(false);
+    });
 }
 
 function useMockDataFallback() {
@@ -1643,8 +1672,12 @@ function loadInitialApplicationData() {
         if (APP_STATE.events.length === 0) {
             useMockDataFallback();
         } else {
-            setLiveSyncIndicator(false);
-            showToast('Mode offline: Menggunakan data tersimpan terakhir.');
+            if (navigator && navigator.onLine === false) {
+                setLiveSyncIndicator(false);
+                showToast('Mode offline: Tidak ada koneksi internet.', true);
+            } else {
+                setLiveSyncIndicator(true);
+            }
         }
         executeUiUpdates();
 
@@ -2361,12 +2394,26 @@ function resetDeviceUploadQuotaCounter() {
     if (!APP_STATE.deviceQuotaMap) APP_STATE.deviceQuotaMap = {};
     var cur = APP_STATE.deviceQuotaMap[myDevId] || { bonusQuota: 0, resetOffset: 0 };
     cur.resetOffset = quotaStats.rawMyUploads;
+    cur.bonusQuota = 0;
     APP_STATE.deviceQuotaMap[myDevId] = cur;
+
+    var savedUploader = localStorage.getItem('SATUALBUM_LAST_UPLOADER_NAME');
+    if (savedUploader) {
+        var nameKey = 'NAME_' + String(savedUploader).trim().toLowerCase();
+        APP_STATE.deviceQuotaMap[nameKey] = {
+            resetOffset: quotaStats.rawMyUploads,
+            bonusQuota: 0,
+            lastUser: savedUploader
+        };
+    }
 
     localStorage.removeItem('SATUALBUM_UPLOAD_COUNT_' + APP_STATE.activeEventId);
     localStorage.removeItem('SATUALBUM_MY_PHOTOS_' + APP_STATE.activeEventId);
     appendDeviceActivityLog(myDevId, 'Device Ini (Admin)', 'Reset Kuota', 'Kuota upload direset kembali ke 0');
+    saveActiveEventScopedSettings(true);
+    saveExtendedConfigCache(true);
     updateHeroCounters();
+    renderAdminDeviceManagementAndLogs();
     syncConfigToBackend('Hitungan kuota upload pada perangkat ini berhasil direset ke 0.');
 }
 
@@ -2378,12 +2425,13 @@ function collectAllDetectedDevices() {
     var map = {};
     var myDevId = getOrCreateDeviceId();
     var savedUploader = localStorage.getItem('SATUALBUM_LAST_UPLOADER_NAME') || 'Perangkat Ini';
+    var localCount = parseInt(localStorage.getItem('SATUALBUM_UPLOAD_COUNT_' + APP_STATE.activeEventId), 10) || 0;
 
     // Pastikan perangkat saat ini selalu terdaftar di tabel manajemen device
     map[myDevId] = {
         deviceId: myDevId,
         userName: savedUploader,
-        rawCount: 0,
+        rawCount: localCount,
         lastActive: 'Aktif Sekarang'
     };
 
@@ -2402,6 +2450,10 @@ function collectAllDetectedDevices() {
         map[dKey].rawCount++;
         if (p.uploadedBy) map[dKey].userName = p.uploadedBy;
         if (p.uploadedAt) map[dKey].lastActive = p.uploadedAt;
+    }
+
+    if (map[myDevId]) {
+        map[myDevId].rawCount = Math.max(map[myDevId].rawCount, localCount);
     }
 
     var qMap = APP_STATE.deviceQuotaMap || {};
@@ -2514,27 +2566,66 @@ function addBonusQuotaForDevice(deviceId, addAmount, userName) {
     if (userName) cur.lastUser = userName;
     APP_STATE.deviceQuotaMap[deviceId] = cur;
 
-    appendDeviceActivityLog(deviceId, userName || 'Admin', 'Tambah Kuota (+' + amount + ')', 'Total bonus kuota device: +' + cur.bonusQuota + ' foto');
+    if (userName && String(userName).trim()) {
+        var nameKey = 'NAME_' + String(userName).trim().toLowerCase();
+        var curName = APP_STATE.deviceQuotaMap[nameKey] || { bonusQuota: 0, resetOffset: 0, lastUser: userName };
+        curName.bonusQuota = Math.max(0, (parseInt(curName.bonusQuota, 10) || 0) + amount);
+        curName.lastUser = userName;
+        APP_STATE.deviceQuotaMap[nameKey] = curName;
+    }
+
+    appendDeviceActivityLog(deviceId, userName || 'Admin', 'Tambah Kuota (+' + amount + ')', 'Total bonus kuota: +' + cur.bonusQuota + ' foto');
+    saveActiveEventScopedSettings(true);
+    saveExtendedConfigCache(true);
     updateHeroCounters();
-    syncConfigToBackend('Berhasil menambahkan +' + amount + ' kuota foto untuk perangkat ' + deviceId + '!');
+    renderAdminDeviceManagementAndLogs();
+    syncConfigToBackend('Berhasil menambahkan +' + amount + ' kuota foto untuk ' + (userName || deviceId) + '!');
 }
 
 function resetQuotaForSpecificDevice(deviceId, currentRawCount, userName) {
     if (!deviceId) return;
     if (!APP_STATE.deviceQuotaMap) APP_STATE.deviceQuotaMap = {};
+    var myDevId = getOrCreateDeviceId();
+    var isThisDev = (deviceId === myDevId);
+    var qStats = getEventUploadQuotaStats(userName);
+    var rawCountToReset = parseInt(currentRawCount, 10) || 0;
+
+    if (isThisDev) {
+        rawCountToReset = Math.max(rawCountToReset, qStats.rawMyUploads);
+        localStorage.removeItem('SATUALBUM_UPLOAD_COUNT_' + APP_STATE.activeEventId);
+        localStorage.removeItem('SATUALBUM_MY_PHOTOS_' + APP_STATE.activeEventId);
+    } else {
+        var actualPhotosForDev = 0;
+        var allP = APP_STATE.allEventPhotos || APP_STATE.photos || [];
+        for (var pi = 0; pi < allP.length; pi++) {
+            if (allP[pi].deviceId === deviceId || (userName && String(allP[pi].uploadedBy || '').toLowerCase() === String(userName).toLowerCase())) {
+                actualPhotosForDev++;
+            }
+        }
+        rawCountToReset = Math.max(rawCountToReset, actualPhotosForDev);
+    }
+
     var cur = APP_STATE.deviceQuotaMap[deviceId] || { bonusQuota: 0, resetOffset: 0, lastUser: userName || 'Tamu' };
-    cur.resetOffset = parseInt(currentRawCount, 10) || 0;
+    cur.resetOffset = rawCountToReset;
     cur.bonusQuota = 0;
     if (userName) cur.lastUser = userName;
     APP_STATE.deviceQuotaMap[deviceId] = cur;
 
-    if (deviceId === getOrCreateDeviceId()) {
-        localStorage.removeItem('SATUALBUM_UPLOAD_COUNT_' + APP_STATE.activeEventId);
+    if (userName && String(userName).trim()) {
+        var nameKey = 'NAME_' + String(userName).trim().toLowerCase();
+        APP_STATE.deviceQuotaMap[nameKey] = {
+            resetOffset: rawCountToReset,
+            bonusQuota: 0,
+            lastUser: userName
+        };
     }
 
     appendDeviceActivityLog(deviceId, userName || 'Admin', 'Reset Kuota Device', 'Kuota terpakai direset kembali ke 0');
+    saveActiveEventScopedSettings(true);
+    saveExtendedConfigCache(true);
     updateHeroCounters();
-    syncConfigToBackend('Kuota upload untuk perangkat ' + deviceId + ' berhasil direset menjadi 0!');
+    renderAdminDeviceManagementAndLogs();
+    syncConfigToBackend('Kuota upload untuk ' + (userName || deviceId) + ' berhasil direset menjadi 0!');
 }
 
 function addCustomQuotaToDeviceFromInput() {
@@ -2595,10 +2686,22 @@ function resetAllDevicesQuotaAdmin() {
             lastUser: d.userName,
             lastActive: d.lastActive
         };
+        if (d.userName) {
+            var nameKey = 'NAME_' + String(d.userName).trim().toLowerCase();
+            APP_STATE.deviceQuotaMap[nameKey] = {
+                bonusQuota: 0,
+                resetOffset: d.rawCount,
+                lastUser: d.userName
+            };
+        }
     }
     localStorage.removeItem('SATUALBUM_UPLOAD_COUNT_' + APP_STATE.activeEventId);
+    localStorage.removeItem('SATUALBUM_MY_PHOTOS_' + APP_STATE.activeEventId);
     appendDeviceActivityLog('ALL-DEVICES', 'Admin', 'Reset Semua Device', 'Seluruh kuota perangkat direset kembali ke 0');
+    saveActiveEventScopedSettings(true);
+    saveExtendedConfigCache(true);
     updateHeroCounters();
+    renderAdminDeviceManagementAndLogs();
     syncConfigToBackend('Seluruh kuota perangkat tamu berhasil direset ke 0!');
 }
 
@@ -2813,7 +2916,7 @@ function callBackendApi(actionName, payloadObj, onSuccess, onError, timeoutMs) {
         var controller = null;
         var signal = undefined;
         var timeoutId = null;
-        var maxWait = timeoutMs || 12000;
+        var maxWait = timeoutMs || 25000;
 
         if (typeof AbortController !== 'undefined') {
             controller = new AbortController();
@@ -2841,7 +2944,11 @@ function callBackendApi(actionName, payloadObj, onSuccess, onError, timeoutMs) {
             })
             .catch(function (err) {
                 if (timeoutId) clearTimeout(timeoutId);
-                setLiveSyncIndicator(false);
+                if (navigator && navigator.onLine === false) {
+                    setLiveSyncIndicator(false);
+                } else {
+                    setLiveSyncIndicator(true);
+                }
                 if (onError) onError(err);
             });
         return;
