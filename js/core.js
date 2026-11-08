@@ -1339,14 +1339,16 @@ window.addEventListener('DOMContentLoaded', function () {
         APP_STATE.config.woLogoUrl = savedCustomLogoLocal;
     }
 
-    // Tampilkan UI awal secara instan dari cache
+    // 1. Pulihkan sesi login admin terlebih dahulu agar status login aktif seketika
+    checkAdminIdleSession();
+    setInterval(checkAdminIdleSession, 5000);
+
+    // 2. Tampilkan UI awal secara instan dari cache
     if (APP_STATE.events && APP_STATE.events.length > 0) {
         loadActiveEventScopedSettings(APP_STATE.activeEventId);
         executeUiUpdates();
     }
 
-    checkAdminIdleSession();
-    setInterval(checkAdminIdleSession, 5000);
     applyRoleBasedAdminView();
 
     // Pulihkan tab terakhir dari hash URL, sessionStorage, atau localStorage
@@ -1387,7 +1389,12 @@ function getConfiguredIdleTimeoutMinutes() {
 }
 
 function checkAdminIdleSession() {
-    var sessionJson = localStorage.getItem('SATUALBUM_ADMIN_SESSION');
+    var sessionJson = null;
+    try { sessionJson = localStorage.getItem('SATUALBUM_ADMIN_SESSION'); } catch (e) { }
+    if (!sessionJson) {
+        try { sessionJson = sessionStorage.getItem('SATUALBUM_ADMIN_SESSION'); } catch (e) { }
+    }
+
     if (!sessionJson) {
         if (APP_STATE.currentUser) {
             APP_STATE.currentUser = null;
@@ -1395,28 +1402,51 @@ function checkAdminIdleSession() {
         }
         return;
     }
+
     try {
         var sess = JSON.parse(sessionJson);
+        var user = sess.user || (sess.userId ? sess : null);
+        if (!user || !user.userId) {
+            try { localStorage.removeItem('SATUALBUM_ADMIN_SESSION'); } catch (e) { }
+            try { sessionStorage.removeItem('SATUALBUM_ADMIN_SESSION'); } catch (e) { }
+            if (APP_STATE.currentUser) {
+                APP_STATE.currentUser = null;
+                applyRoleBasedAdminView();
+            }
+            return;
+        }
+
         var idleMinutes = getConfiguredIdleTimeoutMinutes();
         var nowTime = new Date().getTime();
+        var sessTime = (typeof sess.timestamp === 'number' && sess.timestamp > 0) ? sess.timestamp : nowTime;
 
         if (idleMinutes > 0) {
             var timeoutMs = idleMinutes * 60 * 1000;
-            if (nowTime - sess.timestamp > timeoutMs) {
-                localStorage.removeItem('SATUALBUM_ADMIN_SESSION');
+            if (nowTime - sessTime > timeoutMs) {
+                try { localStorage.removeItem('SATUALBUM_ADMIN_SESSION'); } catch (e) { }
+                try { sessionStorage.removeItem('SATUALBUM_ADMIN_SESSION'); } catch (e) { }
                 APP_STATE.currentUser = null;
                 applyRoleBasedAdminView();
                 showToast('Sesi login admin berakhir karena tidak ada aktivitas selama ' + idleMinutes + ' menit. Silakan login kembali.', true);
                 return;
             }
         }
+
+        // Perbarui timestamp agar sesi tetap segar saat halaman direfresh
+        sess.timestamp = nowTime;
+        sess.user = user;
+        var refreshedJson = JSON.stringify(sess);
+        try { localStorage.setItem('SATUALBUM_ADMIN_SESSION', refreshedJson); } catch (e) { }
+        try { sessionStorage.setItem('SATUALBUM_ADMIN_SESSION', refreshedJson); } catch (e) { }
+
         var wasNull = !APP_STATE.currentUser;
-        APP_STATE.currentUser = sess.user;
+        APP_STATE.currentUser = user;
         if (wasNull && APP_STATE.currentUser) {
             applyRoleBasedAdminView();
         }
     } catch (err) {
-        localStorage.removeItem('SATUALBUM_ADMIN_SESSION');
+        try { localStorage.removeItem('SATUALBUM_ADMIN_SESSION'); } catch (e) { }
+        try { sessionStorage.removeItem('SATUALBUM_ADMIN_SESSION'); } catch (e) { }
         if (APP_STATE.currentUser) {
             APP_STATE.currentUser = null;
             applyRoleBasedAdminView();
@@ -1426,14 +1456,13 @@ function checkAdminIdleSession() {
 
 function refreshAdminActivityTimestamp() {
     if (APP_STATE.currentUser) {
-        var sessionJson = localStorage.getItem('SATUALBUM_ADMIN_SESSION');
-        if (sessionJson) {
-            try {
-                var sess = JSON.parse(sessionJson);
-                sess.timestamp = new Date().getTime();
-                localStorage.setItem('SATUALBUM_ADMIN_SESSION', JSON.stringify(sess));
-            } catch (e) { }
-        }
+        var nowTime = new Date().getTime();
+        var sessData = JSON.stringify({
+            user: APP_STATE.currentUser,
+            timestamp: nowTime
+        });
+        try { localStorage.setItem('SATUALBUM_ADMIN_SESSION', sessData); } catch (e) { }
+        try { sessionStorage.setItem('SATUALBUM_ADMIN_SESSION', sessData); } catch (e) { }
     }
 }
 

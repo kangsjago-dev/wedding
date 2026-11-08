@@ -544,9 +544,11 @@ function startAdminSessionHeartbeat() {
             username: APP_STATE.currentUser.username,
             sessionToken: APP_STATE.currentUser.sessionToken
         }, function (res) {
-            if (res && (res.status === 'expired' || res.status === 'session_expired')) {
+            // HANYA jika server secara eksplisit mengembalikan session_expired
+            if (res && res.status === 'session_expired') {
                 stopAdminSessionHeartbeat();
-                localStorage.removeItem('SATUALBUM_ADMIN_SESSION');
+                try { localStorage.removeItem('SATUALBUM_ADMIN_SESSION'); } catch (e) { }
+                try { sessionStorage.removeItem('SATUALBUM_ADMIN_SESSION'); } catch (e) { }
                 APP_STATE.currentUser = null;
                 applyRoleBasedAdminView();
                 alert('PERINGATAN KEAMANAN:\n' + (res.message || 'Sesi akun Anda telah diakhiri.'));
@@ -563,18 +565,22 @@ function stopAdminSessionHeartbeat() {
 }
 
 function saveAdminSessionToStorage(userObj) {
+    if (!userObj) return;
     APP_STATE.currentUser = userObj;
-    localStorage.setItem('SATUALBUM_ADMIN_SESSION', JSON.stringify({
+    var sessionData = JSON.stringify({
         user: userObj,
         timestamp: new Date().getTime()
-    }));
+    });
+    try { localStorage.setItem('SATUALBUM_ADMIN_SESSION', sessionData); } catch (e) { }
+    try { sessionStorage.setItem('SATUALBUM_ADMIN_SESSION', sessionData); } catch (e) { }
     startAdminSessionHeartbeat();
 }
 
 function adminLogout() {
     var curUser = APP_STATE.currentUser;
     stopAdminSessionHeartbeat();
-    localStorage.removeItem('SATUALBUM_ADMIN_SESSION');
+    try { localStorage.removeItem('SATUALBUM_ADMIN_SESSION'); } catch (e) { }
+    try { sessionStorage.removeItem('SATUALBUM_ADMIN_SESSION'); } catch (e) { }
     APP_STATE.currentUser = null;
 
     // Reset tampilan username dan password pada halaman login
