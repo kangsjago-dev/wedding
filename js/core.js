@@ -1560,8 +1560,19 @@ function applyBrandingToDom() {
     var contacts = document.querySelectorAll('.footer-contact');
     for (var c = 0; c < contacts.length; c++) contacts[c].textContent = cfg.woContact || '';
 
-    var globalDriveInput = document.getElementById('adminGlobalDriveUrl');
-    if (globalDriveInput) globalDriveInput.value = cfg.globalDriveFolderUrl || '';
+    var globalDriveInput = document.getElementById('adminGlobalDriveFolderUrl') || document.getElementById('adminGlobalDriveUrl');
+    if (globalDriveInput) {
+        globalDriveInput.value = cfg.globalDriveFolderUrl || '';
+        var testBtn = document.getElementById('adminMasterDriveTestBtn');
+        if (testBtn) {
+            if (cfg.globalDriveFolderUrl) {
+                testBtn.style.display = 'inline-flex';
+                testBtn.href = buildGoogleDriveFolderUrl(cfg.globalDriveFolderId, cfg.globalDriveFolderUrl);
+            } else {
+                testBtn.style.display = 'none';
+            }
+        }
+    }
 
     var appNameInput = document.getElementById('adminAppName');
     if (appNameInput) appNameInput.value = cfg.appName || '';
@@ -1663,11 +1674,30 @@ function applyRoleBasedAdminView() {
         idleLabelEl.textContent = 'Login Aktif (Idle Timeout: ' + (idleMin === 0 ? 'Unlimited' : (idleMin + ' Menit')) + '):';
     }
 
+    var headerLoginBtn = document.getElementById('headerLoginBtn');
+    var headerCapsule = document.getElementById('headerUserSessionCapsule');
+    var headerName = document.getElementById('headerUserName');
+    var headerRole = document.getElementById('headerUserRole');
+    var headerAvatar = document.getElementById('headerUserAvatar');
+    var fullNameBadge = document.getElementById('adminUserFullNameBadge');
+
     if (APP_STATE.currentUser) {
         if (loginBoxEl) loginBoxEl.style.display = 'none';
         if (containerEl) containerEl.style.display = 'block';
         if (heroAdminBtns) heroAdminBtns.style.display = 'inline-flex';
-        if (badgeEl) badgeEl.textContent = APP_STATE.currentUser.fullName + ' [' + APP_STATE.currentUser.roleLevel + ']';
+        if (badgeEl) badgeEl.textContent = APP_STATE.currentUser.roleLevel;
+        if (fullNameBadge) fullNameBadge.textContent = APP_STATE.currentUser.fullName || APP_STATE.currentUser.username;
+
+        if (headerLoginBtn) headerLoginBtn.style.display = 'none';
+        if (headerCapsule) {
+            headerCapsule.style.display = 'inline-flex';
+            if (headerName) headerName.textContent = APP_STATE.currentUser.fullName || APP_STATE.currentUser.username;
+            if (headerRole) headerRole.textContent = APP_STATE.currentUser.roleLevel || 'Crew';
+            if (headerAvatar) {
+                var initial = (APP_STATE.currentUser.fullName || APP_STATE.currentUser.username || 'U').charAt(0).toUpperCase();
+                headerAvatar.textContent = initial;
+            }
+        }
 
         var role = APP_STATE.currentUser.roleLevel;
         var tabDrive = document.getElementById('adminTabBtn-driveEvents');
@@ -1705,6 +1735,20 @@ function applyRoleBasedAdminView() {
         if (typeof stopAdminSessionHeartbeat === 'function') {
             stopAdminSessionHeartbeat();
         }
+        if (headerLoginBtn) headerLoginBtn.style.display = 'inline-flex';
+        if (headerCapsule) headerCapsule.style.display = 'none';
+
+        // RESET TAMPILAN FORM USERNAME & PIN SAAT LOGOUT
+        var uInput = document.getElementById('adminLoginUsername');
+        var pInput = document.getElementById('adminLoginPin');
+        if (uInput) uInput.value = '';
+        if (pInput) pInput.value = '';
+        var alertBox = document.getElementById('adminLoginAlertBox');
+        if (alertBox) {
+            alertBox.style.display = 'none';
+            alertBox.textContent = '';
+        }
+
         if (loginBoxEl) loginBoxEl.style.display = 'block';
         if (containerEl) containerEl.style.display = 'none';
         if (heroAdminBtns) heroAdminBtns.style.display = 'none';

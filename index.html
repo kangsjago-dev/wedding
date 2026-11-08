@@ -77,11 +77,37 @@
                 <div class="nav-brand-subtitle" id="headerWoNameText">Runway Wedding & Event Organizer</div>
             </div>
         </div>
-        <div class="nav-actions">
+        <div class="nav-actions" style="display:flex; align-items:center; gap:8px;">
             <select class="form-input event-selector-dropdown"
                 style="display:none; padding:6px 10px; font-size:0.76rem; max-width:190px; background:#151b26;"
                 onchange="onEventDropdownChange(this)">
             </select>
+            <!-- Tombol Login Cepat jika belum login -->
+            <button type="button" class="btn btn-secondary btn-sm" id="headerLoginBtn"
+                onclick="switchMainView('admin')"
+                style="padding:6px 12px; font-size:0.75rem; border-radius:20px; border-color:rgba(0,255,170,0.35);">
+                <i class="fa-solid fa-lock" style="color:var(--accent-neon);"></i> Login Admin
+            </button>
+            <!-- Kapsul Profil User Login Mewah jika sudah login -->
+            <div id="headerUserSessionCapsule" style="display:none; align-items:center; gap:8px; background:rgba(18,24,38,0.85); padding:4px 10px 4px 6px; border-radius:30px; border:1px solid rgba(0,255,170,0.35); box-shadow:0 4px 16px rgba(0,0,0,0.4);">
+                <div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg, #00ffaa, #00b4d8); color:#0b0f19; font-weight:800; font-size:0.76rem; display:flex; align-items:center; justify-content:center;" id="headerUserAvatar">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <div style="line-height:1.15; max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                    <div style="font-size:0.75rem; font-weight:800; color:#fff;" id="headerUserName">Admin</div>
+                    <div style="font-size:0.62rem; color:var(--accent-gold); font-weight:700;" id="headerUserRole">Super Admin</div>
+                </div>
+                <div style="display:flex; gap:4px; align-items:center; margin-left:4px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="openChangePasswordModal()"
+                        title="Ganti Password / PIN Akun" style="padding:4px 7px; font-size:0.7rem; border-radius:12px;">
+                        <i class="fa-solid fa-key" style="color:var(--accent-gold);"></i>
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="adminLogout()"
+                        title="Keluar / Logout" style="padding:4px 7px; font-size:0.7rem; border-radius:12px;">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -346,6 +372,23 @@
                     <button type="button" class="filter-chip"
                         onclick="filterGalleryCategory('Keluarga & VIP', this)">👨‍👩‍👧‍👦 Keluarga & VIP</button>
                 </div>
+
+                <!-- Bilah Informasi & Link Folder Penyimpanan Galeri Google Drive -->
+                <div class="gallery-storage-pill" style="margin-top:14px; padding:10px 14px; background:rgba(0,255,170,0.06); border:1px solid rgba(0,255,170,0.22); border-radius:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <i class="fa-brands fa-google-drive" style="color:var(--accent-neon); font-size:1.15rem;"></i>
+                        <div>
+                            <div style="font-size:0.68rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.6px; font-weight:700;">Tempat Penyimpanan Foto Galeri Acara:</div>
+                            <div style="font-size:0.82rem; font-weight:800; color:#fff;">
+                                <span class="active-event-title">-</span>
+                                <span style="font-size:0.7rem; color:var(--accent-gold); margin-left:6px; font-weight:600;">(Google Drive Cloud)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#" target="_blank" class="btn btn-secondary btn-sm active-event-drive-btn" style="padding:6px 14px; font-size:0.75rem;">
+                        <i class="fa-brands fa-google-drive" style="color:var(--accent-neon);"></i> Buka Folder Penyimpanan Galeri
+                    </a>
+                </div>
             </div>
 
             <div id="publicGalleryGrid" class="photo-grid"></div>
@@ -491,6 +534,8 @@
                     </div>
                 </div>
 
+                <div id="adminLoginAlertBox" style="display:none; padding:10px 14px; margin-bottom:14px; border-radius:10px; background:rgba(255,59,48,0.12); border:1px solid #ff3b30; color:#ff8080; font-size:0.78rem; line-height:1.4;"></div>
+
                 <form onsubmit="event.preventDefault(); handleAdminLoginSubmit();"
                     style="display:flex; flex-direction:column; gap:14px;">
                     <div>
@@ -498,7 +543,7 @@
                         <div class="input-icon-wrap">
                             <i class="fa-solid fa-user-tie input-prefix-icon"></i>
                             <input type="text" id="adminLoginUsername" class="form-input"
-                                placeholder="Masukkan Username" autocomplete="username" />
+                                placeholder="Masukkan Username" required autocomplete="username" />
                         </div>
                     </div>
                     <div>
@@ -522,37 +567,45 @@
                 <div
                     style="margin-top:18px; padding-top:14px; border-top:1px solid var(--border-subtle); text-align:center; font-size:0.72rem; color:var(--text-muted); display:flex; align-items:center; justify-content:center; gap:6px;">
                     <i class="fa-solid fa-lock" style="color:var(--accent-gold);"></i>
-                    <span>Akses terenkripsi & dilindungi pengaman sesi otomatis</span>
+                    <span>Akses terenkripsi & dilindungi sistem 1 User 1x Login</span>
                 </div>
             </div>
 
             <!-- Kontainer Dashboard Setelah Login -->
             <div id="adminLoggedInContainer" style="display:none;">
-                <!-- Bar Status Sesi Login Admin -->
+                <!-- Bar Status Sesi Login Admin Mewah & Ergonomis -->
                 <div class="glass-card"
-                    style="margin-bottom:14px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                    <div style="display:flex; align-items:center; gap:10px;">
+                    style="margin-bottom:14px; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-color:rgba(0,255,170,0.35);">
+                    <div style="display:flex; align-items:center; gap:12px;">
                         <div
-                            style="width:36px; height:36px; border-radius:10px; background:rgba(0,255,170,0.12); border:1px solid var(--accent-neon); display:flex; align-items:center; justify-content:center; color:var(--accent-neon);">
+                            style="width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg, rgba(0,255,170,0.2), rgba(0,180,216,0.25)); border:1px solid var(--accent-neon); display:flex; align-items:center; justify-content:center; color:var(--accent-neon); font-size:1.2rem;">
                             <i class="fa-solid fa-user-shield"></i>
                         </div>
                         <div>
-                            <div style="font-size:0.7rem; color:var(--text-muted);" id="adminIdleStatusLabel">Login
-                                Aktif (Idle Timeout: 60 Menit):</div>
-                            <div style="font-weight:800; color:var(--accent-neon); font-size:0.95rem;"
-                                id="adminUserRoleBadge">-</div>
+                            <div style="font-size:0.68rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.6px; font-weight:700;" id="adminIdleStatusLabel">
+                                Pengguna Aktif (1 User 1x Login):
+                            </div>
+                            <div style="font-weight:800; color:#fff; font-size:1rem; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                <span id="adminUserFullNameBadge">-</span>
+                                <span class="brand-badge" id="adminUserRoleBadge" style="background:rgba(0,255,170,0.15); color:var(--accent-neon); border-color:var(--accent-neon); font-size:0.68rem;">Operator</span>
+                            </div>
                         </div>
                     </div>
-                    <div style="display:flex; gap:8px; align-items:center;">
-                        <button type="button" class="btn btn-danger btn-sm" onclick="adminLogout()">
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="openChangePasswordModal()"
+                            style="padding:8px 14px; font-size:0.8rem;">
+                            <i class="fa-solid fa-key" style="color:var(--accent-gold);"></i> Ganti Password
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="adminLogout()"
+                            style="padding:8px 14px; font-size:0.8rem;">
                             <i class="fa-solid fa-power-off"></i> Keluar
                         </button>
                     </div>
                 </div>
 
-                <!-- Panel Seleksi Event Aktif Terpadu -->
+                <!-- Panel Seleksi Event Aktif Terpadu (Bersih Tanpa Scroll & Tombol Ganda) -->
                 <div class="event-scope-panel" style="margin-bottom:16px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                         <div style="display:flex; align-items:center; gap:10px;">
                             <div style="width:38px; height:38px; border-radius:10px; background:rgba(0,255,170,0.15); border:1px solid var(--accent-neon); display:flex; align-items:center; justify-content:center; color:var(--accent-neon); font-size:1.05rem; flex-shrink:0;">
                                 <i class="fa-solid fa-calendar-check"></i>
@@ -566,19 +619,13 @@
                             </div>
                         </div>
 
-                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <div>
                             <select class="form-input event-selector-dropdown"
-                                style="padding:8px 12px; font-size:0.82rem; min-width:200px; background:#0b0f19; border-color:var(--accent-neon); font-weight:700; color:var(--accent-neon);"
+                                style="padding:8px 12px; font-size:0.82rem; min-width:220px; background:#0b0f19; border-color:var(--accent-neon); font-weight:700; color:var(--accent-neon);"
                                 onchange="onEventDropdownChange(this)">
                             </select>
-                            <button type="button" class="btn btn-neon btn-sm" onclick="openEventModal()" title="Buat Event Baru">
-                                <i class="fa-solid fa-plus"></i> Event Baru
-                            </button>
                         </div>
                     </div>
-
-                    <!-- Tombol Kapsul Pilihan Cepat Antar-Event -->
-                    <div id="adminEventQuickPills" class="event-Switcher-pills" style="margin-bottom:0; padding-bottom:2px;"></div>
                 </div>
 
                 <!-- Bar Navigasi Utama Menu 1 s/d 5 (Urut, Bersih & Bebas Ganda) -->
@@ -1156,6 +1203,24 @@
                                     Logo ini ditampilkan di header atas dan halaman login admin (Rasio 320×220 px atau kotak).
                                 </div>
                             </div>
+                            <div class="form-group" style="grid-column:1/-1;">
+                                <label class="form-label">
+                                    <i class="fa-brands fa-google-drive" style="color:var(--accent-neon);"></i>
+                                    Target Master Google Drive (Penyimpanan Default Web, Branding & Sistem)
+                                </label>
+                                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                    <input type="text" id="adminGlobalDriveFolderUrl" class="form-input"
+                                        style="flex:1; min-width:240px;"
+                                        placeholder="https://drive.google.com/drive/folders/... atau Folder ID" />
+                                    <a href="#" target="_blank" id="adminMasterDriveTestBtn" class="btn btn-secondary btn-sm"
+                                        style="display:none; padding:10px 14px;" title="Buka Folder Master Google Drive">
+                                        <i class="fa-solid fa-arrow-up-right-from-square" style="color:var(--accent-gold);"></i> Buka Drive
+                                    </a>
+                                </div>
+                                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px;">
+                                    Folder Google Drive induk utama untuk menyimpan logo branding kustom, backup sistem, dan default jika event belum menentukan folder khusus.
+                                </div>
+                            </div>
                             <div class="form-group">
                                 <label class="form-label">Kontak WO / Instagram</label>
                                 <input type="text" id="adminWoContact" class="form-input" />
@@ -1508,6 +1573,49 @@
                     <i class="fa-solid fa-share-nodes"></i> Share Undangan
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL GANTI PASSWORD / PIN AKUN PENGGUNA -->
+    <div id="changePasswordModal" class="modal-overlay">
+        <div class="modal-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <div style="font-weight:800; color:var(--accent-gold); font-size:1.05rem;">
+                    <i class="fa-solid fa-key"></i> Ganti Password / PIN Akun
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeChangePasswordModal()"
+                    style="padding:4px 8px; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:14px;">
+                Perbarui PIN / Password akun Anda (<strong id="changePasswordUsernameLabel" style="color:var(--accent-neon);">-</strong>). Password baru akan berlaku untuk login berikutnya.
+            </p>
+            <form onsubmit="event.preventDefault(); handleAdminChangePasswordSubmit();"
+                style="display:flex; flex-direction:column; gap:12px;">
+                <input type="hidden" id="changePasswordTargetUserId" value="" />
+                <div>
+                    <label class="form-label">Password / PIN Lama Saat Ini</label>
+                    <input type="password" id="changePasswordOldPin" class="form-input" required
+                        placeholder="Masukkan Password / PIN Lama" autocomplete="current-password" />
+                </div>
+                <div>
+                    <label class="form-label">Password / PIN Baru (Minimal 4 Karakter)</label>
+                    <input type="password" id="changePasswordNewPin" class="form-input" required minlength="4"
+                        placeholder="Masukkan Password / PIN Baru" autocomplete="new-password" />
+                </div>
+                <div>
+                    <label class="form-label">Konfirmasi Password / PIN Baru</label>
+                    <input type="password" id="changePasswordConfirmPin" class="form-input" required minlength="4"
+                        placeholder="Ulangi Password / PIN Baru" autocomplete="new-password" />
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeChangePasswordModal()">Batal</button>
+                    <button type="submit" class="btn btn-neon btn-sm">
+                        <i class="fa-solid fa-floppy-disk"></i> Simpan Password Baru
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 

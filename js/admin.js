@@ -60,7 +60,25 @@ function switchAdminSubTab(subKey, btnEl) {
 function handleAdminLoginSubmit() {
     var uName = document.getElementById('adminLoginUsername').value.trim();
     var uPin = document.getElementById('adminLoginPin').value.trim();
-    if (!uPin) { showToast('Masukkan Kode Akses / PIN Keamanan terlebih dahulu.', true); return; }
+    var alertBox = document.getElementById('adminLoginAlertBox');
+    if (alertBox) { alertBox.style.display = 'none'; alertBox.textContent = ''; }
+
+    if (!uName) {
+        showToast('Masukkan Username akun terlebih dahulu.', true);
+        if (alertBox) {
+            alertBox.style.display = 'block';
+            alertBox.textContent = 'Username wajib diisi sebelum melakukan login.';
+        }
+        return;
+    }
+    if (!uPin) {
+        showToast('Masukkan Password / PIN Keamanan terlebih dahulu.', true);
+        if (alertBox) {
+            alertBox.style.display = 'block';
+            alertBox.textContent = 'Password / PIN wajib diisi sebelum melakukan login.';
+        }
+        return;
+    }
 
     showLoadingOverlay(true, 'Memverifikasi kredensial akses...');
     callBackendApi('authenticateUser', { username: uName, pin: uPin }, function (res) {
@@ -72,9 +90,17 @@ function handleAdminLoginSubmit() {
             loadAdminUsersList();
         } else {
             if (res && res.code === 'ALREADY_LOGGED_IN') {
-                alert('PERINGATAN LOGIN:\n\n' + res.message);
+                if (alertBox) {
+                    alertBox.style.display = 'block';
+                    alertBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> <strong>User Telah Login:</strong><br>' + escapeHtml(res.message);
+                }
+                alert('PERINGATAN LOGIN (1 User 1x Login):\n\n' + res.message);
                 showToast(res.message, true);
                 return;
+            }
+            if (alertBox) {
+                alertBox.style.display = 'block';
+                alertBox.textContent = (res && res.message) || 'Username atau Password tidak sesuai.';
             }
             showToast((res && res.message) || 'Username atau PIN tidak sesuai.', true);
         }
@@ -126,6 +152,18 @@ function adminLogout() {
     stopAdminSessionHeartbeat();
     localStorage.removeItem('SATUALBUM_ADMIN_SESSION');
     APP_STATE.currentUser = null;
+
+    // Reset tampilan username dan password pada halaman login
+    var uInput = document.getElementById('adminLoginUsername');
+    var pInput = document.getElementById('adminLoginPin');
+    if (uInput) uInput.value = '';
+    if (pInput) pInput.value = '';
+    var alertBox = document.getElementById('adminLoginAlertBox');
+    if (alertBox) {
+        alertBox.style.display = 'none';
+        alertBox.textContent = '';
+    }
+
     applyRoleBasedAdminView();
 
     if (curUser && curUser.sessionToken) {
@@ -1034,10 +1072,17 @@ function saveGeneralConfigForm() {
             localStorage.removeItem('SATUALBUM_CUSTOM_WO_LOGO');
         }
     }
+    var masterDriveEl = document.getElementById('adminGlobalDriveFolderUrl') || document.getElementById('adminGlobalDriveUrl');
+    if (masterDriveEl) {
+        var masterVal = masterDriveEl.value.trim();
+        APP_STATE.config.globalDriveFolderUrl = masterVal;
+        APP_STATE.config.globalDriveFolderId = extractDriveFolderIdClient(masterVal);
+    }
     APP_STATE.config.woContact = document.getElementById('adminWoContact').value.trim();
     APP_STATE.config.customFooter = document.getElementById('adminCustomFooter').value.trim();
     applyBrandingToDom();
-    syncConfigToBackend('Nama Aplikasi & Logo Branding WO berhasil diterapkan ke Header & Login Admin!');
+    updateActiveEventHeroBanner();
+    syncConfigToBackend('Identitas Branding WO & Target Master Google Drive berhasil disimpan!');
 }
 
 function saveRemoteEndpointEndpoint() {
@@ -1102,9 +1147,10 @@ function renderAdminUsersTable() {
             html += '<td>' + escapeHtml(u.roleLevel) + '</td>';
             html += '<td>' + escapeHtml(u.accountStatus) + '</td>';
             html += '<td style="display:flex; gap:6px;">';
-            html += '<button type="button" class="btn btn-secondary btn-sm" onclick="openUserModal(\'' + escapeHtml(u.userId) + '\')"><i class="fa-solid fa-pen"></i></button>';
+            html += '<button type="button" class="btn btn-secondary btn-sm" onclick="openUserModal(\'' + escapeHtml(u.userId) + '\')" title="Edit User"><i class="fa-solid fa-pen"></i></button>';
+            html += '<button type="button" class="btn btn-gold btn-sm" onclick="openChangePasswordModal(\'' + escapeHtml(u.userId) + '\', \'' + escapeHtml(u.username) + '\')" title="Ganti Password / PIN"><i class="fa-solid fa-key"></i></button>';
             if (u.userId !== 'USR-0001') {
-                html += '<button type="button" class="btn btn-danger btn-sm" onclick="deleteUserItemAdmin(\'' + escapeHtml(u.userId) + '\')"><i class="fa-solid fa-trash"></i></button>';
+                html += '<button type="button" class="btn btn-danger btn-sm" onclick="deleteUserItemAdmin(\'' + escapeHtml(u.userId) + '\')" title="Hapus User"><i class="fa-solid fa-trash"></i></button>';
             }
             html += '</td></tr>';
         }
@@ -1509,6 +1555,77 @@ function initLightboxInteractiveControls() {
             _initialPinchDistance = 0;
         }
     }, { passive: true });
+}
+
+// MODAL GANTI PASSWORD / PIN AKUN PENGGUNA
+function openChangePasswordModal(userId, username) {
+    var modal = document.getElementById('changePasswordModal');
+    if (!modal) return;
+    var targetId = userId || (APP_STATE.currentUser ? APP_STATE.currentUser.userId : '');
+    var targetName = username || (APP_STATE.currentUser ? (APP_STATE.currentUser.fullName || APP_STATE.currentUser.username) : '');
+
+    var idEl = document.getElementById('changePasswordTargetUserId');
+    if (idEl) idEl.value = targetId;
+
+    var labelEl = document.getElementById('changePasswordUsernameLabel');
+    if (labelEl) labelEl.textContent = targetName || 'Akun Aktif';
+
+    var oldPinEl = document.getElementById('changePasswordOldPin');
+    if (oldPinEl) oldPinEl.value = '';
+    var newPinEl = document.getElementById('changePasswordNewPin');
+    if (newPinEl) newPinEl.value = '';
+    var confirmPinEl = document.getElementById('changePasswordConfirmPin');
+    if (confirmPinEl) confirmPinEl.value = '';
+
+    modal.classList.add('active');
+}
+
+function closeChangePasswordModal() {
+    var modal = document.getElementById('changePasswordModal');
+    if (modal) modal.classList.remove('active');
+}
+
+function handleAdminChangePasswordSubmit() {
+    var idEl = document.getElementById('changePasswordTargetUserId');
+    var userId = idEl ? idEl.value : (APP_STATE.currentUser ? APP_STATE.currentUser.userId : '');
+    var oldPin = document.getElementById('changePasswordOldPin').value.trim();
+    var newPin = document.getElementById('changePasswordNewPin').value.trim();
+    var confirmPin = document.getElementById('changePasswordConfirmPin').value.trim();
+
+    if (!oldPin) {
+        showToast('Masukkan Password / PIN lama terlebih dahulu.', true);
+        return;
+    }
+    if (!newPin || newPin.length < 4) {
+        showToast('Password / PIN baru minimal 4 karakter.', true);
+        return;
+    }
+    if (newPin !== confirmPin) {
+        showToast('Konfirmasi Password baru tidak cocok dengan Password baru.', true);
+        return;
+    }
+
+    showLoadingOverlay(true, 'Memperbarui password akun di Google Sheets...');
+    callBackendApi('changeUserPassword', {
+        userId: userId,
+        username: APP_STATE.currentUser ? APP_STATE.currentUser.username : '',
+        oldPin: oldPin,
+        newPin: newPin
+    }, function (res) {
+        showLoadingOverlay(false);
+        if (res && res.status === 'success') {
+            closeChangePasswordModal();
+            showToast(res.message || 'Password berhasil diperbarui!');
+            alert('SUKSES GANTI PASSWORD:\n\n' + (res.message || 'Password berhasil diperbarui. Silakan gunakan password baru ini pada login berikutnya.'));
+            loadAdminUsersList();
+        } else {
+            showToast((res && res.message) || 'Gagal mengubah password.', true);
+            alert('PERINGATAN:\n\n' + ((res && res.message) || 'Gagal mengubah password.'));
+        }
+    }, function () {
+        showLoadingOverlay(false);
+        showToast('Gagal menghubungi server Google Apps Script.', true);
+    });
 }
 
 if (document.readyState === 'loading') {
