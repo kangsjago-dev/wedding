@@ -1204,6 +1204,10 @@ window.addEventListener('DOMContentLoaded', function () {
         }
     } catch (eCache) { }
 
+    if (!APP_STATE.events || APP_STATE.events.length === 0) {
+        APP_STATE.events = MOCK_INITIAL_BUNDLE.events.slice();
+    }
+
     // Muat cache konfigurasi lanjutan sebelum jaringan selesai
     var extCache = loadExtendedConfigCache();
     if (extCache) {
@@ -1244,6 +1248,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
     checkAdminIdleSession();
     setInterval(checkAdminIdleSession, 5000);
+    applyRoleBasedAdminView();
 
     // Pulihkan tab terakhir dari hash URL, sessionStorage, atau localStorage
     var hashView = (window.location.hash || '').replace('#', '').trim();
@@ -1284,7 +1289,13 @@ function getConfiguredIdleTimeoutMinutes() {
 
 function checkAdminIdleSession() {
     var sessionJson = localStorage.getItem('SATUALBUM_ADMIN_SESSION');
-    if (!sessionJson) return;
+    if (!sessionJson) {
+        if (APP_STATE.currentUser) {
+            APP_STATE.currentUser = null;
+            applyRoleBasedAdminView();
+        }
+        return;
+    }
     try {
         var sess = JSON.parse(sessionJson);
         var idleMinutes = getConfiguredIdleTimeoutMinutes();
@@ -1300,9 +1311,17 @@ function checkAdminIdleSession() {
                 return;
             }
         }
+        var wasNull = !APP_STATE.currentUser;
         APP_STATE.currentUser = sess.user;
+        if (wasNull && APP_STATE.currentUser) {
+            applyRoleBasedAdminView();
+        }
     } catch (err) {
         localStorage.removeItem('SATUALBUM_ADMIN_SESSION');
+        if (APP_STATE.currentUser) {
+            APP_STATE.currentUser = null;
+            applyRoleBasedAdminView();
+        }
     }
 }
 
@@ -1389,12 +1408,7 @@ function mergeServerConfigWithLocalExt(serverCfg) {
 }
 
 function loadInitialApplicationData() {
-    var hasCachedEvents = (APP_STATE.events && APP_STATE.events.length > 0);
-    if (!hasCachedEvents) {
-        showLoadingOverlay(true, 'Menyinkronkan data acara...');
-    } else {
-        setLiveSyncIndicator('SYNCING...');
-    }
+    setLiveSyncIndicator('SYNCING...');
 
     callBackendApi('getInitialAppBundle', {}, function (res) {
         showLoadingOverlay(false);
@@ -2600,8 +2614,8 @@ function resetPhotoMomentCategoriesToDefault() {
     syncConfigToBackend('Kategori momen foto event ini dikembalikan ke pengaturan default.');
 }
 
-// KOMUNIKASI API BACKEND (MENDUKUNG GAS INTERNAL & FETCH REMOTE GITHUB PAGES)
-function callBackendApi(actionName, payloadObj, onSuccess, onError) {
+// KOMUNIKASI API BACKEND (MENDUKUNG GAS INTERNAL & FETCH REMOTE GITHUB PAGES DENGAN TIMEOUT)
+function callBackendApi(actionName, payloadObj, onSuccess, onError, timeoutMs) {
     if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
             .withSuccessHandler(function (res) { if (onSuccess) onSuccess(res); })
@@ -2613,19 +2627,37 @@ function callBackendApi(actionName, payloadObj, onSuccess, onError) {
     }
 
     if (APP_STATE.remoteGasUrl && APP_STATE.remoteGasUrl.indexOf('https://script.google.com') === 0) {
+        var controller = null;
+        var signal = undefined;
+        var timeoutId = null;
+        var maxWait = timeoutMs || 12000;
+
+        if (typeof AbortController !== 'undefined') {
+            controller = new AbortController();
+            signal = controller.signal;
+            timeoutId = setTimeout(function () {
+                if (controller) controller.abort();
+            }, maxWait);
+        }
+
         fetch(APP_STATE.remoteGasUrl, {
             method: 'POST',
             mode: 'cors',
             redirect: 'follow',
             headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: actionName, payload: payloadObj })
+            body: JSON.stringify({ action: actionName, payload: payloadObj }),
+            signal: signal
         })
-            .then(function (r) { return r.json(); })
+            .then(function (r) {
+                if (timeoutId) clearTimeout(timeoutId);
+                return r.json();
+            })
             .then(function (data) {
                 setLiveSyncIndicator(true);
                 if (onSuccess) onSuccess(data);
             })
             .catch(function (err) {
+                if (timeoutId) clearTimeout(timeoutId);
                 setLiveSyncIndicator(false);
                 if (onError) onError(err);
             });

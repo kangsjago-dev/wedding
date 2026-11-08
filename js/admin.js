@@ -112,7 +112,38 @@ function handleAdminLoginSubmit(isForce) {
         return null;
     }
 
-    showLoadingOverlay(true, 'Memverifikasi kredensial akses...');
+    // 1. INSTANT / OPTIMISTIC LOGIN UNTUK AKUN DEFAULT (ZERO-LATENCY INSTANT ACCESS)
+    // Pengguna tidak perlu menunggu antrean jaringan lambat / cold-start Google Apps Script!
+    var instantUser = checkKnownUserMatch(uName, uPin);
+    if (instantUser) {
+        saveAdminSessionToStorage({
+            userId: instantUser.userId,
+            username: instantUser.username,
+            fullName: instantUser.fullName,
+            roleLevel: instantUser.roleLevel,
+            accountStatus: instantUser.accountStatus,
+            sessionToken: 'session-' + Date.now()
+        });
+        showToast('Selamat datang kembali, ' + instantUser.fullName + ' (' + instantUser.roleLevel + ')!');
+        applyRoleBasedAdminView();
+        loadAdminUsersList();
+
+        // Daftarkan sesi secara asynchronous ke server Google Apps Script tanpa memblokir UI
+        callBackendApi('authenticateUser', { username: uName, pin: uPin, forceLogin: true }, function (res) {
+            if (res && res.user && res.user.sessionToken) {
+                if (APP_STATE.currentUser && APP_STATE.currentUser.userId === res.user.userId) {
+                    APP_STATE.currentUser.sessionToken = res.user.sessionToken;
+                    saveAdminSessionToStorage(APP_STATE.currentUser);
+                }
+            }
+        }, function () {
+            // Abaikan kegagalan jaringan latar belakang karena user sudah aktif secara lokal
+        }, 8000);
+        return;
+    }
+
+    // 2. JIKA BUKAN AKUN DEFAULT (PENGGUNA BARU DARI DATABASE GOOGLE SHEETS)
+    showLoadingOverlay(true, 'Memverifikasi akun database...');
     callBackendApi('authenticateUser', { username: uName, pin: uPin, forceLogin: !!isForce }, function (res) {
         showLoadingOverlay(false);
         if (res && res.status === 'success') {
@@ -133,23 +164,6 @@ function handleAdminLoginSubmit(isForce) {
                 return;
             }
 
-            // Jika backend gagal tapi kredensial terverifikasi di daftar resmi
-            var matchedUser = checkKnownUserMatch(uName, uPin);
-            if (matchedUser) {
-                saveAdminSessionToStorage({
-                    userId: matchedUser.userId,
-                    username: matchedUser.username,
-                    fullName: matchedUser.fullName,
-                    roleLevel: matchedUser.roleLevel,
-                    accountStatus: matchedUser.accountStatus,
-                    sessionToken: 'verified-session-' + Date.now()
-                });
-                showToast('Autentikasi berhasil! Selamat datang di Panel Manajemen.');
-                applyRoleBasedAdminView();
-                loadAdminUsersList();
-                return;
-            }
-
             if (alertBox) {
                 alertBox.style.display = 'block';
                 alertBox.textContent = (res && res.message) || 'Username atau Password tidak sesuai.';
@@ -158,28 +172,12 @@ function handleAdminLoginSubmit(isForce) {
         }
     }, function () {
         showLoadingOverlay(false);
-        var fallbackUser = checkKnownUserMatch(uName, uPin);
-        if (fallbackUser) {
-            saveAdminSessionToStorage({
-                userId: fallbackUser.userId,
-                username: fallbackUser.username,
-                fullName: fallbackUser.fullName,
-                roleLevel: fallbackUser.roleLevel,
-                accountStatus: fallbackUser.accountStatus,
-                sessionToken: 'local-session-' + Date.now()
-            });
-            showToast('Autentikasi berhasil! Selamat datang di Panel Manajemen.');
-            applyRoleBasedAdminView();
-            loadAdminUsersList();
-            return;
-        }
-
         if (alertBox) {
             alertBox.style.display = 'block';
             alertBox.textContent = 'Gagal terhubung ke server backend atau kredensial akun tidak sesuai.';
         }
         showToast('Kredensial tidak sesuai atau jaringan backend tidak merespons.', true);
-    });
+    }, 8000);
 }
 
 var _adminHeartbeatTimer = null;
