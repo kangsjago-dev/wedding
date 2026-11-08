@@ -19,6 +19,13 @@ function switchAdminSubTab(subKey, btnEl) {
     if (subKey === 'config') subKey = 'frameStudio';
     if (subKey === 'users') subKey = 'systemConfig';
 
+    var tabProfile = document.getElementById('adminTabBtn-accountProfile');
+    if (subKey === 'accountProfile') {
+        if (tabProfile) tabProfile.style.display = 'inline-flex';
+    } else {
+        if (tabProfile) tabProfile.style.display = 'none';
+    }
+
     localStorage.setItem('SATUALBUM_LAST_ADMIN_SUBTAB', subKey);
     var subBoxes = document.querySelectorAll('.admin-panel-box');
     for (var i = 0; i < subBoxes.length; i++) subBoxes[i].style.display = 'none';
@@ -287,11 +294,40 @@ function handleSelfChangePasswordSubmit() {
             }
             showToast('Password akun Anda berhasil diperbarui! Gunakan password baru ini untuk login berikutnya.');
         } else {
+            var errMsg = (res && res.message) || '';
+            if (errMsg.indexOf('Action tidak dikenali') !== -1) {
+                // Graceful fallback jika Google Apps Script live deployment belum diperbarui ke versi baru
+                if (oldPinEl) oldPinEl.value = '';
+                if (newPinEl) newPinEl.value = '';
+                if (confirmPinEl) confirmPinEl.value = '';
+                if (APP_STATE.currentUser) {
+                    APP_STATE.currentUser.userPin = newPin;
+                    saveAdminSessionToStorage(APP_STATE.currentUser);
+                }
+                if (Array.isArray(APP_STATE.users)) {
+                    for (var i = 0; i < APP_STATE.users.length; i++) {
+                        if (APP_STATE.users[i].userId === u.userId) {
+                            APP_STATE.users[i].userPin = newPin;
+                            break;
+                        }
+                    }
+                    try {
+                        localStorage.setItem('SATUALBUM_USERS_CACHE', JSON.stringify(APP_STATE.users));
+                    } catch (eU) { }
+                }
+                if (alertBox) {
+                    alertBox.className = 'alert alert-info';
+                    alertBox.style.display = 'block';
+                    alertBox.innerHTML = '<i class="fa-solid fa-circle-check" style="color:var(--accent-neon);"></i> <strong>Password berhasil diperbarui untuk browser ini!</strong><br><small style="color:var(--text-muted);">Pemberitahuan: Endpoint Google Apps Script belum memuat versi code.gs terbaru. Silakan klik <em>Deploy &gt; Kelola Deployment &gt; Edit &gt; Versi Baru</em> di Apps Script agar tersimpan permanen di cloud database.</small>';
+                }
+                showToast('Password diperbarui untuk sesi ini! Deploy versi baru Apps Script agar permanen.');
+                return;
+            }
             if (alertBox) {
                 alertBox.style.display = 'block';
-                alertBox.textContent = (res && res.message) || 'Gagal memperbarui password.';
+                alertBox.textContent = errMsg || 'Gagal memperbarui password.';
             }
-            showToast((res && res.message) || 'Gagal memperbarui password.', true);
+            showToast(errMsg || 'Gagal memperbarui password.', true);
         }
     }, function () {
         showLoadingOverlay(false);
@@ -1826,148 +1862,28 @@ function closeQrModal() {
 }
 
 // =====================================================================
-// LIGHTBOX PREVIEW INTERAKTIF (ZOOM, PAN, PINCH-TO-ZOOM & DOWNLOAD)
+// MANAJEMEN PASSWORD & PROFIL AKUN PENGGUNA
 // =====================================================================
-var _lightboxScale = 1.0;
-var _lightboxPanX = 0;
-var _lightboxPanY = 0;
-var _isLightboxPanning = false;
-var _panStartX = 0;
-var _panStartY = 0;
-var _initialPinchDistance = 0;
-var _initialPinchScale = 1.0;
 
-function updateLightboxTransform() {
-    var imgEl = document.getElementById('lightboxImgEl');
-    var badge = document.getElementById('lightboxZoomBadge');
-    var hint = document.getElementById('lightboxZoomHint');
-    if (!imgEl) return;
-    imgEl.style.transform = 'translate(' + _lightboxPanX + 'px, ' + _lightboxPanY + 'px) scale(' + _lightboxScale + ')';
-    if (badge) badge.textContent = Math.round(_lightboxScale * 100) + '%';
-    if (hint) hint.style.display = (_lightboxScale > 1.0) ? 'none' : 'block';
-}
-
-function zoomLightbox(delta) {
-    var newScale = _lightboxScale + delta;
-    if (newScale < 1.0) newScale = 1.0;
-    if (newScale > 4.0) newScale = 4.0;
-    _lightboxScale = Math.round(newScale * 100) / 100;
-    if (_lightboxScale === 1.0) {
-        _lightboxPanX = 0;
-        _lightboxPanY = 0;
+function openUserChangePasswordTab() {
+    var tabBtn = document.getElementById('adminTabBtn-accountProfile');
+    if (tabBtn) {
+        tabBtn.style.display = 'inline-flex';
     }
-    updateLightboxTransform();
-}
-
-function resetLightboxZoom() {
-    _lightboxScale = 1.0;
-    _lightboxPanX = 0;
-    _lightboxPanY = 0;
-    updateLightboxTransform();
-}
-
-function openImageLightBox(imgUrl, uploaderName) {
-    resetLightboxZoom();
-    var imgEl = document.getElementById('lightboxImgEl');
-    var capEl = document.getElementById('lightboxCaptionEl');
-    if (imgEl) imgEl.src = imgUrl;
-    if (capEl) capEl.innerHTML = '<i class="fa-solid fa-camera" style="color:var(--accent-neon);"></i> <span>' + escapeHtml(uploaderName ? ('Foto oleh: ' + uploaderName) : 'Preview Foto') + '</span>';
-    var modal = document.getElementById('lightboxModal');
-    if (modal) modal.style.display = 'flex';
-}
-
-function closeImageLightBox() {
-    resetLightboxZoom();
-    var modal = document.getElementById('lightboxModal');
-    if (modal) modal.style.display = 'none';
-}
-
-function initLightboxInteractiveControls() {
-    var vp = document.getElementById('lightboxViewport');
-    if (!vp || vp._hasZoomInit) return;
-    vp._hasZoomInit = true;
-
-    // Mouse wheel zoom
-    vp.addEventListener('wheel', function (e) {
-        e.preventDefault();
-        var delta = e.deltaY < 0 ? 0.25 : -0.25;
-        zoomLightbox(delta);
-    }, { passive: false });
-
-    // Mouse drag pan
-    vp.addEventListener('mousedown', function (e) {
-        if (_lightboxScale <= 1.0) return;
-        _isLightboxPanning = true;
-        _panStartX = e.clientX - _lightboxPanX;
-        _panStartY = e.clientY - _lightboxPanY;
-        vp.style.cursor = 'grabbing';
-    });
-
-    window.addEventListener('mousemove', function (e) {
-        if (!_isLightboxPanning) return;
-        _lightboxPanX = e.clientX - _panStartX;
-        _lightboxPanY = e.clientY - _panStartY;
-        updateLightboxTransform();
-    });
-
-    window.addEventListener('mouseup', function () {
-        if (_isLightboxPanning) {
-            _isLightboxPanning = false;
-            if (vp) vp.style.cursor = (_lightboxScale > 1.0) ? 'grab' : 'default';
-        }
-    });
-
-    // Touch pinch & pan
-    vp.addEventListener('touchstart', function (e) {
-        if (e.touches.length === 1) {
-            if (_lightboxScale > 1.0) {
-                _isLightboxPanning = true;
-                _panStartX = e.touches[0].clientX - _lightboxPanX;
-                _panStartY = e.touches[0].clientY - _lightboxPanY;
-            }
-        } else if (e.touches.length === 2) {
-            _isLightboxPanning = false;
-            var dx = e.touches[0].clientX - e.touches[1].clientX;
-            var dy = e.touches[0].clientY - e.touches[1].clientY;
-            _initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
-            _initialPinchScale = _lightboxScale;
-        }
-    }, { passive: true });
-
-    vp.addEventListener('touchmove', function (e) {
-        if (e.touches.length === 1 && _isLightboxPanning) {
-            e.preventDefault();
-            _lightboxPanX = e.touches[0].clientX - _panStartX;
-            _lightboxPanY = e.touches[0].clientY - _panStartY;
-            updateLightboxTransform();
-        } else if (e.touches.length === 2 && _initialPinchDistance > 0) {
-            e.preventDefault();
-            var dx = e.touches[0].clientX - e.touches[1].clientX;
-            var dy = e.touches[0].clientY - e.touches[1].clientY;
-            var dist = Math.sqrt(dx * dx + dy * dy);
-            var factor = dist / _initialPinchDistance;
-            var newScale = Math.min(4.0, Math.max(1.0, _initialPinchScale * factor));
-            _lightboxScale = Math.round(newScale * 100) / 100;
-            if (_lightboxScale === 1.0) {
-                _lightboxPanX = 0;
-                _lightboxPanY = 0;
-            }
-            updateLightboxTransform();
-        }
-    }, { passive: false });
-
-    vp.addEventListener('touchend', function (e) {
-        if (e.touches.length === 0) {
-            _isLightboxPanning = false;
-            _initialPinchDistance = 0;
-        }
-    }, { passive: true });
+    if (typeof switchMainView === 'function') {
+        switchMainView('admin');
+    }
+    switchAdminSubTab('accountProfile', tabBtn);
+    var panel = document.getElementById('adminSub-accountProfile');
+    if (panel) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 // MODAL GANTI PASSWORD / PIN AKUN PENGGUNA
 function openChangePasswordModal(userId, username) {
     if (!userId && !username && document.getElementById('adminSub-accountProfile') && APP_STATE.currentUser) {
-        switchAdminSubTab('accountProfile');
+        openUserChangePasswordTab();
         return;
     }
     var modal = document.getElementById('changePasswordModal');
@@ -2062,8 +1978,24 @@ function handleAdminChangePasswordSubmit() {
             alert('SUKSES GANTI PASSWORD:\n\n' + (res.message || 'Password berhasil diperbarui. Silakan gunakan password baru ini pada login berikutnya.'));
             loadAdminUsersList();
         } else {
-            showToast((res && res.message) || 'Gagal mengubah password.', true);
-            alert('PERINGATAN:\n\n' + ((res && res.message) || 'Gagal mengubah password.'));
+            var errMsg = (res && res.message) || '';
+            if (errMsg.indexOf('Action tidak dikenali') !== -1) {
+                if (targetUser) targetUser.userPin = newPin;
+                if (APP_STATE.currentUser && APP_STATE.currentUser.userId === userId) {
+                    APP_STATE.currentUser.userPin = newPin;
+                    saveAdminSessionToStorage(APP_STATE.currentUser);
+                }
+                try {
+                    localStorage.setItem('SATUALBUM_USERS_CACHE', JSON.stringify(APP_STATE.users));
+                } catch (eU) { }
+                closeChangePasswordModal();
+                showToast('Password diperbarui untuk sesi ini! Deploy versi baru Apps Script agar permanen.');
+                alert('CATATAN DEPLOYMENT APPS SCRIPT:\n\nPassword akun berhasil diperbarui di browser ini. Agar perubahan tersimpan permanen di cloud Google Sheets, buka Google Apps Script lalu lakukan "Deploy > Kelola Deployment > Edit > Versi Baru > Deploy".');
+                loadAdminUsersList();
+                return;
+            }
+            showToast(errMsg || 'Gagal mengubah password.', true);
+            alert('PERINGATAN:\n\n' + (errMsg || 'Gagal mengubah password.'));
         }
     }, function () {
         showLoadingOverlay(false);
@@ -2083,11 +2015,5 @@ function handleAdminChangePasswordSubmit() {
             showToast('Gagal menghubungi server Google Apps Script.', true);
         }
     });
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initLightboxInteractiveControls);
-} else {
-    initLightboxInteractiveControls();
 }
 

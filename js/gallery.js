@@ -252,17 +252,91 @@ function renderGalleryGrid() {
     if (loadMoreBtn) loadMoreBtn.style.display = 'none';
 }
 
+// =====================================================================
+// SINKRONISASI FOTO LANGSUNG DARI GOOGLE DRIVE CLOUD
+// =====================================================================
+function syncGalleryWithGoogleDrive() {
+    var evId = APP_STATE.activeEventId;
+    if (!evId) {
+        showToast('Pilih event terlebih dahulu untuk sinkronisasi Google Drive.', true);
+        return;
+    }
+    showToast('Menyinkronkan foto dengan Folder Google Drive...', false);
+    callBackendApi('syncDriveFolderToGallery', { eventId: evId }, function (res) {
+        if (res && res.status === 'success') {
+            showToast(res.message || 'Sinkronisasi foto Google Drive berhasil!');
+            reloadGalleryFeed(true);
+        } else {
+            showToast('Gagal sinkronisasi Drive: ' + ((res && res.message) || 'Periksa konfigurasi Folder Drive'), true);
+        }
+    }, function () {
+        showToast('Gagal menghubungi server untuk sinkronisasi Google Drive.', true);
+    });
+}
+
+// =====================================================================
+// LIGHTBOX CAROUSEL STATE & NAVIGASI PANAH KIRI / KANAN
+// =====================================================================
+var _currentLightboxPhotoId = '';
+var _currentLightboxPhotoList = [];
+var _currentLightboxIndex = 0;
+
 function openPhotoLightboxById(photoId) {
-    var list = mergePhotosWithLocalVoteCache(APP_STATE.allEventPhotos || APP_STATE.photos || []);
-    var target = null;
-    for (var i = 0; i < list.length; i++) {
-        if (list[i].photoId === photoId) {
-            target = list[i];
+    var sourceList = mergePhotosWithLocalVoteCache(APP_STATE.allEventPhotos || APP_STATE.photos || []);
+    var activeList = [];
+    for (var s = 0; s < sourceList.length; s++) {
+        var item = sourceList[s];
+        if (item.eventId && item.eventId !== 'ALL' && APP_STATE.activeEventId && item.eventId !== APP_STATE.activeEventId) {
+            continue;
+        }
+        if (APP_STATE.galleryCategory && APP_STATE.galleryCategory !== 'ALL' && item.category !== APP_STATE.galleryCategory) {
+            continue;
+        }
+        if (APP_STATE.gallerySearch) {
+            var hay = ((item.uploadedBy || '') + ' ' + (item.category || '') + ' ' + (item.awardTitle || '')).toLowerCase();
+            if (hay.indexOf(APP_STATE.gallerySearch) === -1) continue;
+        }
+        activeList.push(item);
+    }
+    if (activeList.length === 0) activeList = sourceList.slice();
+    _currentLightboxPhotoList = activeList;
+
+    var foundIdx = 0;
+    for (var i = 0; i < activeList.length; i++) {
+        if (activeList[i].photoId === photoId) {
+            foundIdx = i;
             break;
         }
     }
-    if (!target) return;
-    openImageLightBox(target.directImageUrl, target.uploadedBy);
+    showLightboxPhotoAtIndex(foundIdx);
+}
+
+function showLightboxPhotoAtIndex(idx) {
+    if (!_currentLightboxPhotoList || _currentLightboxPhotoList.length === 0) return;
+    if (idx < 0) idx = _currentLightboxPhotoList.length - 1;
+    if (idx >= _currentLightboxPhotoList.length) idx = 0;
+    _currentLightboxIndex = idx;
+    var p = _currentLightboxPhotoList[_currentLightboxIndex];
+    if (!p) return;
+    _currentLightboxPhotoId = p.photoId;
+
+    resetLightboxZoom();
+    var imgEl = document.getElementById('lightboxImgEl');
+    var capEl = document.getElementById('lightboxCaptionEl');
+    var badgeEl = document.getElementById('lightboxIndexBadge');
+
+    if (imgEl) imgEl.src = p.directImageUrl;
+    if (capEl) {
+        var uploader = p.uploadedBy ? ('Foto oleh: ' + p.uploadedBy) : 'Preview Foto';
+        capEl.innerHTML = '<i class="fa-solid fa-camera" style="color:var(--accent-neon);"></i> <span>' + escapeHtml(uploader) + '</span><span id="lightboxIndexBadge" class="brand-badge" style="font-size:0.68rem; color:var(--accent-gold); margin-left:8px; border-color:var(--accent-gold); background:rgba(245,197,66,0.12); display:inline-flex;">Foto ' + (_currentLightboxIndex + 1) + ' dari ' + _currentLightboxPhotoList.length + '</span>';
+    }
+    var modal = document.getElementById('lightboxModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function navigateLightboxPhoto(delta) {
+    if (!_currentLightboxPhotoList || _currentLightboxPhotoList.length <= 1) return;
+    showLightboxPhotoAtIndex(_currentLightboxIndex + delta);
 }
 
 function handleGalleryImageError(imgEl, photoId) {
@@ -509,6 +583,41 @@ function initLightboxInteractiveControls() {
             _initialPinchDistance = 0;
         }
     }, { passive: true });
+
+    // Touch horizontal swipe navigation saat zoom normal 100%
+    var _touchStartX = 0;
+    vp.addEventListener('touchstart', function (e) {
+        if (e.touches.length === 1 && _lightboxScale <= 1.0) {
+            _touchStartX = e.touches[0].clientX;
+        }
+    }, { passive: true });
+
+    vp.addEventListener('touchend', function (e) {
+        if (e.changedTouches.length === 1 && _lightboxScale <= 1.0 && _touchStartX > 0) {
+            var diffX = e.changedTouches[0].clientX - _touchStartX;
+            if (Math.abs(diffX) > 45) {
+                if (diffX > 0) navigateLightboxPhoto(-1);
+                else navigateLightboxPhoto(1);
+            }
+            _touchStartX = 0;
+        }
+    }, { passive: true });
+
+    // Keyboard navigation (Panah Kiri / Panah Kanan / Escape)
+    window.addEventListener('keydown', function (e) {
+        var modal = document.getElementById('lightboxModal');
+        if (!modal || modal.style.display !== 'flex') return;
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            navigateLightboxPhoto(-1);
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            navigateLightboxPhoto(1);
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            closeImageLightBox();
+        }
+    });
 }
 
 if (document.readyState === 'loading') {

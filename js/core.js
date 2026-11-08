@@ -1853,7 +1853,8 @@ function applyRoleBasedAdminView() {
         var tabMod = document.getElementById('adminTabBtn-mod');
         var tabSystem = document.getElementById('adminTabBtn-systemConfig');
         var tabProfile = document.getElementById('adminTabBtn-accountProfile');
-        if (tabProfile) tabProfile.style.display = 'inline-flex';
+        // Tab 6 Ganti Password disembunyikan secara bawaan agar bar menu tetap bersih 5 tab
+        if (tabProfile) tabProfile.style.display = 'none';
 
         if (role === 'Operator') {
             if (tabDrive) tabDrive.style.display = 'none';
@@ -1924,6 +1925,7 @@ function openVotingLeaderboardResult() {
 
 function renderEventSelectorDropdown() {
     var selects = document.querySelectorAll('.event-selector-dropdown');
+    if (!selects || selects.length === 0) return;
     var html = '';
     for (var i = 0; i < APP_STATE.events.length; i++) {
         var ev = APP_STATE.events[i];

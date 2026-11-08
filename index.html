@@ -78,10 +78,6 @@
             </div>
         </div>
         <div class="nav-actions" style="display:flex; align-items:center; gap:8px;">
-            <select class="form-input event-selector-dropdown"
-                style="display:none; padding:6px 10px; font-size:0.76rem; max-width:190px; background:#151b26;"
-                onchange="onEventDropdownChange(this)">
-            </select>
             <!-- Tombol Login Cepat jika belum login -->
             <button type="button" class="btn btn-secondary btn-sm" id="headerLoginBtn"
                 onclick="switchMainView('admin')"
@@ -98,7 +94,7 @@
                     <div style="font-size:0.62rem; color:var(--accent-gold); font-weight:700;" id="headerUserRole">Super Admin</div>
                 </div>
                 <div style="display:flex; gap:4px; align-items:center; margin-left:4px;">
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="openChangePasswordModal()"
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="openUserChangePasswordTab()"
                         title="Ganti Password / PIN Akun" style="padding:4px 7px; font-size:0.7rem; border-radius:12px;">
                         <i class="fa-solid fa-key" style="color:var(--accent-gold);"></i>
                     </button>
@@ -385,9 +381,14 @@
                             </div>
                         </div>
                     </div>
-                    <a href="#" target="_blank" class="btn btn-secondary btn-sm active-event-drive-btn" style="padding:6px 14px; font-size:0.75rem;">
-                        <i class="fa-brands fa-google-drive" style="color:var(--accent-neon);"></i> Buka Folder Penyimpanan Galeri
-                    </a>
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-neon btn-sm" onclick="syncGalleryWithGoogleDrive()" style="padding:6px 14px; font-size:0.75rem;">
+                            <i class="fa-solid fa-arrows-rotate"></i> Sinkronkan Foto Drive
+                        </button>
+                        <a href="#" target="_blank" class="btn btn-secondary btn-sm active-event-drive-btn" style="padding:6px 14px; font-size:0.75rem;">
+                            <i class="fa-brands fa-google-drive" style="color:var(--accent-neon);"></i> Buka Folder Penyimpanan Galeri
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -592,7 +593,7 @@
                         </div>
                     </div>
                     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="openChangePasswordModal()"
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="openUserChangePasswordTab()"
                             style="padding:8px 14px; font-size:0.8rem;">
                             <i class="fa-solid fa-key" style="color:var(--accent-gold);"></i> Ganti Password
                         </button>
@@ -619,16 +620,10 @@
                             </div>
                         </div>
 
-                        <div>
-                            <select class="form-input event-selector-dropdown"
-                                style="padding:8px 12px; font-size:0.82rem; min-width:220px; background:#0b0f19; border-color:var(--accent-neon); font-weight:700; color:var(--accent-neon);"
-                                onchange="onEventDropdownChange(this)">
-                            </select>
-                        </div>
                     </div>
                 </div>
 
-                <!-- Bar Navigasi Utama Menu 1 s/d 6 (Urut, Bersih & Bebas Ganda) -->
+                <!-- Bar Navigasi Utama Menu 1 s/d 5 (Urut, Bersih & Bebas Ganda) -->
                 <div class="admin-main-tabs-bar">
                     <button type="button" id="adminTabBtn-driveEvents"
                         class="btn btn-secondary btn-sm admin-tab-btn active"
@@ -651,8 +646,9 @@
                         onclick="switchAdminSubTab('systemConfig', this)">
                         <i class="fa-solid fa-gear"></i> 5. Branding & Sistem
                     </button>
+                    <!-- Menu 6 Ganti Password Mandiri: Tersembunyi secara bawaan, tampil saat user mengklik menu profil -->
                     <button type="button" id="adminTabBtn-accountProfile" class="btn btn-secondary btn-sm admin-tab-btn"
-                        onclick="switchAdminSubTab('accountProfile', this)">
+                        style="display:none;" onclick="switchAdminSubTab('accountProfile', this)">
                         <i class="fa-solid fa-key"></i> 6. Ganti Password
                     </button>
                 </div>
@@ -1701,6 +1697,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:8px; flex-wrap:wrap;">
                 <div id="lightboxCaptionEl" style="font-size:0.86rem; font-weight:700; text-align:left; color:#fff; display:flex; align-items:center; gap:6px;">
                     <i class="fa-solid fa-camera" style="color:var(--accent-neon);"></i> <span>-</span>
+                    <span id="lightboxIndexBadge" class="brand-badge" style="font-size:0.68rem; color:var(--accent-gold); margin-left:8px; border-color:var(--accent-gold); background:rgba(245,197,66,0.12); display:none;"></span>
                 </div>
                 
                 <!-- Zoom Controls -->
@@ -1718,12 +1715,18 @@
                 </div>
             </div>
 
-            <!-- Zoom & Pan Viewport -->
+            <!-- Zoom & Pan Viewport dengan Tombol Navigasi Kiri & Kanan -->
             <div id="lightboxViewport" style="position:relative; width:100%; height:65vh; max-height:70vh; background:#070a10; border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:grab; touch-action:none; border:1px solid var(--border-subtle);">
+                <button type="button" class="lightbox-nav-btn lightbox-nav-prev" onclick="navigateLightboxPhoto(-1); event.stopPropagation();" title="Foto Sebelumnya (Panah Kiri)">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
                 <img id="lightboxImgEl" src=""
                     style="max-width:100%; max-height:100%; object-fit:contain; transform-origin:center center; transition:transform 0.08s ease-out; user-select:none; -webkit-user-drag:none;" />
+                <button type="button" class="lightbox-nav-btn lightbox-nav-next" onclick="navigateLightboxPhoto(1); event.stopPropagation();" title="Foto Berikutnya (Panah Kanan)">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
                 <div id="lightboxZoomHint" style="position:absolute; bottom:10px; background:rgba(0,0,0,0.7); color:#ccc; font-size:0.68rem; padding:3px 8px; border-radius:6px; pointer-events:none;">
-                    Gunakan pinch / scroll mouse untuk zoom & geser
+                    Gunakan pinch / scroll mouse untuk zoom, atau tombol panah kiri-kanan untuk ganti foto
                 </div>
             </div>
 
