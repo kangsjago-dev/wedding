@@ -1719,6 +1719,8 @@ function applyRoleBasedAdminView() {
         var tabQuota = document.getElementById('adminTabBtn-quotaDevices');
         var tabMod = document.getElementById('adminTabBtn-mod');
         var tabSystem = document.getElementById('adminTabBtn-systemConfig');
+        var tabProfile = document.getElementById('adminTabBtn-accountProfile');
+        if (tabProfile) tabProfile.style.display = 'inline-flex';
 
         if (role === 'Operator') {
             if (tabDrive) tabDrive.style.display = 'none';
@@ -1726,7 +1728,11 @@ function applyRoleBasedAdminView() {
             if (tabQuota) tabQuota.style.display = 'inline-flex';
             if (tabMod) tabMod.style.display = 'inline-flex';
             if (tabSystem) tabSystem.style.display = 'none';
-            switchAdminSubTab('mod', tabMod);
+            var curOpSub = localStorage.getItem('SATUALBUM_LAST_ADMIN_SUBTAB') || 'mod';
+            if (curOpSub !== 'mod' && curOpSub !== 'quotaDevices' && curOpSub !== 'accountProfile') {
+                curOpSub = 'mod';
+            }
+            switchAdminSubTab(curOpSub, document.getElementById('adminTabBtn-' + curOpSub) || tabMod);
         } else if (role === 'Admin Event') {
             if (tabDrive) tabDrive.style.display = 'inline-flex';
             if (tabFrame) tabFrame.style.display = 'inline-flex';
@@ -1746,6 +1752,9 @@ function applyRoleBasedAdminView() {
             switchAdminSubTab(lastSub, document.getElementById('adminTabBtn-' + lastSub) || tabDrive);
         }
         renderEventSelectorDropdown();
+        if (typeof populateActiveEventDriveForm === 'function') {
+            populateActiveEventDriveForm();
+        }
         renderAdminEventsTable();
         if (typeof startAdminSessionHeartbeat === 'function') {
             startAdminSessionHeartbeat();
@@ -1989,6 +1998,7 @@ function setActiveEventByAdmin(eventId) {
     renderCustomVoteCategoriesAdmin();
     renderAdminDeviceManagementAndLogs();
     renderAdminEventScopeSummary();
+    if (typeof populateActiveEventDriveForm === 'function') populateActiveEventDriveForm();
     updateAutoRenamePreview();
     renderAdminEventsTable();
     if (typeof updateActiveEventHeroBanner === 'function') updateActiveEventHeroBanner();
@@ -2594,6 +2604,7 @@ function removePhotoMomentCategory(idx) {
     cancelEditPhotoMomentCategory();
     renderPhotoMomentCategoriesUI();
     renderAdminEventScopeSummary();
+    if (typeof populateActiveEventDriveForm === 'function') populateActiveEventDriveForm();
     updateAutoRenamePreview();
     syncConfigToBackend('Kategori momen foto "' + (removed[0] ? removed[0].name : '') + '" dihapus dari event ini.');
 }
@@ -2610,6 +2621,7 @@ function resetPhotoMomentCategoriesToDefault() {
     cancelEditPhotoMomentCategory();
     renderPhotoMomentCategoriesUI();
     renderAdminEventScopeSummary();
+    if (typeof populateActiveEventDriveForm === 'function') populateActiveEventDriveForm();
     updateAutoRenamePreview();
     syncConfigToBackend('Kategori momen foto event ini dikembalikan ke pengaturan default.');
 }

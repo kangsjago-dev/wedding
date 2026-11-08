@@ -558,18 +558,6 @@
                             </button>
                         </div>
                     </div>
-                    <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:2px; font-size:0.7rem;">
-                        <span style="color:var(--text-muted); font-size:0.68rem; width:100%; text-align:center;">Pilih Akun Cepat (Klik untuk Isi Otomatis):</span>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="quickFillAdminLogin('ilham', '111')" style="padding:4px 8px; font-size:0.68rem; border-color:rgba(0,255,170,0.35);">
-                            👑 ilham (111)
-                        </button>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="quickFillAdminLogin('superadmin', '123456')" style="padding:4px 8px; font-size:0.68rem; border-color:rgba(0,255,170,0.35);">
-                            👑 superadmin (123456)
-                        </button>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="quickFillAdminLogin('operator', '000000')" style="padding:4px 8px; font-size:0.68rem;">
-                            📸 operator (000000)
-                        </button>
-                    </div>
                     <button type="submit" class="btn btn-neon"
                         style="width:100%; padding:12px; margin-top:4px; font-size:0.9rem;">
                         <i class="fa-solid fa-shield-halved"></i> Login
@@ -640,7 +628,7 @@
                     </div>
                 </div>
 
-                <!-- Bar Navigasi Utama Menu 1 s/d 5 (Urut, Bersih & Bebas Ganda) -->
+                <!-- Bar Navigasi Utama Menu 1 s/d 6 (Urut, Bersih & Bebas Ganda) -->
                 <div class="admin-main-tabs-bar">
                     <button type="button" id="adminTabBtn-driveEvents"
                         class="btn btn-secondary btn-sm admin-tab-btn active"
@@ -663,6 +651,10 @@
                         onclick="switchAdminSubTab('systemConfig', this)">
                         <i class="fa-solid fa-gear"></i> 5. Branding & Sistem
                     </button>
+                    <button type="button" id="adminTabBtn-accountProfile" class="btn btn-secondary btn-sm admin-tab-btn"
+                        onclick="switchAdminSubTab('accountProfile', this)">
+                        <i class="fa-solid fa-key"></i> 6. Ganti Password
+                    </button>
                 </div>
 
                 <!-- =============================================================== -->
@@ -670,39 +662,53 @@
                 <!-- =============================================================== -->
                 <div id="adminSub-driveEvents" class="admin-panel-box">
 
-                    <!-- Card 1A: Daftar Multi-Event & Drive Per-Event -->
+                    <!-- Card 1A: Menu Input Link Folder Event (Google Drive Penyimpanan Galeri & Foto Event Ini) -->
                     <div class="glass-card" style="margin-bottom:16px; border-color:rgba(0,255,170,0.38);">
                         <div
                             style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
                             <div>
-                                <div style="font-weight:800; color:var(--accent-neon); font-size:1.02rem;">
-                                    <i class="fa-solid fa-calendar-check"></i> Daftar Event & Target Google Drive
-                                    Per-Event (Master & Subfolder)
+                                <div style="font-weight:800; color:var(--accent-neon); font-size:1.02rem; display:flex; align-items:center; gap:8px;">
+                                    <i class="fa-brands fa-google-drive"></i> Link Folder Penyimpanan Foto — Khusus Event:
+                                    <span class="active-event-title" style="color:var(--accent-gold);">-</span>
                                 </div>
-                                <div style="font-size:0.75rem; color:var(--text-muted);">
-                                    Setiap event memiliki Master Google Drive & Subfolder tersendiri. Klik <strong>"Buat
-                                        Event Baru"</strong> untuk mengatur Drive & Subfolder otomatis sesuai Nama
-                                    Pengantin & Tanggal.
+                                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px;">
+                                    Tentukan link folder Google Drive untuk event yang sedang aktif. Seluruh foto yang diambil oleh tamu pada event ini akan langsung tersimpan ke folder Google Drive ini.
                                 </div>
                             </div>
-                            <button type="button" class="btn btn-neon btn-sm" onclick="openEventModal()">
-                                <i class="fa-solid fa-plus"></i> Buat Event Baru
-                            </button>
+                            <div style="display:flex; gap:6px;">
+                                <a id="adminEventDriveOpenBtn" href="#" target="_blank" class="btn btn-secondary btn-sm"
+                                    style="color:var(--accent-neon); border-color:rgba(0,255,170,0.35); text-decoration:none;"
+                                    title="Buka Folder Ini di Google Drive">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Folder Drive
+                                </a>
+                            </div>
                         </div>
-                        <div class="table-responsive">
-                            <table class="zett-table">
-                                <thead>
-                                    <tr>
-                                        <th>ID Event</th>
-                                        <th>Nama Acara / Pengantin</th>
-                                        <th>Tanggal</th>
-                                        <th>Akses Google Drive Event</th>
-                                        <th>Status</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="adminEventsTableBody"></tbody>
-                            </table>
+
+                        <div style="display:flex; flex-direction:column; gap:12px;">
+                            <div>
+                                <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span>Link Folder Google Drive Event Ini:</span>
+                                    <span style="font-size:0.68rem; color:var(--text-muted);">Format: URL lengkap folder atau ID folder</span>
+                                </label>
+                                <div class="input-icon-wrap">
+                                    <i class="fa-solid fa-folder-open input-prefix-icon" style="color:var(--accent-neon);"></i>
+                                    <input type="url" id="adminEventDriveUrlInput" class="form-input"
+                                        placeholder="https://drive.google.com/drive/folders/1..."
+                                        oninput="onAdminEventDriveUrlInput(this.value)" />
+                                </div>
+                            </div>
+
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding:10px 14px; background:rgba(0,0,0,0.25); border:1px solid var(--border-subtle); border-radius:10px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:0.72rem; color:var(--text-muted);">Folder ID Terdeteksi:</span>
+                                    <span id="adminEventDriveFolderIdBadge" class="mono-badge" style="color:var(--accent-gold); font-size:0.75rem;">-</span>
+                                </div>
+                                <div style="display:flex; gap:8px;">
+                                    <button type="button" class="btn btn-neon btn-sm" onclick="saveActiveEventDriveFolder()">
+                                        <i class="fa-solid fa-floppy-disk"></i> Simpan Link Folder Event
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1298,6 +1304,61 @@
                                 <i class="fa-solid fa-arrows-rotate"></i> Simpan & Sinkronkan Database
                             </button>
                         </div>
+                    </div>
+                </div>
+
+                <!-- =============================================================== -->
+                <!-- MENU 6: GANTI PASSWORD MANDIRI & PROFIL AKUN                    -->
+                <!-- =============================================================== -->
+                <div id="adminSub-accountProfile" class="admin-panel-box" style="display:none;">
+                    <div class="glass-card" style="max-width:540px; margin:0 auto; border-color:rgba(245,197,66,0.35);">
+                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                            <div style="width:48px; height:48px; border-radius:14px; background:linear-gradient(135deg, rgba(245,197,66,0.2), rgba(255,183,3,0.3)); border:1px solid var(--accent-gold); display:flex; align-items:center; justify-content:center; color:var(--accent-gold); font-size:1.4rem; flex-shrink:0;">
+                                <i class="fa-solid fa-user-lock"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight:800; color:#fff; font-size:1.1rem;">
+                                    Ganti Password Akun Mandiri
+                                </div>
+                                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+                                    Akun: <strong id="selfProfileUsernameLabel" style="color:var(--accent-neon);">-</strong> | Role: <span id="selfProfileRoleLabel" class="brand-badge" style="font-size:0.65rem;">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form onsubmit="event.preventDefault(); handleSelfChangePasswordSubmit();"
+                            style="display:flex; flex-direction:column; gap:14px;">
+                            <div id="selfChangePasswordAlertBox" style="display:none; padding:10px 14px; border-radius:10px; background:rgba(255,59,48,0.12); border:1px solid #ff3b30; color:#ff8080; font-size:0.78rem; line-height:1.4;"></div>
+
+                            <div>
+                                <label class="form-label" style="color:#cbd5e1;">Password / PIN Lama Saat Ini</label>
+                                <div class="input-icon-wrap">
+                                    <i class="fa-solid fa-lock input-prefix-icon"></i>
+                                    <input type="password" id="selfChangePasswordOldPin" class="form-input" required
+                                        placeholder="Masukkan Password / PIN Lama Anda" autocomplete="current-password" />
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label" style="color:#cbd5e1;">Password / PIN Baru (Minimal 4 Karakter)</label>
+                                <div class="input-icon-wrap">
+                                    <i class="fa-solid fa-key input-prefix-icon" style="color:var(--accent-gold);"></i>
+                                    <input type="password" id="selfChangePasswordNewPin" class="form-input" required minlength="4"
+                                        placeholder="Masukkan Password Baru" autocomplete="new-password" />
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label" style="color:#cbd5e1;">Konfirmasi Password / PIN Baru</label>
+                                <div class="input-icon-wrap">
+                                    <i class="fa-solid fa-circle-check input-prefix-icon" style="color:var(--accent-neon);"></i>
+                                    <input type="password" id="selfChangePasswordConfirmPin" class="form-input" required minlength="4"
+                                        placeholder="Ulangi Password Baru" autocomplete="new-password" />
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-gold" style="width:100%; padding:12px; margin-top:6px; font-size:0.9rem;">
+                                <i class="fa-solid fa-floppy-disk"></i> Simpan Password Baru Saya
+                            </button>
+                        </form>
                     </div>
                 </div>
 

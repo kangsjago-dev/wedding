@@ -35,6 +35,7 @@ function switchAdminSubTab(subKey, btnEl) {
 
     renderAdminEventScopeSummary();
     if (subKey === 'driveEvents') {
+        populateActiveEventDriveForm();
         renderAdminEventsTable();
         renderPhotoMomentCategoriesUI();
         renderCustomVoteCategoriesAdmin();
@@ -55,6 +56,236 @@ function switchAdminSubTab(subKey, btnEl) {
         applyBrandingToDom();
         loadAdminUsersList();
     }
+    if (subKey === 'accountProfile') {
+        populateSelfProfileForm();
+    }
+}
+
+// =========================================================================
+// MENU INPUT LINK FOLDER EVENT (GOOGLE DRIVE PENYIMPANAN GALERI PER-EVENT)
+// =========================================================================
+function populateActiveEventDriveForm() {
+    var curEv = null;
+    var events = APP_STATE.events || [];
+    for (var i = 0; i < events.length; i++) {
+        if (events[i].eventId === APP_STATE.activeEventId) {
+            curEv = events[i];
+            break;
+        }
+    }
+    if (!curEv && events.length > 0) curEv = events[0];
+
+    var urlInput = document.getElementById('adminEventDriveUrlInput');
+    var badgeId = document.getElementById('adminEventDriveFolderIdBadge');
+    var openBtn = document.getElementById('adminEventDriveOpenBtn');
+
+    if (!curEv) {
+        if (urlInput) urlInput.value = '';
+        if (badgeId) badgeId.textContent = '-';
+        if (openBtn) {
+            openBtn.href = '#';
+            openBtn.style.opacity = '0.5';
+            openBtn.style.pointerEvents = 'none';
+        }
+        return;
+    }
+
+    var folderUrl = curEv.targetDriveFolderUrl || '';
+    var folderId = curEv.targetDriveFolderId || (folderUrl ? extractDriveFolderIdClient(folderUrl) : '');
+
+    if (urlInput) urlInput.value = folderUrl;
+    if (badgeId) badgeId.textContent = folderId || '-';
+    if (openBtn) {
+        if (folderId || folderUrl) {
+            openBtn.href = buildGoogleDriveFolderUrl(folderId, folderUrl);
+            openBtn.style.opacity = '1';
+            openBtn.style.pointerEvents = 'auto';
+        } else {
+            openBtn.href = '#';
+            openBtn.style.opacity = '0.5';
+            openBtn.style.pointerEvents = 'none';
+        }
+    }
+}
+
+function onAdminEventDriveUrlInput(val) {
+    var clean = String(val || '').trim();
+    var folderId = extractDriveFolderIdClient(clean);
+    var badgeId = document.getElementById('adminEventDriveFolderIdBadge');
+    var openBtn = document.getElementById('adminEventDriveOpenBtn');
+
+    if (badgeId) badgeId.textContent = folderId || '-';
+    if (openBtn) {
+        if (folderId || clean) {
+            openBtn.href = buildGoogleDriveFolderUrl(folderId, clean);
+            openBtn.style.opacity = '1';
+            openBtn.style.pointerEvents = 'auto';
+        } else {
+            openBtn.href = '#';
+            openBtn.style.opacity = '0.5';
+            openBtn.style.pointerEvents = 'none';
+        }
+    }
+}
+
+function saveActiveEventDriveFolder() {
+    var urlInput = document.getElementById('adminEventDriveUrlInput');
+    var val = urlInput ? urlInput.value.trim() : '';
+    var folderId = extractDriveFolderIdClient(val);
+
+    var curEv = null;
+    var events = APP_STATE.events || [];
+    for (var i = 0; i < events.length; i++) {
+        if (events[i].eventId === APP_STATE.activeEventId) {
+            curEv = events[i];
+            break;
+        }
+    }
+
+    if (!curEv) {
+        showToast('Event aktif tidak ditemukan.', true);
+        return;
+    }
+
+    curEv.targetDriveFolderUrl = val;
+    curEv.targetDriveFolderId = folderId;
+
+    if (!APP_STATE.eventDriveConfigMap) APP_STATE.eventDriveConfigMap = {};
+    if (!APP_STATE.eventDriveConfigMap[curEv.eventId]) {
+        APP_STATE.eventDriveConfigMap[curEv.eventId] = {};
+    }
+    APP_STATE.eventDriveConfigMap[curEv.eventId].masterDriveUrl = val;
+    APP_STATE.eventDriveConfigMap[curEv.eventId].subfolderMode = 'direct_link';
+
+    saveExtendedConfigCache(true);
+    try {
+        localStorage.setItem('SATUALBUM_EVENTS_CACHE', JSON.stringify(APP_STATE.events));
+    } catch (e) { }
+
+    showLoadingOverlay(true, 'Menyimpan link folder Google Drive event...');
+    callBackendApi('saveEventSettings', {
+        eventId: curEv.eventId,
+        targetDriveFolderUrl: val,
+        targetDriveFolderId: folderId
+    }, function () {
+        showLoadingOverlay(false);
+        showToast('Link folder Google Drive untuk event "' + curEv.eventName + '" berhasil disimpan ke database!');
+        populateActiveEventDriveForm();
+    }, function () {
+        showLoadingOverlay(false);
+        showToast('Link folder disimpan secara lokal di perangkat.');
+        populateActiveEventDriveForm();
+    }, 8000);
+}
+
+// =========================================================================
+// MENU GANTI PASSWORD MANDIRI
+// =========================================================================
+function populateSelfProfileForm() {
+    var u = APP_STATE.currentUser;
+    var userLabel = document.getElementById('selfProfileUsernameLabel');
+    var roleLabel = document.getElementById('selfProfileRoleLabel');
+    var oldPinEl = document.getElementById('selfChangePasswordOldPin');
+    var newPinEl = document.getElementById('selfChangePasswordNewPin');
+    var confirmPinEl = document.getElementById('selfChangePasswordConfirmPin');
+    var alertBox = document.getElementById('selfChangePasswordAlertBox');
+
+    if (userLabel) userLabel.textContent = u ? (u.fullName || u.username) : '-';
+    if (roleLabel) roleLabel.textContent = u ? u.roleLevel : '-';
+    if (oldPinEl) oldPinEl.value = '';
+    if (newPinEl) newPinEl.value = '';
+    if (confirmPinEl) confirmPinEl.value = '';
+    if (alertBox) {
+        alertBox.style.display = 'none';
+        alertBox.textContent = '';
+    }
+}
+
+function handleSelfChangePasswordSubmit() {
+    var u = APP_STATE.currentUser;
+    if (!u) {
+        showToast('Silakan login terlebih dahulu untuk mengganti password.', true);
+        return;
+    }
+
+    var oldPinEl = document.getElementById('selfChangePasswordOldPin');
+    var newPinEl = document.getElementById('selfChangePasswordNewPin');
+    var confirmPinEl = document.getElementById('selfChangePasswordConfirmPin');
+    var alertBox = document.getElementById('selfChangePasswordAlertBox');
+
+    var oldPin = oldPinEl ? oldPinEl.value.trim() : '';
+    var newPin = newPinEl ? newPinEl.value.trim() : '';
+    var confirmPin = confirmPinEl ? confirmPinEl.value.trim() : '';
+
+    if (alertBox) {
+        alertBox.style.display = 'none';
+        alertBox.textContent = '';
+    }
+
+    if (!oldPin) {
+        if (alertBox) {
+            alertBox.style.display = 'block';
+            alertBox.textContent = 'Password / PIN lama wajib diisi.';
+        }
+        showToast('Password / PIN lama wajib diisi.', true);
+        return;
+    }
+
+    if (!newPin || newPin.length < 4) {
+        if (alertBox) {
+            alertBox.style.display = 'block';
+            alertBox.textContent = 'Password / PIN baru minimal 4 karakter.';
+        }
+        showToast('Password / PIN baru minimal 4 karakter.', true);
+        return;
+    }
+
+    if (newPin !== confirmPin) {
+        if (alertBox) {
+            alertBox.style.display = 'block';
+            alertBox.textContent = 'Konfirmasi Password baru tidak cocok dengan Password baru.';
+        }
+        showToast('Konfirmasi Password baru tidak cocok.', true);
+        return;
+    }
+
+    if (oldPin === newPin) {
+        if (alertBox) {
+            alertBox.style.display = 'block';
+            alertBox.textContent = 'Password baru tidak boleh sama dengan password lama.';
+        }
+        showToast('Password baru tidak boleh sama dengan password lama.', true);
+        return;
+    }
+
+    showLoadingOverlay(true, 'Memperbarui password akun Anda di database...');
+    callBackendApi('changeUserPassword', {
+        userId: u.userId,
+        username: u.username,
+        oldPin: oldPin,
+        newPin: newPin
+    }, function (res) {
+        showLoadingOverlay(false);
+        if (res && res.status === 'success') {
+            if (oldPinEl) oldPinEl.value = '';
+            if (newPinEl) newPinEl.value = '';
+            if (confirmPinEl) confirmPinEl.value = '';
+            showToast('Password akun Anda berhasil diperbarui! Gunakan password baru ini untuk login berikutnya.');
+        } else {
+            if (alertBox) {
+                alertBox.style.display = 'block';
+                alertBox.textContent = (res && res.message) || 'Gagal memperbarui password.';
+            }
+            showToast((res && res.message) || 'Gagal memperbarui password.', true);
+        }
+    }, function () {
+        showLoadingOverlay(false);
+        if (alertBox) {
+            alertBox.style.display = 'block';
+            alertBox.textContent = 'Gagal terhubung ke backend server. Periksa jaringan Anda.';
+        }
+        showToast('Gagal terhubung ke server backend.', true);
+    }, 8000);
 }
 
 function quickFillAdminLogin(u, p) {
@@ -1629,6 +1860,10 @@ function initLightboxInteractiveControls() {
 
 // MODAL GANTI PASSWORD / PIN AKUN PENGGUNA
 function openChangePasswordModal(userId, username) {
+    if (!userId && !username && document.getElementById('adminSub-accountProfile')) {
+        switchAdminSubTab('accountProfile');
+        return;
+    }
     var modal = document.getElementById('changePasswordModal');
     if (!modal) return;
     var targetId = userId || (APP_STATE.currentUser ? APP_STATE.currentUser.userId : '');
