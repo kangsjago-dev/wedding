@@ -1743,17 +1743,6 @@ function applyRoleBasedAdminView() {
         if (headerLoginBtn) headerLoginBtn.style.display = 'inline-flex';
         if (headerCapsule) headerCapsule.style.display = 'none';
 
-        // RESET TAMPILAN FORM USERNAME & PIN SAAT LOGOUT
-        var uInput = document.getElementById('adminLoginUsername');
-        var pInput = document.getElementById('adminLoginPin');
-        if (uInput) uInput.value = '';
-        if (pInput) pInput.value = '';
-        var alertBox = document.getElementById('adminLoginAlertBox');
-        if (alertBox) {
-            alertBox.style.display = 'none';
-            alertBox.textContent = '';
-        }
-
         if (loginBoxEl) loginBoxEl.style.display = 'block';
         if (containerEl) containerEl.style.display = 'none';
         if (heroAdminBtns) heroAdminBtns.style.display = 'none';
