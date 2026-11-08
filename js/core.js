@@ -91,6 +91,12 @@ if (savedEndpoint) {
 var MOCK_INITIAL_BUNDLE = {
     status: 'success',
     config: APP_STATE.config,
+    users: [
+        { userId: 'USR-0001', username: 'superadmin', fullName: 'Super Admin Dispocam', userPin: '000000', roleLevel: 'Super Admin', accountStatus: 'Active', createdAt: '29/10/2026 00:00:00' },
+        { userId: 'USR-0002', username: 'adminevent', fullName: 'Admin Acara Dimas & Karyn', userPin: '123456', roleLevel: 'Admin Event', accountStatus: 'Active', createdAt: '29/10/2026 00:00:00' },
+        { userId: 'USR-0003', username: 'operator', fullName: 'Operator Stan Foto', userPin: '112233', roleLevel: 'Operator', accountStatus: 'Active', createdAt: '29/10/2026 00:00:00' },
+        { userId: 'USR-0004', username: 'ilham', fullName: 'Ilham', userPin: '123456', roleLevel: 'Super Admin', accountStatus: 'Active', createdAt: '08/11/2026 07:11:00' }
+    ],
     events: [
         {
             eventId: 'EVT-0001',
@@ -107,6 +113,24 @@ var MOCK_INITIAL_BUNDLE = {
             eventDate: '30/10/2026',
             targetDriveFolderUrl: 'https://drive.google.com/drive/folders/1EngagementRaniaPutraFolderID777',
             targetDriveFolderId: '1EngagementRaniaPutraFolderID777',
+            backgroundMusicUrl: '',
+            eventStatus: 'Active'
+        },
+        {
+            eventId: 'EVT-0003',
+            eventName: 'olala dan minas',
+            eventDate: '30/10/2026',
+            targetDriveFolderUrl: 'https://drive.google.com/drive/folders/1ZQaO3hu6n_TGajA-6Y7AJZIP8_0_1234',
+            targetDriveFolderId: '1ZQaO3hu6n_TGajA-6Y7AJZIP8_0_1234',
+            backgroundMusicUrl: '',
+            eventStatus: 'Active'
+        },
+        {
+            eventId: 'EVT-0004',
+            eventName: 'Jeddika & Gracia',
+            eventDate: '01/11/2026',
+            targetDriveFolderUrl: 'https://drive.google.com/drive/folders/1FZoLfD0fczTX2N6y-xAl-G4Kg_0_5678',
+            targetDriveFolderId: '1FZoLfD0fczTX2N6y-xAl-G4Kg_0_5678',
             backgroundMusicUrl: '',
             eventStatus: 'Active'
         }
@@ -137,6 +161,45 @@ var MOCK_INITIAL_BUNDLE = {
             votes: 3,
             votesByCategory: { 'Terlucu & Heboh 😂': 3 },
             deviceId: 'DEV-GUEST-02'
+        },
+        {
+            photoId: 'PHT-0003',
+            eventId: 'EVT-0001',
+            category: 'Best Grup',
+            fileName: 'The_Wedding_of_Karyn_Dimas_Best_Grup_1930.jpg',
+            directImageUrl: 'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=900&q=80',
+            uploadedBy: 'Grup Bridesmaids',
+            uploadedAt: '29/10/2026 19:30:00',
+            awardTitle: 'Grup Paling Heboh ✨',
+            votes: 4,
+            votesByCategory: { 'Terfavorit ❤️': 2, 'Terlucu & Heboh 😂': 2 },
+            deviceId: 'DEV-GUEST-03'
+        },
+        {
+            photoId: 'PHT-0004',
+            eventId: 'EVT-0001',
+            category: 'Candid Acara',
+            fileName: 'The_Wedding_of_Karyn_Dimas_Candid_1945.jpg',
+            directImageUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=900&q=80',
+            uploadedBy: 'Budi Santoso',
+            uploadedAt: '29/10/2026 19:45:00',
+            awardTitle: '',
+            votes: 2,
+            votesByCategory: { 'Terkeren 🔥': 2 },
+            deviceId: 'DEV-GUEST-04'
+        },
+        {
+            photoId: 'PHT-0005',
+            eventId: 'EVT-0001',
+            category: 'Keluarga & VIP',
+            fileName: 'The_Wedding_of_Karyn_Dimas_Keluarga_2000.jpg',
+            directImageUrl: 'https://images.unsplash.com/photo-1544078751-58fee2d8a03b?auto=format&fit=crop&w=900&q=80',
+            uploadedBy: 'Keluarga Besar',
+            uploadedAt: '29/10/2026 20:00:00',
+            awardTitle: 'Keluarga Paling Kompak 👨‍👩‍👧‍👦',
+            votes: 6,
+            votesByCategory: { 'Terfavorit ❤️': 4, 'Kostum Terbaik 👗': 2 },
+            deviceId: 'DEV-GUEST-05'
         }
     ]
 };
@@ -1208,6 +1271,42 @@ window.addEventListener('DOMContentLoaded', function () {
         APP_STATE.events = MOCK_INITIAL_BUNDLE.events.slice();
     }
 
+    // Muat cache user seketika agar tabel manajemen user tidak kosong
+    try {
+        var cachedUsersRaw = localStorage.getItem('SATUALBUM_USERS_CACHE');
+        if (cachedUsersRaw) {
+            var parsedUsers = JSON.parse(cachedUsersRaw);
+            if (Array.isArray(parsedUsers) && parsedUsers.length > 0) {
+                APP_STATE.users = parsedUsers;
+            }
+        }
+    } catch (eUCache) { }
+
+    if (!APP_STATE.users || APP_STATE.users.length === 0) {
+        APP_STATE.users = (MOCK_INITIAL_BUNDLE.users || []).slice();
+    }
+
+    // Muat cache galeri foto seketika agar galeri foto langsung terisi
+    try {
+        var cachedPhotosRaw = localStorage.getItem('SATUALBUM_PHOTOS_CACHE');
+        if (cachedPhotosRaw) {
+            var parsedPhotos = JSON.parse(cachedPhotosRaw);
+            if (Array.isArray(parsedPhotos) && parsedPhotos.length > 0) {
+                APP_STATE.allEventPhotos = parsedPhotos;
+                APP_STATE.photos = parsedPhotos.filter(function (p) {
+                    return !p.eventId || p.eventId === 'ALL' || p.eventId === APP_STATE.activeEventId;
+                });
+            }
+        }
+    } catch (ePCache) { }
+
+    if (!APP_STATE.allEventPhotos || APP_STATE.allEventPhotos.length === 0) {
+        APP_STATE.allEventPhotos = (MOCK_INITIAL_BUNDLE.photos || []).slice();
+        APP_STATE.photos = APP_STATE.allEventPhotos.filter(function (p) {
+            return !p.eventId || p.eventId === 'ALL' || p.eventId === APP_STATE.activeEventId;
+        });
+    }
+
     // Muat cache konfigurasi lanjutan sebelum jaringan selesai
     var extCache = loadExtendedConfigCache();
     if (extCache) {
@@ -1407,6 +1506,42 @@ function mergeServerConfigWithLocalExt(serverCfg) {
     return merged;
 }
 
+function setLiveSyncIndicator(isLive) {
+    var badge = document.getElementById('syncStatusBadge');
+    if (!badge) return;
+    if (isLive === 'SYNCING...') {
+        badge.textContent = 'SYNCING...';
+        badge.style.background = 'rgba(0,217,255,0.15)';
+        badge.style.color = '#00d9ff';
+        badge.style.borderColor = '#00d9ff';
+    } else if (isLive) {
+        badge.textContent = 'LIVE SYNC';
+        badge.style.background = 'rgba(0,255,170,0.15)';
+        badge.style.color = 'var(--accent-neon)';
+        badge.style.borderColor = 'var(--accent-neon)';
+    } else {
+        badge.textContent = 'OFFLINE CACHE';
+        badge.style.background = 'rgba(245,197,66,0.15)';
+        badge.style.color = 'var(--accent-gold)';
+        badge.style.borderColor = 'var(--accent-gold)';
+    }
+}
+
+function useMockDataFallback() {
+    APP_STATE.config = mergeServerConfigWithLocalExt(MOCK_INITIAL_BUNDLE.config);
+    APP_STATE.events = MOCK_INITIAL_BUNDLE.events.slice();
+    if (!APP_STATE.users || APP_STATE.users.length === 0) {
+        APP_STATE.users = (MOCK_INITIAL_BUNDLE.users || []).slice();
+    }
+    if (!APP_STATE.allEventPhotos || APP_STATE.allEventPhotos.length === 0) {
+        APP_STATE.allEventPhotos = (MOCK_INITIAL_BUNDLE.photos || []).slice();
+        APP_STATE.photos = APP_STATE.allEventPhotos.filter(function (p) {
+            return !p.eventId || p.eventId === 'ALL' || p.eventId === APP_STATE.activeEventId;
+        });
+    }
+    setLiveSyncIndicator(false);
+}
+
 function loadInitialApplicationData() {
     setLiveSyncIndicator('SYNCING...');
 
@@ -1426,6 +1561,27 @@ function loadInitialApplicationData() {
                 try {
                     localStorage.setItem('SATUALBUM_CONFIG_CACHE', JSON.stringify(res.config));
                 } catch (eCf) { }
+            }
+            if (res.users && Array.isArray(res.users) && res.users.length > 0) {
+                APP_STATE.users = res.users;
+                try {
+                    localStorage.setItem('SATUALBUM_USERS_CACHE', JSON.stringify(res.users));
+                } catch (eU) { }
+                if (typeof renderAdminUsersTable === 'function') {
+                    renderAdminUsersTable();
+                }
+            }
+            if (res.photos && Array.isArray(res.photos) && res.photos.length > 0) {
+                APP_STATE.allEventPhotos = res.photos;
+                APP_STATE.photos = res.photos.filter(function (p) {
+                    return !p.eventId || p.eventId === 'ALL' || p.eventId === APP_STATE.activeEventId;
+                });
+                try {
+                    localStorage.setItem('SATUALBUM_PHOTOS_CACHE', JSON.stringify(res.photos));
+                } catch (eP) { }
+                if (typeof renderGalleryGrid === 'function') {
+                    renderGalleryGrid();
+                }
             }
             if (APP_STATE.events.length > 0) {
                 var resolvedActive = resolveEventIdFromInputOrQuery(APP_STATE.activeEventId);
@@ -1486,6 +1642,8 @@ function executeUiUpdates() {
     renderCustomVoteCategoriesAdmin();
     renderAdminDeviceManagementAndLogs();
     renderAdminEventScopeSummary();
+    if (typeof renderAdminUsersTable === 'function') renderAdminUsersTable();
+    if (typeof renderGalleryGrid === 'function') renderGalleryGrid();
     reloadGalleryFeed(true);
     reloadGuestbookFeed(true);
     if (APP_STATE.currentUser) {
@@ -1505,39 +1663,8 @@ function executeUiUpdates() {
         if (typeof reloadGuestbookFeed === 'function') reloadGuestbookFeed(true);
         if (typeof renderVoteSection === 'function') renderVoteSection();
         if (typeof renderLiveLeaderboard === 'function') renderLiveLeaderboard();
-        if (APP_STATE.currentUser && typeof loadAdminUsersList === 'function') {
+        if (typeof loadAdminUsersList === 'function') {
             loadAdminUsersList();
-        }
-    }
-
-    function useMockDataFallback() {
-        APP_STATE.config = mergeServerConfigWithLocalExt(MOCK_INITIAL_BUNDLE.config);
-        APP_STATE.events = MOCK_INITIAL_BUNDLE.events;
-        if (APP_STATE.allEventPhotos.length === 0) {
-            APP_STATE.allEventPhotos = mergePhotosWithLocalVoteCache(MOCK_INITIAL_BUNDLE.photos.slice());
-            APP_STATE.photos = APP_STATE.allEventPhotos.slice();
-        }
-        setLiveSyncIndicator(false);
-    }
-
-    function setLiveSyncIndicator(isLive) {
-        var badge = document.getElementById('syncStatusBadge');
-        if (!badge) return;
-        if (isLive === 'SYNCING...') {
-            badge.textContent = 'SYNCING...';
-            badge.style.background = 'rgba(0,217,255,0.15)';
-            badge.style.color = '#00d9ff';
-            badge.style.borderColor = '#00d9ff';
-        } else if (isLive) {
-            badge.textContent = 'LIVE SYNC';
-            badge.style.background = 'rgba(0,255,170,0.15)';
-            badge.style.color = 'var(--accent-neon)';
-            badge.style.borderColor = 'var(--accent-neon)';
-        } else {
-            badge.textContent = 'OFFLINE CACHE';
-            badge.style.background = 'rgba(245,197,66,0.15)';
-            badge.style.color = 'var(--accent-gold)';
-            badge.style.borderColor = 'var(--accent-gold)';
         }
     }
 }

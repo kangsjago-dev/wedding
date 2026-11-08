@@ -1667,7 +1667,7 @@
             <form onsubmit="event.preventDefault(); handleAdminChangePasswordSubmit();"
                 style="display:flex; flex-direction:column; gap:12px;">
                 <input type="hidden" id="changePasswordTargetUserId" value="" />
-                <div>
+                <div id="changePasswordOldPinGroup">
                     <label class="form-label">Password / PIN Lama Saat Ini</label>
                     <input type="password" id="changePasswordOldPin" class="form-input" required
                         placeholder="Masukkan Password / PIN Lama" autocomplete="current-password" />

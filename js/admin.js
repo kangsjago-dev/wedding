@@ -270,6 +270,21 @@ function handleSelfChangePasswordSubmit() {
             if (oldPinEl) oldPinEl.value = '';
             if (newPinEl) newPinEl.value = '';
             if (confirmPinEl) confirmPinEl.value = '';
+            if (APP_STATE.currentUser) {
+                APP_STATE.currentUser.userPin = newPin;
+                saveAdminSessionToStorage(APP_STATE.currentUser);
+            }
+            if (Array.isArray(APP_STATE.users)) {
+                for (var i = 0; i < APP_STATE.users.length; i++) {
+                    if (APP_STATE.users[i].userId === u.userId) {
+                        APP_STATE.users[i].userPin = newPin;
+                        break;
+                    }
+                }
+                try {
+                    localStorage.setItem('SATUALBUM_USERS_CACHE', JSON.stringify(APP_STATE.users));
+                } catch (eU) { }
+            }
             showToast('Password akun Anda berhasil diperbarui! Gunakan password baru ini untuk login berikutnya.');
         } else {
             if (alertBox) {
@@ -280,11 +295,26 @@ function handleSelfChangePasswordSubmit() {
         }
     }, function () {
         showLoadingOverlay(false);
-        if (alertBox) {
-            alertBox.style.display = 'block';
-            alertBox.textContent = 'Gagal terhubung ke backend server. Periksa jaringan Anda.';
+        // Pembaruan lokal jika offline
+        if (APP_STATE.currentUser) {
+            APP_STATE.currentUser.userPin = newPin;
+            saveAdminSessionToStorage(APP_STATE.currentUser);
         }
-        showToast('Gagal terhubung ke server backend.', true);
+        if (Array.isArray(APP_STATE.users)) {
+            for (var i = 0; i < APP_STATE.users.length; i++) {
+                if (APP_STATE.users[i].userId === u.userId) {
+                    APP_STATE.users[i].userPin = newPin;
+                    break;
+                }
+            }
+            try {
+                localStorage.setItem('SATUALBUM_USERS_CACHE', JSON.stringify(APP_STATE.users));
+            } catch (eU) { }
+        }
+        if (oldPinEl) oldPinEl.value = '';
+        if (newPinEl) newPinEl.value = '';
+        if (confirmPinEl) confirmPinEl.value = '';
+        showToast('Password berhasil diperbarui secara lokal.');
     }, 8000);
 }
 
@@ -322,11 +352,38 @@ function handleAdminLoginSubmit(isForce) {
     }
 
     var knownUsers = [
-        { userId: 'USR-0004', username: 'ilham', fullName: 'ilham', userPin: '111', roleLevel: 'Super Admin', accountStatus: 'Active' },
-        { userId: 'USR-0001', username: 'superadmin', fullName: 'Karyn Utama (Owner / Super Admin)', userPin: '123456', roleLevel: 'Super Admin', accountStatus: 'Active' },
-        { userId: 'USR-0002', username: 'adminevent', fullName: 'Rizky Pratama (Event Manager WO)', userPin: '112233', roleLevel: 'Admin Event', accountStatus: 'Active' },
-        { userId: 'USR-0003', username: 'operator', fullName: 'Dimas Aditya (Crew Booth Kamera)', userPin: '000000', roleLevel: 'Operator', accountStatus: 'Active' }
+        { userId: 'USR-0001', username: 'superadmin', fullName: 'Super Admin Dispocam', userPin: '000000', roleLevel: 'Super Admin', accountStatus: 'Active' },
+        { userId: 'USR-0002', username: 'adminevent', fullName: 'Admin Acara Dimas & Karyn', userPin: '123456', roleLevel: 'Admin Event', accountStatus: 'Active' },
+        { userId: 'USR-0003', username: 'operator', fullName: 'Operator Stan Foto', userPin: '112233', roleLevel: 'Operator', accountStatus: 'Active' },
+        { userId: 'USR-0004', username: 'ilham', fullName: 'Ilham', userPin: '123456', roleLevel: 'Super Admin', accountStatus: 'Active' }
     ];
+
+    if (Array.isArray(APP_STATE.users) && APP_STATE.users.length > 0) {
+        for (var u = 0; u < APP_STATE.users.length; u++) {
+            var exist = false;
+            for (var k = 0; k < knownUsers.length; k++) {
+                if (knownUsers[k].username.toLowerCase() === APP_STATE.users[u].username.toLowerCase()) {
+                    knownUsers[k] = APP_STATE.users[u];
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) knownUsers.push(APP_STATE.users[u]);
+        }
+    }
+
+    function findKnownUserByUsername(inUser) {
+        var cleanU = inUser.toLowerCase();
+        for (var i = 0; i < knownUsers.length; i++) {
+            var ku = knownUsers[i];
+            if ((ku.username && ku.username.toLowerCase() === cleanU) ||
+                (cleanU === 'admin' && ku.roleLevel === 'Super Admin') ||
+                (ku.fullName && ku.fullName.toLowerCase() === cleanU)) {
+                return ku;
+            }
+        }
+        return null;
+    }
 
     function checkKnownUserMatch(inUser, inPin) {
         var cleanU = inUser.toLowerCase();
@@ -373,7 +430,7 @@ function handleAdminLoginSubmit(isForce) {
         return;
     }
 
-    // 2. JIKA BUKAN AKUN DEFAULT (PENGGUNA BARU DARI DATABASE GOOGLE SHEETS)
+    // 2. VERIFIKASI AKUN KE SERVER GOOGLE APPS SCRIPT
     showLoadingOverlay(true, 'Memverifikasi akun database...');
     callBackendApi('authenticateUser', { username: uName, pin: uPin, forceLogin: !!isForce }, function (res) {
         showLoadingOverlay(false);
@@ -395,19 +452,49 @@ function handleAdminLoginSubmit(isForce) {
                 return;
             }
 
+            var errHtml = '';
+            var toastMsg = (res && res.message) || 'Username atau Password tidak sesuai.';
+
+            if (res && res.code === 'USER_NOT_FOUND') {
+                errHtml = '<div style="font-weight:700; color:#ff4d4f; margin-bottom:4px;"><i class="fa-solid fa-user-xmark"></i> User Tidak Ditemukan:</div>' +
+                          '<div>' + escapeHtml(res.message) + '</div>';
+                toastMsg = res.message;
+            } else if (res && res.code === 'WRONG_PIN') {
+                errHtml = '<div style="font-weight:700; color:#ff4d4f; margin-bottom:4px;"><i class="fa-solid fa-key"></i> Password Salah:</div>' +
+                          '<div>' + escapeHtml(res.message) + '</div>';
+                toastMsg = res.message;
+            } else if (res && res.code === 'ACCOUNT_INACTIVE') {
+                errHtml = '<div style="font-weight:700; color:#ffaa00; margin-bottom:4px;"><i class="fa-solid fa-user-lock"></i> Akun Dinonaktifkan:</div>' +
+                          '<div>' + escapeHtml(res.message) + '</div>';
+                toastMsg = res.message;
+            } else {
+                errHtml = '<div style="margin-bottom:4px;"><i class="fa-solid fa-circle-exclamation"></i> ' + escapeHtml(toastMsg) + '</div>';
+            }
+
             if (alertBox) {
                 alertBox.style.display = 'block';
-                alertBox.textContent = (res && res.message) || 'Username atau Password tidak sesuai.';
+                alertBox.innerHTML = errHtml;
             }
-            showToast((res && res.message) || 'Username atau PIN tidak sesuai.', true);
+            showToast(toastMsg, true);
         }
     }, function () {
         showLoadingOverlay(false);
-        if (alertBox) {
-            alertBox.style.display = 'block';
-            alertBox.textContent = 'Gagal terhubung ke server backend atau kredensial akun tidak sesuai.';
+        var foundLocal = findKnownUserByUsername(uName);
+        var offlineMsg = '';
+        if (!foundLocal) {
+            offlineMsg = 'User "' + escapeHtml(uName) + '" tidak ditemukan. Periksa kembali username Anda.';
+            if (alertBox) {
+                alertBox.style.display = 'block';
+                alertBox.innerHTML = '<div style="font-weight:700; color:#ff4d4f; margin-bottom:4px;"><i class="fa-solid fa-user-xmark"></i> User Tidak Ditemukan:</div><div>' + offlineMsg + '</div>';
+            }
+        } else {
+            offlineMsg = 'Password / PIN yang Anda masukkan salah untuk user "' + escapeHtml(foundLocal.username) + '".';
+            if (alertBox) {
+                alertBox.style.display = 'block';
+                alertBox.innerHTML = '<div style="font-weight:700; color:#ff4d4f; margin-bottom:4px;"><i class="fa-solid fa-key"></i> Password Salah:</div><div>' + offlineMsg + '</div>';
+            }
         }
-        showToast('Kredensial tidak sesuai atau jaringan backend tidak merespons.', true);
+        showToast(offlineMsg, true);
     }, 8000);
 }
 
@@ -1414,20 +1501,39 @@ function deleteEventItem(eventId) {
 
 // MANAJEMEN USER & LEVEL ROLE
 function loadAdminUsersList() {
+    // 1. Pulihkan user dari APP_STATE, cache lokal, atau default 4 user langsung agar tabel tidak pernah kosong
+    if (!APP_STATE.users || APP_STATE.users.length === 0) {
+        try {
+            var cachedUsersRaw = localStorage.getItem('SATUALBUM_USERS_CACHE');
+            if (cachedUsersRaw) {
+                var parsedU = JSON.parse(cachedUsersRaw);
+                if (Array.isArray(parsedU) && parsedU.length > 0) {
+                    APP_STATE.users = parsedU;
+                }
+            }
+        } catch (eUC) { }
+    }
+    if (!APP_STATE.users || APP_STATE.users.length === 0) {
+        APP_STATE.users = [
+            { userId: 'USR-0001', username: 'superadmin', fullName: 'Super Admin Dispocam', userPin: '000000', roleLevel: 'Super Admin', accountStatus: 'Active', createdAt: '29/10/2026 00:00:00' },
+            { userId: 'USR-0002', username: 'adminevent', fullName: 'Admin Acara Dimas & Karyn', userPin: '123456', roleLevel: 'Admin Event', accountStatus: 'Active', createdAt: '29/10/2026 00:00:00' },
+            { userId: 'USR-0003', username: 'operator', fullName: 'Operator Stan Foto', userPin: '112233', roleLevel: 'Operator', accountStatus: 'Active', createdAt: '29/10/2026 00:00:00' },
+            { userId: 'USR-0004', username: 'ilham', fullName: 'Ilham', userPin: '123456', roleLevel: 'Super Admin', accountStatus: 'Active', createdAt: '08/11/2026 07:11:00' }
+        ];
+    }
+    renderAdminUsersTable();
+
+    // 2. Muat data pengguna terbaru dari Google Apps Script secara asynchronous
     callBackendApi('getPaginatedData', { dataType: 'users', offset: 0, limit: 50 }, function (res) {
-        if (res && res.status === 'success') {
-            APP_STATE.users = res.items || [];
+        if (res && res.status === 'success' && Array.isArray(res.items) && res.items.length > 0) {
+            APP_STATE.users = res.items;
+            try {
+                localStorage.setItem('SATUALBUM_USERS_CACHE', JSON.stringify(res.items));
+            } catch (eU) { }
             renderAdminUsersTable();
         }
     }, function () {
-        if (APP_STATE.users.length === 0) {
-            APP_STATE.users = [
-                { userId: 'USR-0001', username: 'superadmin', fullName: 'Karyn Utama (Super Admin)', userPin: '123456', roleLevel: 'Super Admin', accountStatus: 'Active' },
-                { userId: 'USR-0002', username: 'adminevent', fullName: 'Rizky Pratama (Admin Event)', userPin: '112233', roleLevel: 'Admin Event', accountStatus: 'Active' },
-                { userId: 'USR-0003', username: 'operator', fullName: 'Dimas Aditya (Operator)', userPin: '000000', roleLevel: 'Operator', accountStatus: 'Active' }
-            ];
-        }
-        renderAdminUsersTable();
+        // Fallback offline: data user sudah dirender di langkah 1
     });
 }
 
@@ -1860,7 +1966,7 @@ function initLightboxInteractiveControls() {
 
 // MODAL GANTI PASSWORD / PIN AKUN PENGGUNA
 function openChangePasswordModal(userId, username) {
-    if (!userId && !username && document.getElementById('adminSub-accountProfile')) {
+    if (!userId && !username && document.getElementById('adminSub-accountProfile') && APP_STATE.currentUser) {
         switchAdminSubTab('accountProfile');
         return;
     }
@@ -1875,8 +1981,18 @@ function openChangePasswordModal(userId, username) {
     var labelEl = document.getElementById('changePasswordUsernameLabel');
     if (labelEl) labelEl.textContent = targetName || 'Akun Aktif';
 
-    var oldPinEl = document.getElementById('changePasswordOldPin');
-    if (oldPinEl) oldPinEl.value = '';
+    // Jika Super Admin mereset password akun user lain, input Password Lama tidak wajib
+    var isSuperAdminResetOther = (APP_STATE.currentUser && APP_STATE.currentUser.roleLevel === 'Super Admin' && targetId && targetId !== APP_STATE.currentUser.userId);
+    var oldPinGroup = document.getElementById('changePasswordOldPinGroup');
+    var oldPinInput = document.getElementById('changePasswordOldPin');
+    if (oldPinGroup) {
+        oldPinGroup.style.display = isSuperAdminResetOther ? 'none' : 'block';
+    }
+    if (oldPinInput) {
+        oldPinInput.required = !isSuperAdminResetOther;
+        oldPinInput.value = '';
+    }
+
     var newPinEl = document.getElementById('changePasswordNewPin');
     if (newPinEl) newPinEl.value = '';
     var confirmPinEl = document.getElementById('changePasswordConfirmPin');
@@ -1893,11 +2009,14 @@ function closeChangePasswordModal() {
 function handleAdminChangePasswordSubmit() {
     var idEl = document.getElementById('changePasswordTargetUserId');
     var userId = idEl ? idEl.value : (APP_STATE.currentUser ? APP_STATE.currentUser.userId : '');
-    var oldPin = document.getElementById('changePasswordOldPin').value.trim();
+    var oldPinEl = document.getElementById('changePasswordOldPin');
+    var oldPin = oldPinEl ? oldPinEl.value.trim() : '';
     var newPin = document.getElementById('changePasswordNewPin').value.trim();
     var confirmPin = document.getElementById('changePasswordConfirmPin').value.trim();
 
-    if (!oldPin) {
+    var isSuperAdminResetOther = (APP_STATE.currentUser && APP_STATE.currentUser.roleLevel === 'Super Admin' && userId && userId !== APP_STATE.currentUser.userId);
+
+    if (!isSuperAdminResetOther && !oldPin) {
         showToast('Masukkan Password / PIN lama terlebih dahulu.', true);
         return;
     }
@@ -1910,15 +2029,34 @@ function handleAdminChangePasswordSubmit() {
         return;
     }
 
+    var targetUser = null;
+    if (Array.isArray(APP_STATE.users)) {
+        for (var i = 0; i < APP_STATE.users.length; i++) {
+            if (APP_STATE.users[i].userId === userId) {
+                targetUser = APP_STATE.users[i];
+                break;
+            }
+        }
+    }
+
     showLoadingOverlay(true, 'Memperbarui password akun di Google Sheets...');
     callBackendApi('changeUserPassword', {
         userId: userId,
-        username: APP_STATE.currentUser ? APP_STATE.currentUser.username : '',
+        username: targetUser ? targetUser.username : (APP_STATE.currentUser ? APP_STATE.currentUser.username : ''),
         oldPin: oldPin,
-        newPin: newPin
+        newPin: newPin,
+        isAdminReset: isSuperAdminResetOther
     }, function (res) {
         showLoadingOverlay(false);
         if (res && res.status === 'success') {
+            if (targetUser) targetUser.userPin = newPin;
+            if (APP_STATE.currentUser && APP_STATE.currentUser.userId === userId) {
+                APP_STATE.currentUser.userPin = newPin;
+                saveAdminSessionToStorage(APP_STATE.currentUser);
+            }
+            try {
+                localStorage.setItem('SATUALBUM_USERS_CACHE', JSON.stringify(APP_STATE.users));
+            } catch (eU) { }
             closeChangePasswordModal();
             showToast(res.message || 'Password berhasil diperbarui!');
             alert('SUKSES GANTI PASSWORD:\n\n' + (res.message || 'Password berhasil diperbarui. Silakan gunakan password baru ini pada login berikutnya.'));
@@ -1929,7 +2067,21 @@ function handleAdminChangePasswordSubmit() {
         }
     }, function () {
         showLoadingOverlay(false);
-        showToast('Gagal menghubungi server Google Apps Script.', true);
+        if (targetUser) {
+            targetUser.userPin = newPin;
+            if (APP_STATE.currentUser && APP_STATE.currentUser.userId === userId) {
+                APP_STATE.currentUser.userPin = newPin;
+                saveAdminSessionToStorage(APP_STATE.currentUser);
+            }
+            try {
+                localStorage.setItem('SATUALBUM_USERS_CACHE', JSON.stringify(APP_STATE.users));
+            } catch (eU2) { }
+            closeChangePasswordModal();
+            showToast('Mode offline: Password diperbarui secara lokal.');
+            loadAdminUsersList();
+        } else {
+            showToast('Gagal menghubungi server Google Apps Script.', true);
+        }
     });
 }
 

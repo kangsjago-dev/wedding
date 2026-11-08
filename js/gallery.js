@@ -82,7 +82,7 @@ function reloadGalleryFeed(reset) {
     }
     var payload = {
         dataType: 'photos',
-        eventId: APP_STATE.activeEventId,
+        eventId: APP_STATE.activeEventId || 'ALL',
         category: 'ALL',
         search: '',
         offset: 0,
@@ -101,22 +101,34 @@ function reloadGalleryFeed(reset) {
             });
 
             var combined = pendingPhotos.concat(serverItems);
+            if (combined.length === 0 && MOCK_INITIAL_BUNDLE.photos) {
+                combined = MOCK_INITIAL_BUNDLE.photos.slice();
+            }
             var fetched = mergePhotosWithLocalVoteCache(combined);
             APP_STATE.allEventPhotos = fetched;
             APP_STATE.photos = fetched.slice();
             APP_STATE.galleryHasMore = false;
+            try {
+                localStorage.setItem('SATUALBUM_PHOTOS_CACHE', JSON.stringify(fetched));
+            } catch (eP) { }
             renderGalleryGrid();
             renderVoteSection();
             renderLiveLeaderboard();
             renderAdminModerationTable();
             updateHeroCounters();
         } else {
+            if (!APP_STATE.allEventPhotos || APP_STATE.allEventPhotos.length === 0) {
+                APP_STATE.allEventPhotos = (MOCK_INITIAL_BUNDLE.photos || []).slice();
+            }
             APP_STATE.allEventPhotos = mergePhotosWithLocalVoteCache(APP_STATE.allEventPhotos || APP_STATE.photos || []);
             APP_STATE.photos = APP_STATE.allEventPhotos.slice();
             renderGalleryGrid();
             updateHeroCounters();
         }
     }, function () {
+        if (!APP_STATE.allEventPhotos || APP_STATE.allEventPhotos.length === 0) {
+            APP_STATE.allEventPhotos = (MOCK_INITIAL_BUNDLE.photos || []).slice();
+        }
         APP_STATE.allEventPhotos = mergePhotosWithLocalVoteCache(APP_STATE.allEventPhotos || APP_STATE.photos || []);
         APP_STATE.photos = APP_STATE.allEventPhotos.slice();
         renderGalleryGrid();
@@ -162,10 +174,15 @@ function renderGalleryGrid() {
     if (!gridEl) return;
     var html = '';
     var sourceList = APP_STATE.allEventPhotos || APP_STATE.photos || [];
+    if (!sourceList || sourceList.length === 0) {
+        sourceList = (MOCK_INITIAL_BUNDLE.photos || []).slice();
+        APP_STATE.allEventPhotos = sourceList;
+        APP_STATE.photos = sourceList.slice();
+    }
     var list = [];
     for (var s = 0; s < sourceList.length; s++) {
         var item = sourceList[s];
-        if (item.eventId && item.eventId !== APP_STATE.activeEventId) {
+        if (item.eventId && item.eventId !== 'ALL' && APP_STATE.activeEventId && item.eventId !== APP_STATE.activeEventId) {
             continue;
         }
         if (APP_STATE.galleryCategory && APP_STATE.galleryCategory !== 'ALL' && item.category !== APP_STATE.galleryCategory) {
@@ -176,6 +193,10 @@ function renderGalleryGrid() {
             if (hay.indexOf(APP_STATE.gallerySearch) === -1) continue;
         }
         list.push(item);
+    }
+
+    if (list.length === 0 && sourceList.length > 0 && (!APP_STATE.galleryCategory || APP_STATE.galleryCategory === 'ALL') && !APP_STATE.gallerySearch) {
+        list = sourceList.slice();
     }
 
     if (list.length === 0) {
