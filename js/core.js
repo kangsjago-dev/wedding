@@ -1719,12 +1719,17 @@ function applyRoleBasedAdminView() {
             if (tabQuota) tabQuota.style.display = 'inline-flex';
             if (tabMod) tabMod.style.display = 'inline-flex';
             if (tabSystem) tabSystem.style.display = 'none';
+            var curSub = localStorage.getItem('SATUALBUM_LAST_ADMIN_SUBTAB') || 'driveEvents';
+            if (curSub === 'systemConfig') curSub = 'driveEvents';
+            switchAdminSubTab(curSub, document.getElementById('adminTabBtn-' + curSub) || tabDrive);
         } else {
             if (tabDrive) tabDrive.style.display = 'inline-flex';
             if (tabFrame) tabFrame.style.display = 'inline-flex';
             if (tabQuota) tabQuota.style.display = 'inline-flex';
             if (tabMod) tabMod.style.display = 'inline-flex';
             if (tabSystem) tabSystem.style.display = 'inline-flex';
+            var lastSub = localStorage.getItem('SATUALBUM_LAST_ADMIN_SUBTAB') || 'driveEvents';
+            switchAdminSubTab(lastSub, document.getElementById('adminTabBtn-' + lastSub) || tabDrive);
         }
         renderEventSelectorDropdown();
         renderAdminEventsTable();
