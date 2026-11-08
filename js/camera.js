@@ -1017,6 +1017,12 @@
 
                 if (res && res.status === 'success' && res.photo) {
                     var realPhotoId = res.photo.photoId;
+                    var driveId = String(res.photo.driveFileId || '');
+                    if (driveId.indexOf('LOCAL_') === 0) {
+                        showToast('⚠️ Foto tercatat di database, namun gagal tersimpan di Google Drive. Pastikan script Google Apps Script telah diberikan izin Drive dan dideploy ulang.', true);
+                    } else {
+                        showToast('✅ Foto berhasil diunggah ke Google Drive & Galeri Acara!');
+                    }
                     recordMyUploadedPhotoId(realPhotoId, currentTask.uploadedBy);
 
                     // Migrasi otomatis apabila foto sempat di-vote saat masih berstatus PHT-TEMP-
@@ -1058,7 +1064,7 @@
                     renderAdminModerationTable();
                     updateHeroCounters();
                 } else if (res && res.status === 'error') {
-                    showToast(res.message || 'Upload latar belakang mengalami kendala.', true);
+                    showToast('❌ ' + (res.message || 'Upload foto ke server Google Drive gagal.'), true);
                 }
 
                 APP_STATE.backgroundUploadQueue.shift();
@@ -1066,11 +1072,12 @@
                     APP_STATE.isBackgroundUploading = false;
                     processBackgroundUploadQueue();
                 }, 250);
-            }, function () {
+            }, function (err) {
                 if (bgProgressTimer) {
                     clearInterval(bgProgressTimer);
                     bgProgressTimer = null;
                 }
+                showToast('❌ Gagal menghubungi server saat upload foto: ' + (err && err.message ? err.message : 'Koneksi terputus atau timeout.'), true);
                 APP_STATE.backgroundUploadQueue.shift();
                 setTimeout(function () {
                     APP_STATE.isBackgroundUploading = false;

@@ -43,6 +43,26 @@ Pengguna menyampaikan instruksi perbaikan mendasar terkait kestabilan sinkronisa
   2. Periksa apakah user yang sedang aktif adalah kru/admin (`isCrew = Boolean(APP_STATE.currentUser)`). Jika kru, bypass validasi batas tamu secara menyeluruh.
   3. Di `resetQuotaForSpecificDevice` dan `resetDeviceUploadQuotaCounter`, hitung offset reset secara akurat terhadap total upload aktual sehingga sisa kuota terpakai langsung terevaluasi ke 0 dan foto dapat langsung diambil kembali.
 
+### D. Masalah Foto Tidak Masuk ke Server Meski Status Berhasil (Google Drive Fallback)
+- **Akar Masalah:**
+  1. Pada backend Google Apps Script yang terdeploy saat ini, pemanggilan `DriveApp` di dalam fungsi `uploadEventPhoto` mengalami kendala perizinan (*authorization scope*) atau akses folder, sehingga alur eksekusi melompat ke blok `catch (driveErr)`.
+  2. Kode backend lama menangkap error tersebut, menetapkan `driveFileId = 'LOCAL_' + randomSuffix`, dan **tetap mengembalikan `status: 'success'`**.
+  3. Frontend browser menganggap respon `status: 'success'` sebagai upload berhasil, menampilkan foto dari memori data URL lokal, namun di Google Drive berkas foto sebenarnya **tidak pernah terbuat**.
+  4. Script Google Apps Script live di cloud belum diperbarui ke versi `code.gs` terbaru di workspace (terbukti dari pesan `Action tidak dikenali: syncDriveFolderToGallery`).
+- **Solusi Komprehensif:**
+  1. **Di `code.gs`:**
+     - Menghilangkan *false-positive success*: jika pembuatan berkas di Google Drive gagal, server akan mengembalikan `status: 'error'` disertai rincian penyebab kegagalan secara transparan.
+     - Memisahkan operasi `driveFile.setSharing(...)` ke dalam `try/catch` mandiri agar kegagalan pengaturan izin link tidak membatalkan perolehan `driveFile.getId()`.
+     - Mengarahkan `directImageUrl` ke CDN resmi Google Drive (`https://lh3.googleusercontent.com/d/{id}=w2400`) agar gambar dapat di-load secara cepat dan stabil tanpa isu cookie.
+     - Menambahkan fungsi pengujian `testDriveUploadCapability()` untuk memverifikasi izin DriveApp langsung dari spreadsheet/API.
+  2. **Di `appsscript.json`:**
+     - Mendaftarkan cakupan OAuth eksplisit (`https://www.googleapis.com/auth/drive`, `https://www.googleapis.com/auth/spreadsheets`, `https://www.googleapis.com/auth/script.external_request`).
+  3. **Di `js/camera.js`:**
+     - Menambahkan deteksi `driveFileId`: jika berawalan `LOCAL_`, sistem memunculkan toast peringatan tegas bahwa foto belum masuk ke Google Drive.
+     - Menampilkan notifikasi error yang jelas jika server menolak upload atau koneksi terputus.
+  4. **Di `index.html` & `js/admin.js`:**
+     - Menambahkan tombol *"Uji Izin Google Drive"* di Tab 1 Admin untuk mendiagnosis kesiapan Google Apps Script dalam menulis ke Google Drive dengan 1 klik.
+
 ---
 
 ## 3. TABEL RENCANA PERUBAHAN TEKNIS & BERKAS TERDAMPAK
@@ -53,7 +73,8 @@ Pengguna menyampaikan instruksi perbaikan mendasar terkait kestabilan sinkronisa
 | **2** | **Persistensi Batas & Kuota (Tab 3)** | Komparasi timestamp `_updatedAt` di `loadActiveEventScopedSettings`, seleksi preset 0/Unlimited presisi. | `js/core.js`, `js/admin.js` | **SELESAI** |
 | **3** | **Bonus Kuota & Reset Kuota Kamera** | `effectiveMaxPerUser` memperhitungkan `bonusQuota`, perbaikan reset offset, zeroing counter lokal. | `js/camera.js`, `js/core.js` | **SELESAI** |
 | **4** | **Kru/Admin Quota Bypass** | Pengguna yang terautentikasi (`APP_STATE.currentUser`) bebas mengambil foto tanpa dibatasi kuota tamu. | `js/camera.js` | **SELESAI** |
-| **5** | **Verifikasi Kestabilan Sistem** | Validasi headless Chrome & Edge: 0 error syntax, 10/10 berkas lulus uji integritas `build.ps1`. | Seluruh Modul | **SELESAI** |
+| **5** | **Solusi Upload Foto Google Drive** | Eliminasi false-positive success di `uploadEventPhoto`, isolasi `setSharing`, deteksi `LOCAL_` di kamera, tombol uji Drive di admin. | `code.gs`, `appsscript.json`, `js/camera.js`, `index.html`, `js/admin.js` | **SELESAI** |
+| **6** | **Verifikasi Kestabilan Sistem** | Validasi headless Chrome & Edge: 0 error syntax, 10/10 berkas lulus uji integritas `build.ps1`. | Seluruh Modul | **SELESAI** |
 
 ---
 
@@ -64,5 +85,6 @@ Pengguna menyampaikan instruksi perbaikan mendasar terkait kestabilan sinkronisa
 - [x] Penambahan bonus kuota (+1 / +3) di tabel Device Management langsung menambah batas foto yang dapat diambil di kamera.
 - [x] Tombol "Reset Kuota" seketika mengembalikan hitungan terpakai ke 0 dan membuka kembali akses kamera.
 - [x] Kru / Admin yang sedang login tidak pernah terblokir oleh kuota upload tamu.
-- [x] Seluruh fitur galeri Drive, Lightbox carousel, 5-tab admin, dan ganti password tetap berfungsi optimal.
-- [x] Uji headless Chrome: 0 uncaught errors, seluruh skenario uji berhasil 100%.
+- [x] Backend `uploadEventPhoto` tidak lagi mengembalikan status sukses palsu jika berkas gagal dibuat di Google Drive.
+- [x] Tombol "Uji Izin Google Drive" tersedia di Tab 1 Panel Admin.
+- [x] Seluruh berkas lulus uji `build.ps1` dan pengujian Chrome Headless: 0 error.

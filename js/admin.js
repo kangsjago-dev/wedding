@@ -185,6 +185,19 @@ function saveActiveEventDriveFolder() {
     }, 8000);
 }
 
+function testDriveConnectionAdmin() {
+    showToast('Menguji koneksi dan izin Google Drive ke server...');
+    callBackendApi('testDriveUploadCapability', {}, function (res) {
+        if (res && res.status === 'success') {
+            showToast('✅ ' + res.message);
+        } else {
+            showToast('❌ ' + (res && res.message ? res.message : 'Uji koneksi Google Drive gagal.'), true);
+        }
+    }, function (err) {
+        showToast('❌ Gagal menghubungi backend API: ' + (err && err.message ? err.message : 'Timeout / Belum ada respons'), true);
+    }, 15000);
+}
+
 // =========================================================================
 // MENU GANTI PASSWORD MANDIRI
 // =========================================================================

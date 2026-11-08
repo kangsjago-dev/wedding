@@ -706,7 +706,10 @@
                                     <span style="font-size:0.72rem; color:var(--text-muted);">Folder ID Terdeteksi:</span>
                                     <span id="adminEventDriveFolderIdBadge" class="mono-badge" style="color:var(--accent-gold); font-size:0.75rem;">-</span>
                                 </div>
-                                <div style="display:flex; gap:8px;">
+                                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="testDriveConnectionAdmin()" title="Uji apakah Google Apps Script memiliki izin ke Google Drive">
+                                        <i class="fa-solid fa-cloud-bolt"></i> Uji Izin Google Drive
+                                    </button>
                                     <button type="button" class="btn btn-neon btn-sm" onclick="saveActiveEventDriveFolder()">
                                         <i class="fa-solid fa-floppy-disk"></i> Simpan Link Folder Event
                                     </button>
