@@ -129,7 +129,7 @@
                     html += '<div class="glass-card photo-card">';
                     html += '<div>';
                     html += '<div class="photo-img-box">';
-                    html += '<img src="' + escapeHtml(p.directImageUrl) + '" onclick="openImageLightBox(\'' + escapeHtml(p.directImageUrl) + '\', \'' + escapeHtml(p.uploadedBy) + '\')" onerror="this.src=\'https://placehold.co/640x360/151b26/00ffaa?text=Foto\'" />';
+                    html += '<img src="' + escapeHtml(p.directImageUrl) + '" loading="lazy" onclick="openPhotoLightboxById(\'' + escapeHtml(p.photoId) + '\')" onerror="this.src=\'https://placehold.co/640x360/151b26/00ffaa?text=Foto\'" />';
                     if (p.awardTitle) {
                         html += '<span style="position:absolute; top:8px; left:8px; font-size:0.68rem; font-weight:800; padding:3px 8px; border-radius:6px; background:var(--accent-gold); color:#0b0f19;"><i class="fa-solid fa-crown"></i> ' + escapeHtml(p.awardTitle) + '</span>';
                     }
@@ -222,7 +222,8 @@
                 btnSubmit.style.opacity = firstAvailableCat ? '1' : '0.5';
             }
 
-            document.getElementById('voteSelectModal').style.display = 'flex';
+            var voteModal = document.getElementById('voteSelectModal');
+            if (voteModal) voteModal.style.display = 'flex';
         }
 
         function selectVoteOptionByIndex(catIdx, el) {
@@ -235,7 +236,8 @@
         }
 
         function closeVoteModal() {
-            document.getElementById('voteSelectModal').style.display = 'none';
+            var voteModal = document.getElementById('voteSelectModal');
+            if (voteModal) voteModal.style.display = 'none';
         }
 
         // PROSES SUBMIT VOTE DENGAN PEREKAMAN GANDA KE DATABASE SPREADSHEET (PHOTOS + ADMIN_CONFIG LEDGER)

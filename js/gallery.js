@@ -50,6 +50,16 @@ function startGalleryAutoPolling() {
                     var fetched = mergePhotosWithLocalVoteCache(combined);
                     APP_STATE.allEventPhotos = fetched;
                     APP_STATE.photos = fetched.slice();
+                    try {
+                        var cacheablePhotos = fetched.map(function (item) {
+                            var copy = Object.assign({}, item);
+                            if (copy.directImageUrl && copy.directImageUrl.indexOf('data:image') === 0 && copy.directImageUrl.length > 50000) {
+                                copy.directImageUrl = '';
+                            }
+                            return copy;
+                        });
+                        localStorage.setItem('SATUALBUM_PHOTOS_CACHE', JSON.stringify(cacheablePhotos));
+                    } catch (eP) { }
                     renderGalleryGrid();
                     renderVoteSection();
                     renderLiveLeaderboard();
@@ -109,7 +119,14 @@ function reloadGalleryFeed(reset) {
             APP_STATE.photos = fetched.slice();
             APP_STATE.galleryHasMore = false;
             try {
-                localStorage.setItem('SATUALBUM_PHOTOS_CACHE', JSON.stringify(fetched));
+                var cacheablePhotos = fetched.map(function (item) {
+                    var copy = Object.assign({}, item);
+                    if (copy.directImageUrl && copy.directImageUrl.indexOf('data:image') === 0 && copy.directImageUrl.length > 50000) {
+                        copy.directImageUrl = '';
+                    }
+                    return copy;
+                });
+                localStorage.setItem('SATUALBUM_PHOTOS_CACHE', JSON.stringify(cacheablePhotos));
             } catch (eP) { }
             renderGalleryGrid();
             renderVoteSection();
@@ -211,7 +228,7 @@ function renderGalleryGrid() {
             html += '<div class="glass-card photo-card">';
             html += '<div>';
             html += '<div class="photo-img-box">';
-            html += '<img src="' + escapeHtml(p.directImageUrl) + '" onclick="openImageLightBox(\'' + escapeHtml(p.directImageUrl) + '\', \'' + escapeHtml(p.uploadedBy) + '\')" onerror="this.src=\'https://placehold.co/640x360/151b26/00ffaa?text=Foto+Acara\'" />';
+            html += '<img src="' + escapeHtml(p.directImageUrl) + '" loading="lazy" onclick="openPhotoLightboxById(\'' + escapeHtml(p.photoId) + '\')" onerror="handleGalleryImageError(this, \'' + escapeHtml(p.photoId) + '\')" />';
             html += badgeAward;
             html += '<span style="position:absolute; bottom:8px; right:8px; font-size:0.68rem; font-weight:600; padding:3px 8px; border-radius:6px; background:rgba(11,15,25,0.82); color:var(--accent-neon); border:1px solid var(--border-glass);">' + escapeHtml(p.category) + '</span>';
             html += '</div>';
@@ -235,6 +252,49 @@ function renderGalleryGrid() {
     if (loadMoreBtn) loadMoreBtn.style.display = 'none';
 }
 
+function openPhotoLightboxById(photoId) {
+    var list = mergePhotosWithLocalVoteCache(APP_STATE.allEventPhotos || APP_STATE.photos || []);
+    var target = null;
+    for (var i = 0; i < list.length; i++) {
+        if (list[i].photoId === photoId) {
+            target = list[i];
+            break;
+        }
+    }
+    if (!target) return;
+    openImageLightBox(target.directImageUrl, target.uploadedBy);
+}
+
+function handleGalleryImageError(imgEl, photoId) {
+    if (!imgEl) return;
+    var list = APP_STATE.allEventPhotos || APP_STATE.photos || [];
+    var p = null;
+    for (var i = 0; i < list.length; i++) {
+        if (list[i].photoId === photoId) { p = list[i]; break; }
+    }
+    if (p && p.driveFileId && p.driveFileId.indexOf('LOCAL_') === -1 && p.driveFileId.indexOf('DRV_') === -1) {
+        if (imgEl.src.indexOf('lh3.googleusercontent.com') === -1) {
+            imgEl.src = 'https://lh3.googleusercontent.com/d/' + p.driveFileId + '=w1200';
+            return;
+        }
+    }
+    imgEl.src = 'https://placehold.co/640x360/151b26/00ffaa?text=Foto+Acara';
+}
+
+function base64ToBlob(base64Data, contentType) {
+    contentType = contentType || 'image/jpeg';
+    var parts = base64Data.split(',');
+    var base64Str = parts[1] || parts[0];
+    base64Str = base64Str.trim();
+    var byteCharacters = window.atob(base64Str);
+    var byteNumbers = new Array(byteCharacters.length);
+    for (var i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    var byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: contentType });
+}
+
 function downloadPhotoById(photoId) {
     var list = APP_STATE.allEventPhotos || APP_STATE.photos || [];
     var target = null;
@@ -256,30 +316,59 @@ function downloadCurrentLightboxPhoto() {
 
 function triggerImageDownload(imgUrl, fileName) {
     if (!imgUrl) return;
-    if (imgUrl.indexOf('data:image') === 0) {
-        var a = document.createElement('a');
-        a.href = imgUrl;
-        a.download = fileName || 'SatuAlbum_Foto.jpg';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        showToast('Mengunduh foto ke perangkat Anda...');
-        return;
+    var safeName = fileName || ('SatuAlbum_Foto_' + Date.now() + '.jpg');
+    if (safeName.indexOf('.jpg') === -1 && safeName.indexOf('.jpeg') === -1 && safeName.indexOf('.png') === -1) {
+        safeName += '.jpg';
     }
+
+    if (imgUrl.indexOf('data:image') === 0) {
+        try {
+            var blob = base64ToBlob(imgUrl, 'image/jpeg');
+            var blobUrl = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = safeName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function () {
+                try { URL.revokeObjectURL(blobUrl); } catch (eR) { }
+            }, 60000);
+            showToast('Foto resolusi penuh berhasil diunduh ke perangkat Anda!');
+            return;
+        } catch (eB) {
+            var link = document.createElement('a');
+            link.href = imgUrl;
+            link.download = safeName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Mengunduh foto...');
+            return;
+        }
+    }
+
     var matchId = imgUrl.match(/[?&]id=([a-zA-Z0-9_-]{10,})/) || imgUrl.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
     if (matchId && matchId[1]) {
         var dlUrl = 'https://drive.google.com/uc?export=download&id=' + matchId[1];
-        window.open(dlUrl, '_blank');
-        showToast('Membuka unduhan foto resolusi penuh...');
+        var aDl = document.createElement('a');
+        aDl.href = dlUrl;
+        aDl.target = '_blank';
+        aDl.download = safeName;
+        document.body.appendChild(aDl);
+        aDl.click();
+        document.body.removeChild(aDl);
+        showToast('Membuka unduhan foto resolusi penuh dari Drive...');
         return;
     }
-    var link = document.createElement('a');
-    link.href = imgUrl;
-    link.target = '_blank';
-    link.download = fileName || 'SatuAlbum_Foto.jpg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+
+    var defaultLink = document.createElement('a');
+    defaultLink.href = imgUrl;
+    defaultLink.target = '_blank';
+    defaultLink.download = safeName;
+    document.body.appendChild(defaultLink);
+    defaultLink.click();
+    document.body.removeChild(defaultLink);
     showToast('Mengunduh foto...');
 }
 
